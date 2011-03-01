@@ -84,14 +84,14 @@ public class TomcatClaws implements RobotListener, Gun {
 
     public GunDecision getGunDecision(Target t, double firePower) {
         final double angleToTarget = robot.angleTo(t);
-        if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
+        targetingConfig = tomcatEyes.getConfiguration(t);
+        if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0 || targetingConfig == null) {
             predictedPoses = null;
             return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime));
         }
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
             predictedPoses = new ArrayList<TurnPrediction>();
-            targetingConfig = tomcatEyes.getConfiguration(t);
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes());
             robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
