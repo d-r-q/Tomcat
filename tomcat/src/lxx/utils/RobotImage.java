@@ -30,14 +30,6 @@ public final class RobotImage implements LXXRobotState {
         this.turnRateRadians = turnRateRadians;
     }
 
-    public RobotImage(LXXRobotState original) {
-        this.position = new LXXPoint(original);
-        this.velocity = original.getVelocity();
-        this.heading = original.getHeadingRadians();
-        this.battleField = original.getBattleField();
-        this.turnRateRadians = original.getTurnRateRadians();
-    }
-
     // todo(zhidkov): use RobocodeDuelSimulator
     public void apply(MovementDecision movementDecision) {
         heading = Utils.normalAbsoluteAngle(heading + movementDecision.getTurnRateRadians());

@@ -31,6 +31,8 @@ public class AttributesManager {
     public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on wall", -90, 90, new EnemyBearingToHOWallVE());
     public static final Attribute enemyBearingToMe = new Attribute("Enemy bearing to me", -180, 180, new EnemyBearingToMeVE());
     public static final Attribute enemyStopTime = new Attribute("Enemy stop time", 0, 2000, new EnemyStopTimeVE());
+    public static final Attribute enemyTravelTime = new Attribute("Enemy travel time", 0, 2000, new EnemyTravelTimeVE());
+    public static final Attribute enemyTurnTime = new Attribute("Enemy turn time", 0, 2000, new EnemyTurnTimeVE());
     public static final Attribute enemyDistanceToCenter = new Attribute("Enemy distance to center", 0, 850, new EnemyDistanceToCenterVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
@@ -59,6 +61,8 @@ public class AttributesManager {
             enemyBearingToForwardWall,
             enemyBearingToMe,
             enemyStopTime,
+            enemyTravelTime,
+            enemyTurnTime,
             enemyDistanceToCenter,
 
             myX,

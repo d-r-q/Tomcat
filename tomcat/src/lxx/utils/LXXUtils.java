@@ -51,6 +51,19 @@ public class LXXUtils {
         return res;
     }
 
+    public static double weightedManhattanDistance(double[] a, double[] b, double[] weights) {
+        double res = 0;
+
+        for (int i = 0; i < a.length; i++) {
+            res += ((b[i] > a[i])
+                    ? b[i] - a[i]
+                    : a[i] - b[i])
+                    * weights[i];
+        }
+
+        return res;
+    }
+
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
         // - 3 * firepower = speed - 20

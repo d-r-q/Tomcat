@@ -4,17 +4,21 @@
 
 package lxx.targeting.tomcat_claws;
 
-import lxx.Tomcat;
 import lxx.RobotListener;
+import lxx.Tomcat;
 import lxx.events.TickEvent;
 import lxx.model.BattleSnapshot;
-import lxx.model.attributes.Attribute;
-import lxx.office.*;
+import lxx.office.BattleSnapshotManager;
+import lxx.office.Office;
+import lxx.office.TargetManager;
+import lxx.office.Timer;
 import lxx.simulator.RobocodeDuelSimulator;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
+import lxx.targeting.tomcat_eyes.TargetingConfiguration;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
 import robocode.Event;
 import robocode.Rules;
@@ -44,39 +48,20 @@ public class TomcatClaws implements RobotListener, Gun {
     private final BattleSnapshotManager battleSnapshotManager;
     private final TargetManager targetManager;
     private final Timer timer;
-
-    private final Attribute[] attributes;
-    private final int[] indexes;
-    private final double[] weights;
+    private final TomcatEyes tomcatEyes;
 
     private List<TurnPrediction> predictedPoses = null;
     private RobocodeDuelSimulator duelSimulator;
     private APoint robotPosAtFireTime;
+    private TargetingConfiguration targetingConfig;
 
-    public TomcatClaws(Office office) {
+    public TomcatClaws(Office office, TomcatEyes tomcatEyes) {
         this.battleSnapshotManager = office.getBattleSnapshotManager();
         this.targetManager = office.getTargetManager();
         this.timer = office.getBattleTimeManager();
+        this.tomcatEyes = tomcatEyes;
 
         robot = office.getTomcat();
-
-        attributes = new Attribute[]{
-                AttributesManager.enemyBearingToMe,
-                AttributesManager.enemyDistanceToCenter,
-                AttributesManager.enemyStopTime,
-                AttributesManager.enemyBearingToForwardWall,
-                AttributesManager.enemyVelocityModule,
-        };
-
-        indexes = new int[attributes.length];
-        weights = new double[AttributesManager.attributesCount()];
-        double weight = 1;
-        int idx = 0;
-        for (Attribute a : attributes) {
-            indexes[idx++] = a.getId();
-            weights[a.getId()] = weight / a.getActualRange();
-            weight = weight * 4 + 1;
-        }
     }
 
     public void onEvent(Event event) {
@@ -106,16 +91,15 @@ public class TomcatClaws implements RobotListener, Gun {
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
             predictedPoses = new ArrayList<TurnPrediction>();
-            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), attributes);
+            targetingConfig = tomcatEyes.getConfiguration(t);
+            robot.setDebugProperty("Use targeting config", targetingConfig.getName());
+            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes());
             robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
 
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
             buildPattern(bulletSpeed);
 
-            if (timer.getBattleTime() > 70 && (predictedPoses == null || predictedPoses.size() == 0 || predictedPoses.get(0).enemyPos.aDistance(predictedPoses.get(predictedPoses.size() - 1).enemyPos) < 10)) {
-
-                duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), attributes);
-                buildPattern(bulletSpeed);
+            if (predictedPoses == null || predictedPoses.size() == 0) {
                 return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime));
             }
         }
@@ -131,20 +115,17 @@ public class TomcatClaws implements RobotListener, Gun {
 
     public void buildPattern(double bulletSpeed) {
         final List<EnemyMovementDecision> enemyMovementDecisions = getLastEnemyMovementDecisions();
+        final TargetingConfiguration targetingConfiguration = tomcatEyes.getConfiguration(targetManager.getDuelOpponent());
+
         long timeDelta = 0;
         while (!isBulletHitEnemy(duelSimulator.getEnemyProxy(), timeDelta, bulletSpeed)) {
             final PatternTreeNode node = getNode(enemyMovementDecisions);
-            final PatternTreeNode.PatternTreeNodeSelectionData n = node.getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), indexes, weights);
+            final PatternTreeNode.PatternTreeNodeSelectionData n = node.getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), targetingConfiguration.getIndexes(), targetingConfiguration.getWeights());
             final EnemyMovementDecision emd = n.getDecision();
             if (emd.acceleration < -Rules.DECELERATION || emd.acceleration > Rules.ACCELERATION) {
                 throw new RuntimeException("Something wrong!");
             }
             LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
-            if ((emd.acceleration == 0 && enemyState.getVelocity() > 0 && enemyState.getVelocity() < Rules.MAX_VELOCITY) ||
-                    (emd.acceleration > 0 && duelSimulator.getSimulatorSnapshot().getAttrValue(AttributesManager.enemyBearingToForwardWall) != 0) ||
-                    (emd.turnRateRadians == 0 && enemyState.getVelocity() == 0 && emd.acceleration == 0)) {
-                node.getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), indexes, weights);
-            }
             final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyState));
             duelSimulator.setEnemyMovementDecision(movementDecision);
             duelSimulator.doTurn();

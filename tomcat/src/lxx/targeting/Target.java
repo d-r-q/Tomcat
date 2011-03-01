@@ -304,11 +304,14 @@ public class Target implements LXXRobot, Serializable {
         return abs(state.velocity);
     }
 
-    // todo(zhidkov): will be used later
-    @SuppressWarnings({"UnusedDeclaration"})
-    public long getTurnTime() {
+    public long getLastTurnTime() {
         ensureValid();
-        return owner.getTime() - info.lastNotTurnTime;
+        return info.lastTurnTime;
+    }
+
+    public long getLastNotTurnTime() {
+        ensureValid();
+        return info.lastNotTurnTime;
     }
 
     public TargetState getPrevState() {
@@ -480,6 +483,7 @@ public class Target implements LXXRobot, Serializable {
 
         private long myLastHitTime;
         private double myLastDamage;
+        private long lastTurnTime;
         private long lastNotTurnTime;
 
         private long enemyLastHitTime;
@@ -492,7 +496,9 @@ public class Target implements LXXRobot, Serializable {
             }
 
             if (Utils.isNear(curState.turnRateRadians, 0) || signum(prevState.turnRateRadians) != signum(curState.turnRateRadians)) {
-                lastNotTurnTime = owner.getTime();
+                lastNotTurnTime = owner.getTime() - 1;
+            } else {
+                lastTurnTime = owner.getTime() - 1;
             }
 
             if (curState.velocity == 0) {

@@ -36,6 +36,8 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private double prevHeadingRadians;
     private long lastStopTime;
     private long lastTravelTime;
+    private long lastTurnTime;
+    private long lastNotTurnTime;
     private double acceleration;
     private int lastDirection = 1;
 
@@ -189,9 +191,17 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             lastDirection = (int) signum(e.getStatus().getVelocity());
         }
 
+        final double prevTurnRateSignum = signum(getTurnRateRadians());
         prevHeadingRadians = getHeadingRadians();
 
         super.onStatus(e);
+
+        final double turnRateSignum = signum(getTurnRateRadians());
+        if (turnRateSignum == 0 || turnRateSignum != prevTurnRateSignum) {
+            lastTurnTime = getTime() - 1;
+        } else {
+            lastNotTurnTime = getTime() - 1;
+        }
 
         notifyListeners(e);
     }
@@ -235,5 +245,13 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public double getTurnRateRadians() {
         return prevHeadingRadians - getHeadingRadians();
+    }
+
+    public long getLastTurnTime() {
+        return lastTurnTime;
+    }
+
+    public long getLastNotTurnTime() {
+        return lastNotTurnTime;
     }
 }

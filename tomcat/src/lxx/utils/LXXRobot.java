@@ -33,4 +33,9 @@ public interface LXXRobot extends APoint {
     long getLastStopTime();
 
     long getLastTravelTime();
+
+    long getLastTurnTime();
+
+    long getLastNotTurnTime();
+
 }

@@ -7,6 +7,8 @@ package lxx.simulator;
 import lxx.utils.*;
 import robocode.Rules;
 
+import static java.lang.Math.signum;
+
 public class RobotProxy implements LXXRobot {
 
     private final LXXRobot original;
@@ -16,6 +18,8 @@ public class RobotProxy implements LXXRobot {
 
     private long lastTravelTime = 0;
     private long lastStopTime = 0;
+    private long lastTurnTime = 0;
+    private long lastNotTurnTime = 0;
 
     private long time;
 
@@ -26,6 +30,8 @@ public class RobotProxy implements LXXRobot {
                 original.getState().getHeadingRadians(), original.getState().getBattleField(), original.getState().getTurnRateRadians());
         lastTravelTime = original.getLastTravelTime();
         lastStopTime = original.getLastStopTime();
+        lastTurnTime = original.getLastTurnTime();
+        lastNotTurnTime = original.getLastNotTurnTime();
     }
 
     void doTurn(LXXRobotState newState) {
@@ -37,6 +43,12 @@ public class RobotProxy implements LXXRobot {
             lastStopTime = time;
         } else {
             lastTravelTime = time;
+        }
+
+        if (newState.getTurnRateRadians() == 0 || signum(newState.getTurnRateRadians()) != signum(prevState.getTurnRateRadians())) {
+            lastNotTurnTime = time - 1;
+        } else {
+            lastTurnTime = time - 1;
         }
     }
 
@@ -111,5 +123,13 @@ public class RobotProxy implements LXXRobot {
 
     public APoint project(DeltaVector dv) {
         return currentState.project(dv);
+    }
+
+    public long getLastNotTurnTime() {
+        return lastNotTurnTime;
+    }
+
+    public long getLastTurnTime() {
+        return lastTurnTime;
     }
 }

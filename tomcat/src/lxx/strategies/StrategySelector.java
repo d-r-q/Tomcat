@@ -14,6 +14,7 @@ import lxx.strategies.duel.WaveSurfingMovement;
 import lxx.strategies.find_enemies.FindEnemiesStrategy;
 import lxx.strategies.win.WinStrategy;
 import lxx.targeting.tomcat_claws.TomcatClaws;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,18 +25,25 @@ public class StrategySelector {
 
     public StrategySelector(Tomcat robot, Office office) {
         final TargetManager targetManager = office.getTargetManager();
-        strategies.add(new FindEnemiesStrategy(robot, targetManager, robot.getInitialOthers()));
         final EnemyBulletManager enemyBulletManager = office.getEnemyBulletManager();
-        /*final DuelGun duelGun = new DuelGun(office, new FireLogSet());
-        robot.addListener(duelGun);*/
 
-        final TomcatClaws tomcatClaws = new TomcatClaws(office);
-        robot.addListener(tomcatClaws);
+        strategies.add(new FindEnemiesStrategy(robot, targetManager, robot.getInitialOthers()));
+
         final DuelStrategy waveSurfingDuelStrategy = new DuelStrategy(robot,
-                new WaveSurfingMovement(robot, targetManager, enemyBulletManager), tomcatClaws,
+                new WaveSurfingMovement(robot, targetManager, enemyBulletManager),
+                createDuelGun(robot, office, targetManager),
                 new DuelFirePowerSelector(), targetManager, enemyBulletManager);
         strategies.add(waveSurfingDuelStrategy);
+
         strategies.add(new WinStrategy(robot, targetManager, enemyBulletManager));
+    }
+
+    private Gun createDuelGun(Tomcat robot, Office office, TargetManager targetManager) {
+        final TomcatEyes tomcatEyes = new TomcatEyes(robot, office.getBulletManager());
+        targetManager.addListener(tomcatEyes);
+        final TomcatClaws tomcatClaws = new TomcatClaws(office, tomcatEyes);
+        robot.addListener(tomcatClaws);
+        return tomcatClaws;
     }
 
     public Strategy selectStrategy() {
