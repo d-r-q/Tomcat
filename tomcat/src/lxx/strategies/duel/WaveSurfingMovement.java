@@ -10,29 +10,24 @@ import lxx.office.EnemyBulletManager;
 import lxx.office.TargetManager;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
-import lxx.strategies.duel.point_selecting.PointsSelector;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.*;
-import robocode.Rules;
 import robocode.util.Utils;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.abs;
 
 public class WaveSurfingMovement implements Movement {
 
-    private final PointsSelector pointsSelector = new PointsSelector();
-
     private final Tomcat robot;
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
 
     private double minDanger;
-    private OrbitDirection minDangerOrbitDirection;
+    private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
 
     public WaveSurfingMovement(Tomcat robot, TargetManager targetManager, EnemyBulletManager enemyBulletManager) {
         this.robot = robot;
@@ -49,19 +44,19 @@ public class WaveSurfingMovement implements Movement {
     }
 
     private void selectOrbitDirection(APoint surfPoint) {
-        final LXXBullet lxxBullet = getBullet();
+        final List<LXXBullet> lxxBullets = getBullets();
 
         minDanger = Integer.MAX_VALUE;
 
-        checkPointsInDirection(surfPoint, lxxBullet, OrbitDirection.CLOCKWISE);
-        checkPointsInDirection(surfPoint, lxxBullet, OrbitDirection.STOP);
+        checkPointsInDirection(surfPoint, lxxBullets, OrbitDirection.CLOCKWISE);
+        checkPointsInDirection(surfPoint, lxxBullets, OrbitDirection.STOP);
         // todo(zhidkov): reuse stop points
-        checkPointsInDirection(surfPoint, lxxBullet, OrbitDirection.COUNTER_CLOCKWISE);
+        checkPointsInDirection(surfPoint, lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
     }
 
-    private void checkPointsInDirection(APoint surfPoint, LXXBullet lxxBullet, OrbitDirection orbitDirection) {
-        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullet, surfPoint, targetManager.getDuelOpponent())) {
-            double danger = getPointDanger(lxxBullet, pnt);
+    private void checkPointsInDirection(APoint surfPoint, List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
+        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets, surfPoint, targetManager.getDuelOpponent())) {
+            double danger = getPointDanger(lxxBullets, pnt);
 
             if (danger < minDanger) {
                 minDanger = danger;
@@ -70,55 +65,68 @@ public class WaveSurfingMovement implements Movement {
         }
     }
 
-    private double getPointDanger(LXXBullet lxxBullet, LXXPoint pnt) {
+    private double getPointDanger(List<LXXBullet> lxxBullets, LXXPoint pnt) {
         final Target duelOpponent = targetManager.getDuelOpponent();
-        final EnemyAimingPredictionData enemyAimingPredictionData = lxxBullet != null ? (EnemyAimingPredictionData) lxxBullet.getAimPredictionData() : null;
-        double distanceDanger;
-        if (duelOpponent != null) {
-            distanceDanger = 100 / pnt.aDistance(duelOpponent);
-        } else {
-            distanceDanger = 0;
-        }
+        double totalDanger = 0;
+        double weight = 1D;
+        for (LXXBullet lxxBullet : lxxBullets) {
+            final EnemyAimingPredictionData enemyAimingPredictionData = lxxBullet != null ? (EnemyAimingPredictionData) lxxBullet.getAimPredictionData() : null;
+            double distanceDanger;
+            if (duelOpponent != null) {
+                distanceDanger = 300 / pnt.aDistance(duelOpponent);
+            } else {
+                distanceDanger = 0;
+            }
 
-        double bulletDanger;
-        if (enemyAimingPredictionData != null) {
-            bulletDanger = enemyAimingPredictionData.getDanger(LXXUtils.bearingOffset(lxxBullet.getFirePosition(), lxxBullet.getWave().getTargetStateAtFireTime(), pnt));
-        } else {
-            bulletDanger = 0;
-        }
+            double bulletDanger;
+            if (enemyAimingPredictionData != null) {
+                bulletDanger = enemyAimingPredictionData.getMaxDanger(LXXUtils.bearingOffset(lxxBullet.getFirePosition(), lxxBullet.getWave().getTargetStateAtFireTime(), pnt),
+                        LXXUtils.getRobotWidthInRadians(lxxBullet.getFirePosition(), pnt));
+            } else {
+                bulletDanger = 0;
+            }
 
-        return bulletDanger + distanceDanger;
+            totalDanger += (bulletDanger + distanceDanger) * weight;
+            weight /= 25;
+        }
+        return totalDanger;
     }
 
-    private LXXBullet getBullet() {
-        if (enemyBulletManager.hasBulletsOnAir()) {
-            return enemyBulletManager.getClosestBullet();
+    private List<LXXBullet> getBullets() {
+        final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBullets();
+        for (int i = 0; i < 2; i++) {
+            if (bulletsOnAir.size() == i) {
+                break;
+            }
+            bullets.add(bulletsOnAir.get(i));
         }
 
-        Target duelOpponent = targetManager.getDuelOpponent();
-        if (duelOpponent.getGunHeat() < 0.2) {
-            return enemyBulletManager.getImaginaryBullet(duelOpponent);
+        final Target duelOpponent = targetManager.getDuelOpponent();
+        if (bullets.size() == 0 && duelOpponent != null) {
+            bullets.add(enemyBulletManager.createSafeBullet(duelOpponent));
         }
 
-        return null;
+        return bullets;
     }
 
     private APoint getSurfPoint() {
-        if (enemyBulletManager.hasBulletsOnAir()) {
+        final Target duelOpponent = targetManager.getDuelOpponent();
+        if (duelOpponent == null) {
             return enemyBulletManager.getClosestBullet().getFirePosition();
         }
 
-        return targetManager.getDuelOpponent();
+        return duelOpponent;
     }
 
-    private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, LXXBullet bullet, APoint surfPoint, Target enemy) {
+    private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, List<LXXBullet> bullets, APoint surfPoint, Target enemy) {
         final List<LXXPoint> points = new ArrayList<LXXPoint>();
 
         final RobotImage robotImg = new RobotImage(robot.getPosition(), robot.getVelocity(), robot.getHeadingRadians(), robot.battleField, 0);
         final RobotImage opponentImg = enemy == null ? null : new RobotImage(enemy.getPosition(), enemy.getVelocity(), enemy.getState().getHeadingRadians(), robot.battleField, 0);
+        final LXXBullet bullet = bullets.get(0);
         int time = 0;
-        while ((bullet != null && (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance()) > bullet.getSpeed() * time) ||
-                (bullet == null && robot.aDistance(enemy) > Rules.getBulletSpeed(enemy.getFirePower()) * time)) {
+        while (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance() > bullet.getSpeed() * time) {
             final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, robotImg, opponentImg);
             robotImg.apply(md);
             points.add(new LXXPoint(robotImg));
@@ -131,31 +139,14 @@ public class WaveSurfingMovement implements Movement {
         return points;
     }
 
-    private double getTargetHeading(APoint surfPoint, LXXRobotState robot, LXXRobotState opponent, OrbitDirection orbitDirection) {
-        return robot.angleTo(pointsSelector.selectPoint(getPossiblePoints(surfPoint, robot, orbitDirection), robot, opponent));
-    }
-
-    private Collection<APoint> getPossiblePoints(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
-        final double orbitHeading = Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign);
-        final double heading = LXXUtils.anglesDiff(orbitHeading, robot.getHeadingRadians()) <
-                LXXUtils.anglesDiff(orbitHeading, Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180))
-                ? robot.getHeadingRadians()
-                : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
-        final double deceleratedSpeed = LXXUtils.limit(0, robot.getVelocityModule() - Rules.DECELERATION, Rules.MAX_VELOCITY);
-        final double maxPossibleTurnRate = Rules.getTurnRateRadians(deceleratedSpeed);
-
-        final Set<APoint> possiblePoints = new HashSet<APoint>();
-        double turnRateStep = maxPossibleTurnRate / 10;
-        for (double turnRate = -maxPossibleTurnRate; turnRate <= maxPossibleTurnRate + 0.001; turnRate += turnRateStep) {
-            possiblePoints.add(robot.project(heading + turnRate, Rules.MAX_VELOCITY));
-        }
-
-        return possiblePoints;
+    private double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
+        return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign -
+                LXXConstants.RADIANS_4 * orbitDirection.sign);
     }
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, LXXRobotState opponent) {
-        double targetHeading = getTargetHeading(surfPoint, robot, opponent, orbitDirection);
+        final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
 
         if (orbitDirection == OrbitDirection.STOP || isGoingOnOpponent(robot, opponent)) {
             double turnRateRadians = Utils.normalRelativeAngle(targetHeading - robot.getHeadingRadians());

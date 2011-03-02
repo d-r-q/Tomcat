@@ -4,8 +4,9 @@
 
 package lxx.office;
 
-import lxx.Tomcat;
 import lxx.RobotListener;
+import lxx.Tomcat;
+import lxx.enemy_bullets.EnemyAimingPredictionData;
 import lxx.enemy_bullets.EnemyFireAnglePredictor;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
@@ -247,5 +248,18 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         final Bullet bullet = new Bullet(t.angleTo(robot), t.getX(), t.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
         return new LXXBullet(bullet, wave, enemyFireAnglePredictor.getPredictionData(t));
+    }
+
+    public LXXBullet createSafeBullet(Target target) {
+        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), robot.getTime() + 1);
+        final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
+
+        final HashMap<Double, Double> matches = new HashMap<Double, Double>();
+        for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
+            matches.put(bearingOffset, 0D);
+        }
+
+        return new LXXBullet(bullet, wave, new EnemyAimingPredictionData(matches));
     }
 }

@@ -128,6 +128,10 @@ public class LXXUtils {
         return abs(velocity) * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
     }
 
+    public static double lateralVelocity(APoint center, APoint pos, double velocity, double heading) {
+        return abs(velocity) * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
+    }
+
     public static APoint getMyPos(BattleSnapshot bs) {
         return new LXXPoint(bs.getAttrValue(AttributesManager.myX), bs.getAttrValue(AttributesManager.myY));
     }
@@ -182,4 +186,34 @@ public class LXXUtils {
         }
         return maxAngle - minAngle;
     }
+
+    public static long getAccelerationTime(double startVel, double targetVel) {
+        final double velocityDelta = startVel < targetVel ? Rules.ACCELERATION : Rules.DECELERATION;
+        if (startVel > targetVel) {
+            startVel = -startVel;
+            targetVel = -targetVel;
+        }
+        long res = 0;
+        while (startVel < targetVel) {
+            res++;
+            startVel += min(velocityDelta, abs(startVel - targetVel));
+        }
+        return res;
+    }
+
+    public static long getAccelerationDistance(double startVel, double targetVel) {
+        final double velocityDelta = startVel < targetVel ? Rules.ACCELERATION : Rules.DECELERATION;
+        if (startVel > targetVel) {
+            startVel = -startVel;
+            targetVel = -targetVel;
+        }
+        long res = 0;
+        while (startVel < targetVel) {
+            startVel += min(velocityDelta, abs(startVel - targetVel));
+            res += abs(startVel);
+        }
+        return res;
+    }
+
+
 }

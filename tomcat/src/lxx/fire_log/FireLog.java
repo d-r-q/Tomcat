@@ -76,4 +76,7 @@ public class FireLog<T extends Serializable> {
         return matches;
     }
 
+    public int getEntryCount() {
+        return entryCount;
+    }
 }

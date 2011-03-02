@@ -47,22 +47,29 @@ public class TomcatEyes implements TargetManagerListener {
             AttributesManager.enemyBearingToMe,
     };
 
+    private static final Attribute[] doctorBobAttributes = new Attribute[]{
+            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyStopTime,
+            AttributesManager.distBetween,
+            AttributesManager.enemyTravelTime,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyVelocityModule,
+    };
+
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
         targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes));
 
         TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes);
-        targetingConfigurations.put(new double[]{7.297, 0.083, 7.916, 0.540, 14.810, 147.405, 655.90, 41.761, 467.83, 273.12}, crazyTC);
-        targetingConfigurations.put(new double[]{6.703, 0.115, 7.845, 0.947, 70.497, -64.406, 535.56, 44.501, 447.17, 207.50}, crazyTC);
-
-        TargetingConfiguration starTC = getTargetingConfig("Star", drussAttributes);
-        targetingConfigurations.put(new double[]{7.338, 0.026, 7.847, 0.204, 86.675, 84.947, 599.04, 74.480, 546.72, 316.82}, starTC);
-        targetingConfigurations.put(new double[]{-6.864, 0.070, 7.758, 0.309, 70.128, -93.761, 480.73, 73.364, 512.71, 234.60}, starTC);
+        targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
         final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes);
-        targetingConfigurations.put(new double[]{5.273, 5.331, 5.902, 5.489, 86.115, 76.972, 595.34, 67.093, 580.6, 257.13}, drussTC);
-        targetingConfigurations.put(new double[]{-4.074, -0.230, 6.394, 1.155, 75.664, -61.314, 382.14, 73.098, 439.89, 112.20}, drussTC);
+        targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
+
+        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes);
+        targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
     private static final double[] weights = {
@@ -117,7 +124,7 @@ public class TomcatEyes implements TargetManagerListener {
     private MovementMetaProfile getMovementMetaProfile(Target t) {
         MovementMetaProfile mmp = movementMetaProfiles.get(t);
         if (mmp == null) {
-            mmp = new MovementMetaProfile(t, robot, bulletManager);
+            mmp = new MovementMetaProfile();
             movementMetaProfiles.put(t, mmp);
         }
 
@@ -126,7 +133,7 @@ public class TomcatEyes implements TargetManagerListener {
 
     public void targetUpdated(Target target) {
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        movementMetaProfile.update();
+        movementMetaProfile.update(target, robot, bulletManager);
         // todo(zhidkov): remove it
         robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
     }

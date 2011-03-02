@@ -7,11 +7,8 @@ package lxx.targeting.bullets;
 import lxx.utils.APoint;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXRobot;
-import lxx.utils.LXXUtils;
 import lxx.wave.Wave;
 import robocode.Bullet;
-
-import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -49,7 +46,7 @@ public class LXXBullet {
         return wave.getSourceStateAtFireTime().aDistance(wave.getTargetStateAtFireTime().getRobot());
     }
 
-    public APoint getTargetPos() {
+    public APoint getTargetPosAtFireTime() {
         return wave.getTargetStateAtFireTime();
     }
 
@@ -90,11 +87,6 @@ public class LXXBullet {
         return result;
     }
 
-    public int getTargetLateralDirection() {
-        return (int) signum(LXXUtils.lateralVelocity2(wave.getSourceStateAtFireTime(), wave.getTargetStateAtFireTime(),
-                wave.getTargetStateAtFireTime().getVelocityModule(), wave.getTargetStateAtFireTime().getAbsoluteHeadingRadians()));
-    }
-
     public double angleToTargetPos() {
         return wave.getSourceStateAtFireTime().angleTo(wave.getTargetStateAtFireTime());
     }
@@ -103,7 +95,4 @@ public class LXXBullet {
         return wave;
     }
 
-    public long getFireTime() {
-        return wave.getLaunchTime();
-    }
 }

@@ -8,9 +8,13 @@ import lxx.model.BattleSnapshot;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.toRadians;
 
 /**
  * User: jdev
@@ -49,7 +53,7 @@ public class PatternTreeNode {
             children.put(link, child);
         }
         child.visitCount++;
-        predicateResults.add(new PredicateResult(predicate, child, link));
+        predicateResults.add(new PredicateResult(predicate, link));
         if (predicateResults.size() > 2000) {
             for (int i = 0; i < predicateResults.size(); i++) {
                 if (predicateResults.get(i).enemyMovementDecision.equals(link)) {
@@ -72,60 +76,31 @@ public class PatternTreeNode {
         return children.get(enemyMovementDecision);
     }
 
-    public List<PatternTreeNodeSelectionData> getSortedNodes(BattleSnapshot battleSnapshot, int[] indexes, double[] weights) {
-        final Map<PatternTreeNode, PatternTreeNodeSelectionData> nodesSelectionData = new HashMap<PatternTreeNode, PatternTreeNodeSelectionData>();
-        for (PredicateResult pr : predicateResults) {
-            if (pr.enemyMovementDecision.acceleration < -Rules.DECELERATION ||
-                    pr.enemyMovementDecision.acceleration > Rules.ACCELERATION) {
-                continue;
-            }
-            final double dist = pr.predicate.quickDistance(indexes, battleSnapshot, weights);
-            PatternTreeNodeSelectionData sd = nodesSelectionData.get(pr.result);
-            if (sd == null) {
-                sd = new PatternTreeNodeSelectionData();
-                nodesSelectionData.put(pr.result, sd);
-            }
-            if (dist < sd.minDist) {
-                sd.battleSnapshot = pr.predicate;
-                sd.minDist = dist;
-                sd.decision = pr.enemyMovementDecision;
-            }
-        }
-
-        final List<PatternTreeNodeSelectionData> sortedNodes = new ArrayList<PatternTreeNodeSelectionData>();
-        double maxDist = 0;
-        for (PatternTreeNodeSelectionData selectionData : nodesSelectionData.values()) {
-            sortedNodes.add(selectionData);
-            maxDist = max(maxDist, selectionData.minDist);
-        }
-        final double md = maxDist;
-        Collections.sort(sortedNodes, new Comparator<PatternTreeNodeSelectionData>() {
-            public int compare(PatternTreeNodeSelectionData o1, PatternTreeNodeSelectionData o2) {
-                final Double o1quality = (1 - o1.minDist / md);
-                final Double o2quality = (1 - o2.minDist / md);
-                return (int) signum(o2quality - o1quality);
-            }
-        });
-
-        return sortedNodes;
-    }
-
     public PatternTreeNodeSelectionData getChildBySnapshot(BattleSnapshot battleSnapshot, int[] indexes, double[] weights) {
-        PatternTreeNodeSelectionData selectionData = new PatternTreeNodeSelectionData();
+        final PatternTreeNodeSelectionData selectionData = new PatternTreeNodeSelectionData();
+        selectionData.decision = new EnemyMovementDecision(0, 0);
         for (PredicateResult pr : predicateResults) {
-            if (pr.enemyMovementDecision.acceleration < -Rules.DECELERATION ||
-                    pr.enemyMovementDecision.acceleration > Rules.ACCELERATION) {
+            if (!isValidEnemyDecision(pr, battleSnapshot)) {
                 continue;
             }
             final double dist = pr.predicate.quickDistance(indexes, battleSnapshot, weights);
             if (dist < selectionData.minDist) {
-                selectionData.battleSnapshot = pr.predicate;
                 selectionData.minDist = dist;
                 selectionData.decision = pr.enemyMovementDecision;
             }
         }
 
         return selectionData;
+    }
+
+    private boolean isValidEnemyDecision(PredicateResult pr, BattleSnapshot bs) {
+        final double acceleration = pr.enemyMovementDecision.acceleration;
+        final double newVelocity = bs.getEnemyVelocityModule() + acceleration;
+        return acceleration >= -Rules.DECELERATION &&
+                acceleration <= Rules.ACCELERATION &&
+                newVelocity >= 0 &&
+                newVelocity <= Rules.MAX_VELOCITY &&
+                abs(pr.enemyMovementDecision.turnRateRadians) <= Rules.getTurnRateRadians(bs.getEnemyVelocityModule()) + 0.01;
     }
 
     public int getChildrenCount() {
@@ -146,14 +121,6 @@ public class PatternTreeNode {
                 "children: " + children.keySet();
     }
 
-    public int getMinVisitCount() {
-        int minVisitCount = Integer.MAX_VALUE;
-        for (PatternTreeNode child : children.values()) {
-            minVisitCount = min(minVisitCount, child.visitCount);
-        }
-        return minVisitCount;
-    }
-
     public int getVisitCount() {
         return visitCount;
     }
@@ -161,12 +128,10 @@ public class PatternTreeNode {
     private class PredicateResult {
 
         private final BattleSnapshot predicate;
-        private final PatternTreeNode result;
         private final EnemyMovementDecision enemyMovementDecision;
 
-        private PredicateResult(BattleSnapshot predicate, PatternTreeNode result, EnemyMovementDecision enemyMovementDecision) {
+        private PredicateResult(BattleSnapshot predicate, EnemyMovementDecision enemyMovementDecision) {
             this.predicate = predicate;
-            this.result = result;
             this.enemyMovementDecision = enemyMovementDecision;
         }
 
@@ -176,7 +141,6 @@ public class PatternTreeNode {
     public class PatternTreeNodeSelectionData {
 
         private EnemyMovementDecision decision;
-        private BattleSnapshot battleSnapshot;
         private double minDist = Integer.MAX_VALUE;
 
         public EnemyMovementDecision getDecision() {

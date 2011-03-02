@@ -31,18 +31,7 @@ public class MovementMetaProfile {
     private final AvgValue avgDistanceToFirstBulletPos = new AvgValue(10000);
     private final AvgValue avgDistanceToCenter = new AvgValue(10000);
 
-    private final LXXRobot owner;
-    private final LXXRobot viewPoint;
-
-    private final BulletManager bulletManager;
-
-    public MovementMetaProfile(LXXRobot owner, LXXRobot viewPoint, BulletManager bulletManager) {
-        this.owner = owner;
-        this.viewPoint = viewPoint;
-        this.bulletManager = bulletManager;
-    }
-
-    public void update() {
+    public void update(LXXRobot owner, LXXRobot viewPoint, BulletManager bulletManager) {
         avgVelocity.addValue(owner.getState().getVelocity());
         avgVelocityModule.addValue(owner.getState().getVelocityModule());
 
@@ -60,20 +49,6 @@ public class MovementMetaProfile {
         }
 
         avgDistanceToCenter.addValue(owner.getPosition().aDistance(owner.getState().getBattleField().center));
-    }
-
-    public String toString() {
-        return String.format("%s's movement meta profile: " +
-                "(average velocity = %1.3f) (average turn rate = %2.3f) " +
-                "(average velocity module = %1.3f) (average turn rate module = %2.3f) " +
-                "(average attack angle = %2.3f) (average bearing = %3.3f) " +
-                "(average distance = %4.2f (average first bullet attack angle = %3.3f) " +
-                "(average distance to first bullet fire pos = %4.2f) (average distance to center = %4.2f)",
-                owner.getName(), avgVelocity.getCurrentValue(), avgTurnRate.getCurrentValue(),
-                avgVelocityModule.getCurrentValue(), avgTurnRateModule.getCurrentValue(),
-                avgAttackAngle.getCurrentValue(), avgBearing.getCurrentValue(),
-                avgDistanceBetween.getCurrentValue(), avgFirstBulletAttackAngle.getCurrentValue(),
-                avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue());
     }
 
     public String toShortString() {

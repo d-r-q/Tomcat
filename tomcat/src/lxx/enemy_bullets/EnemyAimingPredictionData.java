@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
@@ -48,6 +46,18 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
         step = (maxBearingOffset * 2 + LXXConstants.RADIANS_1) / matches.size();
     }
 
+    public double getAverangeDanger(double baseBearingOffset, double botWidthRadians) {
+        double totalDanger = 0;
+        for (double delta = -botWidthRadians / 2; delta <= botWidthRadians / 2 + 0.01; delta += botWidthRadians / 10) {
+            totalDanger += getDanger(baseBearingOffset + delta);
+        }
+        return totalDanger / 10;
+    }
+
+    public double getMaxDanger(double baseBearingOffset, double botWidthRadians) {
+        return max(max(getDanger(baseBearingOffset), getDanger(baseBearingOffset - botWidthRadians / 2)), getDanger(baseBearingOffset + botWidthRadians / 2));
+    }
+
     public double getDanger(double bearingOffset) {
         final int idx = LXXUtils.limit(0, (int) ((bearingOffset + maxBearingOffset) / step), dangers.size() - 1);
         final SegmentDanger<Double> segmentDanger = dangers.get(idx);
@@ -73,7 +83,7 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
 
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
-        double baseAlpha = bullet.getFirePosition().angleTo(bullet.getTargetPos());
+        double baseAlpha = bullet.getFirePosition().angleTo(bullet.getTargetPosAtFireTime());
         final double currentBearingOffset = bullet.getFirePosition().angleTo(bullet.getTarget());
         float currentBearingOffsetDanger = 0;
         for (SegmentDanger<Double> danger : dangers) {

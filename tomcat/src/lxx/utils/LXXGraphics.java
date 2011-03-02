@@ -141,4 +141,7 @@ public class LXXGraphics {
                 (int) round(toDegrees(Utils.normalRelativeAngle(center.angleTo(rightBorder) - center.angleTo(leftBorder)))));
     }
 
+    public void drawLine(APoint center, double alpha, double distance, double length) {
+        drawLine(center.project(alpha, distance - length / 2), center.project(alpha, distance + length / 2));
+    }
 }
