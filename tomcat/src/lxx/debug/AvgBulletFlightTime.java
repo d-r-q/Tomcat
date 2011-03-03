@@ -40,7 +40,7 @@ public class AvgBulletFlightTime implements Debugger, WaveCallback {
         }
         final Target target = office.getTargetManager().getDuelOpponent();
         if (target.getState() != null) {
-            office.getWaveManager().launchWave(tomcat.getState(), target, Rules.getBulletSpeed(tomcat.firePower()), this);
+            office.getWaveManager().launchWave(tomcat.getState(), target.getState(), Rules.getBulletSpeed(tomcat.firePower()), this);
         }
     }
 

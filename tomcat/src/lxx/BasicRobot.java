@@ -32,8 +32,8 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private int initialOthers;
     public BattleField battleField;
 
-    private double prevVelocity;
-    private double prevHeadingRadians;
+    private LXXRobotState prevState;
+
     private long lastStopTime;
     private long lastTravelTime;
     private long lastTurnTime;
@@ -49,6 +49,8 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         setAdjustRadarForRobotTurn(true);
+
+        prevState = new RobotSnapshot(this);
     }
 
     public double angleTo(APoint point) {
@@ -170,7 +172,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     }
 
     public void onStatus(StatusEvent e) {
-        acceleration = abs(getVelocity()) - abs(prevVelocity);
+        acceleration = abs(e.getStatus().getVelocity()) - getVelocityModule();
         if (acceleration < -Rules.DECELERATION - 0.01) {
             System.out.println("[WARN] acceleration: " + acceleration);
             acceleration = -Rules.DECELERATION;
@@ -178,7 +180,6 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             System.out.println("[WARN] acceleration: " + acceleration);
             acceleration = Rules.ACCELERATION;
         }
-        prevVelocity = getVelocity();
         if (Utils.isNear(getVelocity(), 0)) {
             lastStopTime = e.getTime();
         } else {
@@ -191,13 +192,13 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             lastDirection = (int) signum(e.getStatus().getVelocity());
         }
 
-        final double prevTurnRateSignum = signum(getTurnRateRadians());
-        prevHeadingRadians = getHeadingRadians();
+        final double prevTurnRateSign = signum(getTurnRateRadians());
+        prevState = new RobotSnapshot(this);
 
         super.onStatus(e);
 
         final double turnRateSignum = signum(getTurnRateRadians());
-        if (turnRateSignum == 0 || turnRateSignum != prevTurnRateSignum) {
+        if (turnRateSignum == 0 || turnRateSignum != prevTurnRateSign) {
             lastTurnTime = getTime() - 1;
         } else {
             lastNotTurnTime = getTime() - 1;
@@ -244,7 +245,10 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     }
 
     public double getTurnRateRadians() {
-        return prevHeadingRadians - getHeadingRadians();
+        if (prevState == null) {
+            return 0;
+        }
+        return prevState.getHeadingRadians() - getHeadingRadians();
     }
 
     public long getLastTurnTime() {
@@ -253,5 +257,9 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public long getLastNotTurnTime() {
         return lastNotTurnTime;
+    }
+
+    public LXXRobotState getPrevState() {
+        return prevState;
     }
 }

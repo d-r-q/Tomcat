@@ -55,7 +55,14 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
     }
 
     public double getMaxDanger(double baseBearingOffset, double botWidthRadians) {
-        return max(max(getDanger(baseBearingOffset), getDanger(baseBearingOffset - botWidthRadians / 2)), getDanger(baseBearingOffset + botWidthRadians / 2));
+        final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
+        final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
+        double danger = 0;
+        for (int i = fromIdx; i <= toIdx; i++) {
+            danger = max(danger, dangers.get(i).match);
+        }
+
+        return danger;
     }
 
     public double getDanger(double bearingOffset) {
@@ -83,8 +90,14 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
 
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
-        double baseAlpha = bullet.getFirePosition().angleTo(bullet.getTargetPosAtFireTime());
-        final double currentBearingOffset = bullet.getFirePosition().angleTo(bullet.getTarget());
+        final APoint firePosition = bullet.getFirePosition();
+        final double baseDistance = bullet.getTravelledDistance() - 5;
+
+        g.setColor(new Color(255, 255, 255, 240));
+        g.drawLine(firePosition, bullet.angleToTargetPos(), baseDistance, 12);
+
+        final double baseAlpha = firePosition.angleTo(bullet.getTargetPosAtFireTime());
+        final double currentAngle = firePosition.angleTo(bullet.getTarget());
         float currentBearingOffsetDanger = 0;
         for (SegmentDanger<Double> danger : dangers) {
             double alpha = baseAlpha + (danger.bearingOffset);
@@ -94,31 +107,26 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
             g.setColor(new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 240));
 
             int length = (int) (8 * match / maxDanger);
+            g.drawLine(firePosition, alpha, baseDistance, length);
 
-            APoint pnt1 = bullet.getFirePosition().project(alpha, bullet.getTravelledDistance() - 5 - length / 2);
-            APoint pnt2 = bullet.getFirePosition().project(alpha, bullet.getTravelledDistance() - 5 + length / 2);
-            g.drawLine(pnt1, pnt2);
-
-            if (LXXUtils.anglesDiff(currentBearingOffset, alpha) < LXXConstants.RADIANS_1) {
+            if (LXXUtils.anglesDiff(currentAngle, alpha) < LXXConstants.RADIANS_1) {
                 currentBearingOffsetDanger = match;
             }
         }
 
         final Color rgb = new Color(Color.HSBtoRGB((float) (0.33F - 0.33F * currentBearingOffsetDanger / maxDanger), 1F, 1F));
         g.setColor(new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 240));
-        final APoint pnt1 = bullet.getFirePosition().project(currentBearingOffset, bullet.getTravelledDistance() - 5 + 6);
-        final APoint pnt2 = bullet.getFirePosition().project(currentBearingOffset, bullet.getTravelledDistance() - 5 - 6);
-        g.drawLine(pnt1, pnt2);
+        g.drawLine(firePosition, currentAngle, baseDistance, 6);
 
         final Font oldFont = g.getFont();
         g.setFont(new Font("Arial", Font.PLAIN, 10));
 
-        final APoint dangerLabelPos = bullet.getFirePosition().project(currentBearingOffset, bullet.getTravelledDistance() - 5 - 6 - 20);
+        final APoint dangerLabelPos = firePosition.project(currentAngle, baseDistance - 6 - 20);
         g.drawString(dangerLabelPos, format.format(currentBearingOffsetDanger));
 
         g.setColor(Color.WHITE);
         final double bulletFlightTime = (bullet.getDistanceToTarget() - bullet.getTravelledDistance()) / bullet.getSpeed();
-        final APoint bftLabelPos = bullet.getFirePosition().project(bullet.angleToTargetPos() - LXXConstants.RADIANS_50, bullet.getTravelledDistance() - 5 - 6 - 20);
+        final APoint bftLabelPos = firePosition.project(bullet.angleToTargetPos() - LXXConstants.RADIANS_50, baseDistance - 6 - 20);
         g.drawString(bftLabelPos, format.format(bulletFlightTime));
 
         g.setFont(oldFont);

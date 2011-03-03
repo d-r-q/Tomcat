@@ -59,7 +59,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 ws = new HashSet<Wave>();
                 waves.put(target.getName(), ws);
             }
-            final Wave wave = waveManager.launchWave(target.getPrevState(), robot, Rules.getBulletSpeed(target.getExpectedEnergy() - target.getEnergy()), this);
+            final Wave wave = waveManager.launchWave(target.getPrevState(), robot.getPrevState(), Rules.getBulletSpeed(target.getExpectedEnergy() - target.getEnergy()), this);
             ws.add(wave);
 
             enemyFireAnglePredictor.enemyFire(wave);
@@ -167,7 +167,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
         for (Wave w : targetWaves) {
             if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.0001 &&
-                    abs(w.getTraveledDistance() - w.getSourcePos().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() * 2) {
+                    abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() * 2) {
                 return w;
             }
         }

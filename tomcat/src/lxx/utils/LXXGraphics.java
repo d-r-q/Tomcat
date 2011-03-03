@@ -45,6 +45,14 @@ public class LXXGraphics {
         drawLine(pnt1.getX(), pnt1.getY(), pnt2.getX(), pnt2.getY());
     }
 
+    public void drawLine(APoint center, double angle, double length) {
+        drawLine(center.project(angle, length / 2), center.project(robocode.util.Utils.normalAbsoluteAngle(angle - Math.PI), length / 2));
+    }
+
+    public void drawLine(APoint center, double alpha, double distance, double length) {
+        drawLine(center.project(alpha, distance - length / 2), center.project(alpha, distance + length / 2));
+    }
+
     public void drawArrow(APoint from, APoint to) {
         drawArrow(from, to, 15);
     }
@@ -65,10 +73,6 @@ public class LXXGraphics {
 
         drawLine(peakPnt1, to);
         drawLine(peakPnt2, to);
-    }
-
-    private void drawLine(APoint center, double angle, double length) {
-        drawLine(center.project(angle, length / 2), center.project(robocode.util.Utils.normalAbsoluteAngle(angle - Math.PI), length / 2));
     }
 
     public void drawCircle(APoint position, int diameter) {
@@ -141,7 +145,4 @@ public class LXXGraphics {
                 (int) round(toDegrees(Utils.normalRelativeAngle(center.angleTo(rightBorder) - center.angleTo(leftBorder)))));
     }
 
-    public void drawLine(APoint center, double alpha, double distance, double length) {
-        drawLine(center.project(alpha, distance - length / 2), center.project(alpha, distance + length / 2));
-    }
 }

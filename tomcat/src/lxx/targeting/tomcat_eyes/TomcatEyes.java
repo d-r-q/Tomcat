@@ -60,15 +60,15 @@ public class TomcatEyes implements TargetManagerListener {
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
-        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes));
+        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes, 10));
 
-        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes);
+        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 4);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
-        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes);
+        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 4);
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
-        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes);
+        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 4);
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
@@ -94,7 +94,7 @@ public class TomcatEyes implements TargetManagerListener {
         this.bulletManager = bulletManager;
     }
 
-    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes) {
+    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes, int weightMultiplier) {
         int[] indexes = new int[attributes.length];
         double[] weights = new double[AttributesManager.attributesCount()];
         double weight = 1;
@@ -102,7 +102,7 @@ public class TomcatEyes implements TargetManagerListener {
         for (Attribute a : attributes) {
             indexes[idx++] = a.getId();
             weights[a.getId()] = weight / a.getActualRange();
-            weight = weight * 4 + 1;
+            weight = weight * weightMultiplier + 1;
         }
         return new TargetingConfiguration(name, attributes, weights, indexes);
     }

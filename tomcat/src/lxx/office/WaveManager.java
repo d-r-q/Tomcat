@@ -6,7 +6,6 @@ package lxx.office;
 
 import lxx.RobotListener;
 import lxx.events.TickEvent;
-import lxx.utils.LXXRobot;
 import lxx.utils.LXXRobotState;
 import lxx.wave.Wave;
 import lxx.wave.WaveCallback;
@@ -23,20 +22,20 @@ public class WaveManager implements RobotListener {
     private final Map<String, Set<Wave>> waves = new HashMap<String, Set<Wave>>();
     private final Map<Wave, Set<WaveCallback>> waveCallbacks = new HashMap<Wave, Set<WaveCallback>>();
 
-    public Wave launchWave(LXXRobotState source, LXXRobot target, double speed, WaveCallback callback) {
-        Wave w = new Wave(source, target.getState(), speed, source.getRobot().getTime());
+    public Wave launchWave(LXXRobotState source, LXXRobotState target, double speed, WaveCallback callback) {
+        Wave w = new Wave(source, target, speed, source.getRobot().getTime());
         addWave(source.getRobot().getName(), w, callback);
 
         return w;
     }
 
-    public Wave launchWaveOnNextTick(LXXRobotState source, LXXRobot target, double bulletSpeed) {
+    public Wave launchWaveOnNextTick(LXXRobotState source, LXXRobotState target, double bulletSpeed) {
         return launchWaveOnTick(source, target, bulletSpeed, source.getRobot().getTime() + 1, null);
     }
 
-    private Wave launchWaveOnTick(LXXRobotState source, LXXRobot target, double bulletSpeed,
+    private Wave launchWaveOnTick(LXXRobotState source, LXXRobotState target, double bulletSpeed,
                                   long tick, WaveCallback callback) {
-        Wave w = new Wave(source, target.getState(), bulletSpeed, tick);
+        Wave w = new Wave(source, target, bulletSpeed, tick);
         addWave(source.getRobot().getName(), w, callback);
 
         return w;
@@ -68,7 +67,6 @@ public class WaveManager implements RobotListener {
         return waves;
     }
 
-    @Override
     public void onEvent(Event event) {
         if (event instanceof TickEvent) {
             for (Set<Wave> ws : waves.values()) {

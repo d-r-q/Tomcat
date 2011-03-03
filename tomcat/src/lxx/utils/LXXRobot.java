@@ -22,6 +22,8 @@ public interface LXXRobot extends APoint {
 
     LXXRobotState getState();
 
+    LXXRobotState getPrevState();
+
     boolean equals(Object another);
 
     int hashCode();
@@ -37,5 +39,4 @@ public interface LXXRobot extends APoint {
     long getLastTurnTime();
 
     long getLastNotTurnTime();
-
 }

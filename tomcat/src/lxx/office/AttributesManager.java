@@ -41,6 +41,7 @@ public class AttributesManager {
     public static final Attribute myVelocityModule = new Attribute("My velocity module", -8, 8, new MyVelocityVE());
     public static final Attribute myLateralVelocityModule = new Attribute("My lateral velocity module * 4", 0, 32, new MyLateralVelocityModuleVE());
     public static final Attribute myAbsoluteHeading = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
+    public final static Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
     public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse wall", 0, 1700, new MyDistanceToReverseWallVE());
@@ -72,8 +73,8 @@ public class AttributesManager {
             myVelocityModule,
             myLateralVelocityModule,
             myAbsoluteHeading,
+            myRelativeHeading,
             myAcceleration,
-
             myDistToForwardWall,
             myDistToReverseWall,
             myTravelTime,

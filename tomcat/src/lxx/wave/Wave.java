@@ -44,11 +44,11 @@ public class Wave {
         return targetRect.contains(bulletPos);
     }
 
-    public APoint getSourcePos() {
+    public APoint getSourcePosAtFireTime() {
         return sourceState;
     }
 
-    public APoint getTargetPos() {
+    public APoint getTargetPosAtFireTime() {
         return targetState;
     }
 

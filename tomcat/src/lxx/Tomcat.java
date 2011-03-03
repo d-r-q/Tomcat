@@ -16,7 +16,6 @@ import lxx.strategies.StrategySelector;
 import lxx.strategies.TurnDecision;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.LXXUtils;
-import lxx.utils.QuickMath;
 import lxx.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
@@ -93,7 +92,7 @@ public class Tomcat extends BasicRobot {
         strategySelector = new StrategySelector(this, office);
 
         setColors(new Color(255, 67, 0), new Color(255, 144, 66), new Color(255, 192, 66),
-               new Color(255, 192, 66), new Color(255, 192, 66));
+                new Color(255, 192, 66), new Color(255, 192, 66));
     }
 
     private void turnRadar() {
@@ -117,7 +116,7 @@ public class Tomcat extends BasicRobot {
 
         final Bullet bullet = setFireBullet(turnDecision.getFirePower());
         if (bullet != null && turnDecision.getTarget() != null) {
-            final Wave bulletWave = office.getWaveManager().launchWaveOnNextTick(getState(), turnDecision.getTarget(), Rules.getBulletSpeed(turnDecision.getFirePower()));
+            final Wave bulletWave = office.getWaveManager().launchWaveOnNextTick(getState(), turnDecision.getTarget().getState(), Rules.getBulletSpeed(turnDecision.getFirePower()));
             final LXXBullet lxxBullet = new LXXBullet(bullet, bulletWave, turnDecision.getAimAimPredictionData());
 
             notifyListeners(new FireEvent(lxxBullet));

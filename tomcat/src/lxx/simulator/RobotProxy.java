@@ -129,6 +129,10 @@ public class RobotProxy implements LXXRobot {
         return lastNotTurnTime;
     }
 
+    public LXXRobotState getPrevState() {
+        return prevState;
+    }
+
     public long getLastTurnTime() {
         return lastTurnTime;
     }

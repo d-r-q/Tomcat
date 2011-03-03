@@ -4,10 +4,7 @@
 
 package lxx.strategies.duel.point_selecting;
 
-import lxx.utils.APoint;
-import lxx.utils.LXXConstants;
-import lxx.utils.LXXRobotState;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 
 import java.util.Collection;
 import java.util.HashMap;

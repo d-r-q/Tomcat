@@ -23,7 +23,7 @@ import static java.lang.Math.*;
 
 public class EnemyFireAnglePredictor {
 
-    private static final double A = 0.0125;
+    private static final double A = 0.02;
     private static final int B = 20;
 
     private static final int FIRE_DETECTION_LATENCY = 1;
@@ -49,7 +49,7 @@ public class EnemyFireAnglePredictor {
     // todo(zhidkov): add flat movement
     @SuppressWarnings({"UnusedDeclaration"})
     public void updateWaveState(Wave w) {
-        updateWaveState(w, w.getSourcePos().angleTo(w.getTargetStateAtFireTime().getRobot()));
+        updateWaveState(w, w.getSourcePosAtFireTime().angleTo(w.getTargetStateAtFireTime().getRobot()));
     }
 
     // todo(zhidkov): rename
@@ -58,17 +58,21 @@ public class EnemyFireAnglePredictor {
         final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
                 bs.getAttrValue(AttributesManager.myVelocityModule), toRadians(bs.getAttrValue(AttributesManager.myAbsoluteHeading)));
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = QuickMath.asin((abs(lateralVelocity) + 1) / Rules.getBulletSpeed(((Target) w.getSourceStateAtFireTime().getRobot()).getFirePower()));
+        final double maxEscapeAngle = getMaxEscapeAngle(w.getSpeed());
 
-        final Double bearingOffsetRadians = maxEscapeAngle == 0 ? 0 : Utils.normalRelativeAngle(bulletHeading - w.getSourcePos().angleTo(w.getTargetPos())) * lateralDirection / maxEscapeAngle;
-        addEntry(w, bearingOffsetRadians);
+        final Double guessFactor = maxEscapeAngle == 0 ? 0 : Utils.normalRelativeAngle(bulletHeading - w.getSourcePosAtFireTime().angleTo(w.getTargetPosAtFireTime())) * lateralDirection / maxEscapeAngle;
+        addEntry(w, guessFactor);
     }
 
-    private void addEntry(Wave w, Double bearingOffsetRadians) {
+    private double getMaxEscapeAngle(double bulletSpeed) {
+        return QuickMath.asin(Rules.MAX_VELOCITY / bulletSpeed);
+    }
+
+    private void addEntry(Wave w, Double guessFactor) {
         final FireLog<Double> log = getLog(w.getSourceStateAtFireTime().getRobot().getName());
 
         final FireLogEntry<Double> entry = entriesByWaves.get(w);
-        entry.result = bearingOffsetRadians;
+        entry.result = guessFactor;
         log.addEntry(entry);
     }
 
@@ -90,7 +94,7 @@ public class EnemyFireAnglePredictor {
                     final double difference = bulletBearingOffset - wavePointBearingOffset;
                     final double differenceSquare = difference * difference;
                     final double bearingOffsetsDifference = differenceSquare + A;
-                    bearingOffsetDanger += 1 / (bearingOffsetsDifference * B);
+                    bearingOffsetDanger += 1D / (bearingOffsetsDifference * B);
                 }
             }
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
@@ -105,10 +109,10 @@ public class EnemyFireAnglePredictor {
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getAttrValue(AttributesManager.myVelocityModule), toRadians(predicate.getAttrValue(AttributesManager.myAbsoluteHeading)));
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = QuickMath.asin((abs(lateralVelocity) + 1) / Rules.getBulletSpeed(firePower));
+        final double maxEscapeAngle = getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
         if (matches.size() > 0) {
             for (EntryMatch<Double> match : matches) {
-                if (bearingOffsets.size() > round(log.getEntryCount() * 0.33)) {
+                if (bearingOffsets.size() > ceil(log.getEntryCount() * 0.2)) {
                     break;
                 }
 
@@ -131,8 +135,8 @@ public class EnemyFireAnglePredictor {
 
     private static FireLog<Double> createLog() {
         final Attribute[] splitAttributes = {
-                AttributesManager.myLateralVelocityModule, AttributesManager.distBetween,
-                AttributesManager.myDistToForwardWall};
+                AttributesManager.myVelocityModule, AttributesManager.myRelativeHeading,
+                AttributesManager.distBetween, AttributesManager.myDistToForwardWall};
         final double[] attrWeights = new double[AttributesManager.attributesCount()];
         double weight = 1;
         for (Attribute a : splitAttributes) {
