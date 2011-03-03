@@ -53,6 +53,28 @@ public class MovementDecision {
         return new MovementDecision(acceleration, turnRateRadians, movementDirection);
     }
 
+    public static MovementDecision toMovementDecision(LXXRobotState robot, double targetHeading, MovementDirection movementDirection, double distanceToTravel, long timeToTravel) {
+        final double robotHeading = movementDirection == MovementDirection.FORWARD ? robot.getHeadingRadians() : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
+        final double neededTurnRateRadians = Utils.normalRelativeAngle(targetHeading - robotHeading);
+        double turnRateRadians = neededTurnRateRadians;
+        final double speed = robot.getVelocityModule();
+        final double acceleratedSpeed = min(speed + 1, Rules.MAX_VELOCITY);
+        if (abs(turnRateRadians) > Rules.getTurnRateRadians(acceleratedSpeed)) {
+            turnRateRadians = Rules.getTurnRateRadians(acceleratedSpeed) * signum(turnRateRadians);
+        }
+
+        final double requiredSpeed = distanceToTravel / timeToTravel;
+        double acceleration = getAcceleration(robot, turnRateRadians, robotHeading);
+        if (requiredSpeed < speed + acceleration) {
+            acceleration = LXXUtils.limit(-Rules.DECELERATION, requiredSpeed - speed, Rules.ACCELERATION);
+        }
+
+        turnRateRadians = min(abs(neededTurnRateRadians),
+                abs(Rules.getTurnRateRadians(LXXUtils.limit(0, speed + acceleration, Rules.MAX_VELOCITY)))) * signum(turnRateRadians);
+
+        return new MovementDecision(acceleration, turnRateRadians, movementDirection);
+    }
+
     private static double getAcceleration(LXXRobotState robot, double turnRateRadians, double robotHeading) {
         final double speed = min(robot.getVelocityModule(), Rules.MAX_VELOCITY);
         final double acceleratedSpeed = min(speed + 1, Rules.MAX_VELOCITY);

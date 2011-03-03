@@ -31,6 +31,8 @@ public class WaveSurfingMovement implements Movement {
 
     private double minDanger;
     private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
+    private double distanceToTravel;
+    private long timeToTravel;
 
     public WaveSurfingMovement(Tomcat robot, TargetManager targetManager, EnemyBulletManager enemyBulletManager) {
         this.robot = robot;
@@ -44,7 +46,7 @@ public class WaveSurfingMovement implements Movement {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
         selectOrbitDirection(lxxBullets);
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState());
+        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), distanceToTravel, timeToTravel);
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -58,12 +60,19 @@ public class WaveSurfingMovement implements Movement {
     }
 
     private void checkPointsInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
+        double distance = 0;
+        long time = 0;
+        LXXPoint prevPoint = robot.getPosition();
         for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets, targetManager.getDuelOpponent())) {
+            distance += prevPoint.aDistance(pnt);
+            time++;
             double danger = getPointDanger(lxxBullets, pnt);
 
             if (danger < minDanger) {
                 minDanger = danger;
                 minDangerOrbitDirection = orbitDirection;
+                distanceToTravel = distance;
+                timeToTravel = time;
             }
         }
     }
@@ -143,7 +152,7 @@ public class WaveSurfingMovement implements Movement {
         final LXXBullet bullet = bullets.get(0);
         int time = 0;
         while (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance() > bullet.getSpeed() * time) {
-            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullets), orbitDirection, robotImg);
+            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullets), orbitDirection, robotImg, Integer.MAX_VALUE, 0);
             robotImg.apply(md);
             points.add(new LXXPoint(robotImg));
             time++;
@@ -162,7 +171,7 @@ public class WaveSurfingMovement implements Movement {
     }
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
-                                                 LXXRobotState robot) {
+                                                 LXXRobotState robot, double distanceToTravel, long timeToTravel) {
         final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
 
         if (orbitDirection == OrbitDirection.STOP) {
@@ -179,7 +188,7 @@ public class WaveSurfingMovement implements Movement {
         final MovementDecision.MovementDirection md = LXXUtils.anglesDiff(robot.getHeadingRadians(), smoothedHeading) < LXXConstants.RADIANS_90
                 ? MovementDecision.MovementDirection.FORWARD
                 : MovementDecision.MovementDirection.BACKWARD;
-        return MovementDecision.toMovementDecision(robot, smoothedHeading, md);
+        return MovementDecision.toMovementDecision(robot, smoothedHeading, md, distanceToTravel, timeToTravel);
     }
 
     private enum OrbitDirection {
