@@ -12,7 +12,10 @@ import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import lxx.office.BattleSnapshotManager;
 import lxx.targeting.Target;
-import lxx.utils.*;
+import lxx.utils.AimingPredictionData;
+import lxx.utils.LXXConstants;
+import lxx.utils.LXXPoint;
+import lxx.utils.LXXUtils;
 import lxx.wave.Wave;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -54,18 +57,13 @@ public class EnemyFireAnglePredictor {
 
     // todo(zhidkov): rename
     public void updateWaveState(Wave w, double bulletHeading) {
-        final BattleSnapshot bs = battleSnapshotManager.getSnapshotByRoundTime(w.getSourceStateAtFireTime().getRobot().getName(), w.getLaunchTime());
         final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
-                bs.getAttrValue(AttributesManager.myVelocityModule), toRadians(bs.getAttrValue(AttributesManager.myAbsoluteHeading)));
+                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = getMaxEscapeAngle(w.getSpeed());
+        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(w.getSpeed());
 
         final Double guessFactor = maxEscapeAngle == 0 ? 0 : Utils.normalRelativeAngle(bulletHeading - w.getSourcePosAtFireTime().angleTo(w.getTargetPosAtFireTime())) * lateralDirection / maxEscapeAngle;
         addEntry(w, guessFactor);
-    }
-
-    private double getMaxEscapeAngle(double bulletSpeed) {
-        return QuickMath.asin(Rules.MAX_VELOCITY / bulletSpeed);
     }
 
     private void addEntry(Wave w, Double guessFactor) {
@@ -109,7 +107,7 @@ public class EnemyFireAnglePredictor {
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getAttrValue(AttributesManager.myVelocityModule), toRadians(predicate.getAttrValue(AttributesManager.myAbsoluteHeading)));
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
+        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
         if (matches.size() > 0) {
             for (EntryMatch<Double> match : matches) {
                 if (bearingOffsets.size() > ceil(log.getEntryCount() * 0.2)) {

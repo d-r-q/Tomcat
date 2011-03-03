@@ -215,5 +215,8 @@ public class LXXUtils {
         return res;
     }
 
+    public static double getMaxEscapeAngle(double bulletSpeed) {
+        return QuickMath.asin(Rules.MAX_VELOCITY / bulletSpeed);
+    }
 
 }

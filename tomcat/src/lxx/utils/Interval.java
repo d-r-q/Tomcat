@@ -30,4 +30,16 @@ public class Interval {
         return "[" + a + ", " + b + "]";
     }
 
+    public void extend(int x) {
+        if (a > x) {
+            a = x;
+        }
+        if (b < x) {
+            b = x;
+        }
+    }
+
+    public boolean contains(Interval another) {
+        return another.a >= a && another.b <= b;
+    }
 }

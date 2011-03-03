@@ -8,6 +8,6 @@ public enum GunType {
 
     HEAD_ON,
     LINEAR,
-    ADVANCED
+    ADVANCED,
 
 }

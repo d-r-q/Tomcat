@@ -81,7 +81,7 @@ public class WaveManager implements RobotListener {
                         e.printStackTrace();
                     }
 
-                    Set<WaveCallback> callbacks = waveCallbacks.get(w);
+                    final Set<WaveCallback> callbacks = waveCallbacks.get(w);
                     if (w.check()) {
                         for (WaveCallback callback : callbacks) {
                             callback.wavePassing(w);

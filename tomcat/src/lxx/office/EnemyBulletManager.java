@@ -74,7 +74,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public void wavePassing(Wave w) {
-        if (!hittedBullets.containsKey(w) && lastHitEvent != null && robot.getTime() == lastHitEvent.getTime() && w.getSourceStateAtFireTime().getRobot().getName().equals(lastHitEvent.getName())) {
+        if (!hittedBullets.containsKey(w) && lastHitEvent != null && robot.getTime() == lastHitEvent.getTime() &&
+                w.getSourceStateAtFireTime().getRobot().getName().equals(lastHitEvent.getName())) {
             hittedBullets.put(w, lastHitEvent.getBullet());
             for (BulletManagerListener listener : listeners) {
                 listener.bulletHit(new LXXBullet(lastHitEvent.getBullet(), w, null));
@@ -176,15 +177,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public void onHitByBullet(HitByBulletEvent e) {
         lastHitEvent = e;
-    }
-
-    public LXXBullet getClosestBullet() {
-        final Wave closestWave = getClosestWave();
-        if (closestWave == null) {
-            return null;
-        }
-
-        return getBullet(closestWave);
     }
 
     public List<LXXBullet> getBullets() {

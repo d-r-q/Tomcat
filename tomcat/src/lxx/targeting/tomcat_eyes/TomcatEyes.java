@@ -7,19 +7,30 @@ package lxx.targeting.tomcat_eyes;
 import lxx.Tomcat;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
+import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManager;
+import lxx.targeting.bullets.BulletManagerListener;
+import lxx.targeting.bullets.LXXBullet;
+import lxx.utils.Interval;
+import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
+import lxx.wave.Wave;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.Math.signum;
 
 /**
  * User: jdev
  * Date: 01.03.2011
  */
-public class TomcatEyes implements TargetManagerListener {
+public class TomcatEyes implements TargetManagerListener, BulletManagerListener {
+
+    private static final Interval headOnInterval = new Interval(-10, 10);
+    private static final Interval linearInterval = new Interval(-13, Integer.MAX_VALUE);
 
     private static final Attribute[] wallsAttributes = new Attribute[]{
             AttributesManager.enemyBearingToMe,
@@ -84,7 +95,8 @@ public class TomcatEyes implements TargetManagerListener {
             100D / 1700,
             100D / 425};
 
-    private static final Map<Target, MovementMetaProfile> movementMetaProfiles = new HashMap<Target, MovementMetaProfile>();
+    private static final Map<LXXRobot, MovementMetaProfile> movementMetaProfiles = new HashMap<LXXRobot, MovementMetaProfile>();
+    private static final Map<LXXRobot, TargetingProfile> targetingProfiles = new HashMap<LXXRobot, TargetingProfile>();
 
     private final Tomcat robot;
     private final BulletManager bulletManager;
@@ -121,7 +133,14 @@ public class TomcatEyes implements TargetManagerListener {
         return minDistTC;
     }
 
-    private MovementMetaProfile getMovementMetaProfile(Target t) {
+    public void targetUpdated(Target target) {
+        final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
+        movementMetaProfile.update(target, robot, bulletManager);
+        // todo(zhidkov): remove it
+        robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
+    }
+
+    private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
         MovementMetaProfile mmp = movementMetaProfiles.get(t);
         if (mmp == null) {
             mmp = new MovementMetaProfile();
@@ -131,10 +150,37 @@ public class TomcatEyes implements TargetManagerListener {
         return mmp;
     }
 
-    public void targetUpdated(Target target) {
-        final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        movementMetaProfile.update(target, robot, bulletManager);
-        // todo(zhidkov): remove it
-        robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
+    public void bulletHit(LXXBullet bullet) {
+        final Wave w = bullet.getWave();
+        final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
+                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
+        final double lateralDirection = signum(lateralVelocity);
+        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetPosAtFireTime(), bullet.getTarget());
+
+        getTargetingProfile(bullet.getOwner()).addBearingOffset((bearingOffset * lateralDirection));
+    }
+
+    private TargetingProfile getTargetingProfile(LXXRobot t) {
+        TargetingProfile tp = targetingProfiles.get(t);
+        if (tp == null) {
+            tp = new TargetingProfile();
+            targetingProfiles.put(t, tp);
+        }
+
+        return tp;
+    }
+
+    public GunType getEnemyGunType(LXXRobot enemy) {
+        TargetingProfile tp = getTargetingProfile(enemy);
+        if (headOnInterval.contains(tp.getBearingOffsetsInterval())) {
+            return GunType.HEAD_ON;
+        } else if (linearInterval.contains(tp.getBearingOffsetsInterval())) {
+            return GunType.LINEAR;
+        } else {
+            return GunType.ADVANCED;
+        }
+    }
+
+    public void bulletMiss(LXXBullet bullet) {
     }
 }
