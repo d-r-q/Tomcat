@@ -24,7 +24,7 @@ public class Target implements LXXRobot, Serializable {
 
     private static final double INITIAL_GUN_HEAT = 3.0;
 
-    private final List<Event> eventsList = new ArrayList<Event>();
+    private final List<Event> eventsList = new ArrayList<Event>(15);
 
     private final String name;
     private transient final BasicRobot owner;

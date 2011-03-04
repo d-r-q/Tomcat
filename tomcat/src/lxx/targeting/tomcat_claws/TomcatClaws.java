@@ -27,6 +27,7 @@ import robocode.util.Utils;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.toDegrees;
@@ -50,7 +51,7 @@ public class TomcatClaws implements RobotListener, Gun {
     private final Timer timer;
     private final TomcatEyes tomcatEyes;
 
-    private List<TurnPrediction> predictedPoses = null;
+    private LinkedList<TurnPrediction> predictedPoses = null;
     private RobocodeDuelSimulator duelSimulator;
     private APoint robotPosAtFireTime;
 
@@ -90,7 +91,7 @@ public class TomcatClaws implements RobotListener, Gun {
         }
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
-            predictedPoses = new ArrayList<TurnPrediction>();
+            predictedPoses = new LinkedList<TurnPrediction>();
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             robot.setDebugProperty("Enemy gun type", tomcatEyes.getEnemyGunType(t).toString());
             duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes());
@@ -104,7 +105,7 @@ public class TomcatClaws implements RobotListener, Gun {
             }
         }
 
-        final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.get(predictedPoses.size() - 1).enemyPos, this.robotPosAtFireTime);
+        final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.getLast().enemyPos, this.robotPosAtFireTime);
 
         return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, robotPosAtFireTime));
     }
@@ -128,6 +129,7 @@ public class TomcatClaws implements RobotListener, Gun {
             LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
             final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyState));
             duelSimulator.setEnemyMovementDecision(movementDecision);
+            duelSimulator.setMyMovementDecision(new MovementDecision(0, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
             enemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot()));
             if (timeDelta >= AIMING_TIME) {

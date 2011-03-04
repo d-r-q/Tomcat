@@ -53,6 +53,10 @@ public class RobocodeDuelSimulator {
         movementDecisions.put(enemyProxy, movementDecision);
     }
 
+    public void setMyMovementDecision(MovementDecision myMovementDecision) {
+        movementDecisions.put(meProxy, myMovementDecision);
+    }
+
     public void doTurn() {
         for (RobotProxy proxy : movementDecisions.keySet()) {
             final MovementDecision md = movementDecisions.get(proxy);
@@ -98,5 +102,4 @@ public class RobocodeDuelSimulator {
     public RobotProxy getEnemyProxy() {
         return enemyProxy;
     }
-
 }

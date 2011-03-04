@@ -28,4 +28,7 @@ public class AvgValue {
         return currentSum / min(valuesCount, depth);
     }
 
+    public String toString() {
+        return String.format("Avg value = %10.5f", getCurrentValue());
+    }
 }

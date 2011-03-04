@@ -9,16 +9,19 @@ import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.AvgValue;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
+import lxx.utils.Mediana;
 import robocode.util.Utils;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.toDegrees;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
  * Date: 01.03.2011
  */
 public class MovementMetaProfile {
+
+    private static final int DISTANCE_SEGMENTS = 25;
+    private final Mediana[] distancesMedianaAngles = new Mediana[1700 / DISTANCE_SEGMENTS];
 
     private final AvgValue avgVelocity = new AvgValue(10000);
     private final AvgValue avgTurnRate = new AvgValue(10000);
@@ -31,6 +34,8 @@ public class MovementMetaProfile {
     private final AvgValue avgDistanceToFirstBulletPos = new AvgValue(10000);
     private final AvgValue avgDistanceToCenter = new AvgValue(10000);
 
+    private int enemyPreferredDistance = -1;
+
     public void update(LXXRobot owner, LXXRobot viewPoint, BulletManager bulletManager) {
         avgVelocity.addValue(owner.getState().getVelocity());
         avgVelocityModule.addValue(owner.getState().getVelocityModule());
@@ -41,7 +46,8 @@ public class MovementMetaProfile {
         avgAttackAngle.addValue(toDegrees(LXXUtils.getAttackAngle(viewPoint, owner, owner.getState().getAbsoluteHeadingRadians())));
         avgBearing.addValue(toDegrees(Utils.normalRelativeAngle(owner.angleTo(viewPoint) - owner.getState().getAbsoluteHeadingRadians())));
 
-        avgDistanceBetween.addValue(owner.aDistance(viewPoint));
+        final double distanceBetween = owner.aDistance(viewPoint);
+        avgDistanceBetween.addValue(distanceBetween);
         final LXXBullet firstBullet = bulletManager.getFirstBullet();
         if (firstBullet != null) {
             avgFirstBulletAttackAngle.addValue(toDegrees(LXXUtils.getAttackAngle(firstBullet.getFirePosition(), owner, owner.getState().getAbsoluteHeadingRadians())));
@@ -49,6 +55,12 @@ public class MovementMetaProfile {
         }
 
         avgDistanceToCenter.addValue(owner.getPosition().aDistance(owner.getState().getBattleField().center));
+        int idx = (int) round(distanceBetween / DISTANCE_SEGMENTS);
+        if (distancesMedianaAngles[idx] == null) {
+            distancesMedianaAngles[idx] = new Mediana();
+        }
+        final double angle = toDegrees(LXXUtils.anglesDiff(viewPoint.angleTo(owner), owner.getState().getAbsoluteHeadingRadians()));
+        distancesMedianaAngles[idx].addValue(angle);
     }
 
     public String toShortString() {
@@ -67,6 +79,24 @@ public class MovementMetaProfile {
                 avgAttackAngle.getCurrentValue(), avgBearing.getCurrentValue(),
                 avgDistanceBetween.getCurrentValue(), avgFirstBulletAttackAngle.getCurrentValue(),
                 avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue()};
+    }
+
+    public int getPreferredDistance() {
+        for (int i = 0; i < distancesMedianaAngles.length; i++) {
+            if (distancesMedianaAngles[i] == null ||
+                    distancesMedianaAngles[i + 1] == null) {
+                continue;
+            }
+            double m1 = distancesMedianaAngles[i].getMediana();
+            double m2 = distancesMedianaAngles[i + 1].getMediana();
+            if (m1 > 75 && m1 < 90 &&
+                    m2 > 90 && m2 < 100) {
+                enemyPreferredDistance = (i + 1) * DISTANCE_SEGMENTS;
+                break;
+            }
+        }
+
+        return enemyPreferredDistance;
     }
 
 }

@@ -19,7 +19,6 @@ public class OfficeImpl implements Office {
     private final EnemyBulletManager enemyBulletManager;
     private final AttributesManager attributesManager;
     private final BulletManager bulletManager;
-    private final PatternManager patternManager;
 
     private final Tomcat tomcat;
 
@@ -49,8 +48,6 @@ public class OfficeImpl implements Office {
 
         final StatisticsManager statisticsManager = new StatisticsManager(this, tomcat);
         tomcat.addListener(statisticsManager);
-
-        patternManager = new PatternManager(this);
 
         final PaintManager paintManager = new PaintManager();
         tomcat.addListener(paintManager);
@@ -85,10 +82,6 @@ public class OfficeImpl implements Office {
 
     public BulletManager getBulletManager() {
         return bulletManager;
-    }
-
-    public PatternManager getPatternManager() {
-        return patternManager;
     }
 
     public long getTime() {

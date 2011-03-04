@@ -23,8 +23,6 @@ public interface Office {
 
     BulletManager getBulletManager();
 
-    PatternManager getPatternManager();
-
     long getTime();
 
     Tomcat getTomcat();

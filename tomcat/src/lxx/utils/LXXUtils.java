@@ -219,4 +219,7 @@ public class LXXUtils {
         return QuickMath.asin(Rules.MAX_VELOCITY / bulletSpeed);
     }
 
+    public static double lateralVelocity(APoint center, LXXRobotState robotState) {
+        return lateralVelocity(center, robotState, robotState.getVelocityModule(), robotState.getAbsoluteHeadingRadians());
+    }
 }

@@ -13,7 +13,6 @@ import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManager;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
-import lxx.utils.Interval;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
 import lxx.wave.Wave;
@@ -28,9 +27,6 @@ import static java.lang.Math.signum;
  * Date: 01.03.2011
  */
 public class TomcatEyes implements TargetManagerListener, BulletManagerListener {
-
-    private static final Interval headOnInterval = new Interval(-10, 10);
-    private static final Interval linearInterval = new Interval(-13, Integer.MAX_VALUE);
 
     private static final Attribute[] wallsAttributes = new Attribute[]{
             AttributesManager.enemyBearingToMe,
@@ -62,8 +58,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyStopTime,
-            AttributesManager.distBetween,
             AttributesManager.enemyTravelTime,
+            AttributesManager.distBetween,
             AttributesManager.enemyBearingToMe,
             AttributesManager.enemyVelocityModule,
     };
@@ -138,6 +134,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         movementMetaProfile.update(target, robot, bulletManager);
         // todo(zhidkov): remove it
         robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
+        robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
@@ -172,9 +169,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     public GunType getEnemyGunType(LXXRobot enemy) {
         TargetingProfile tp = getTargetingProfile(enemy);
-        if (headOnInterval.contains(tp.getBearingOffsetsInterval())) {
+        if (tp.zeroGFHitCount > tp.totalHits * 0.9 || tp.totalHits == 0) {
             return GunType.HEAD_ON;
-        } else if (linearInterval.contains(tp.getBearingOffsetsInterval())) {
+        } else if (tp.positiveGFHitCount > tp.totalHits * 0.9) {
             return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;
@@ -182,5 +179,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     }
 
     public void bulletMiss(LXXBullet bullet) {
+    }
+
+    public int getEnemyPreferredDistance(LXXRobot enemy) {
+        return getMovementMetaProfile(enemy).getPreferredDistance();
     }
 }

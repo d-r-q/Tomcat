@@ -22,7 +22,8 @@ import robocode.util.Utils;
 
 import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.signum;
+import static java.lang.Math.toRadians;
 
 public class EnemyFireAnglePredictor {
 
@@ -60,10 +61,9 @@ public class EnemyFireAnglePredictor {
         final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
                 w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(w.getSpeed());
 
-        final Double guessFactor = maxEscapeAngle == 0 ? 0 : Utils.normalRelativeAngle(bulletHeading - w.getSourcePosAtFireTime().angleTo(w.getTargetPosAtFireTime())) * lateralDirection / maxEscapeAngle;
-        addEntry(w, guessFactor);
+        final Double bearingOffset = Utils.normalRelativeAngle(bulletHeading - w.getSourcePosAtFireTime().angleTo(w.getTargetPosAtFireTime())) * lateralDirection;
+        addEntry(w, bearingOffset);
     }
 
     private void addEntry(Wave w, Double guessFactor) {
@@ -77,9 +77,8 @@ public class EnemyFireAnglePredictor {
     public AimingPredictionData getPredictionData(Target t) {
         final FireLog<Double> log = getLog(t.getName());
 
-        final List<Double> bearingOffsets = new ArrayList<Double>();
-        final BattleSnapshot predicate1 = battleSnapshotManager.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
-        getBearingOffsets(log, bearingOffsets, predicate1, t.getFirePower());
+        final BattleSnapshot predicate = battleSnapshotManager.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
+        final List<Double> bearingOffsets = getBearingOffsets(log, predicate, t.getFirePower());
 
         final int bearingOffsetsCount = bearingOffsets.size();
         final Map<Double, Double> bearingOffsetDangers = new TreeMap<Double, Double>();
@@ -102,24 +101,26 @@ public class EnemyFireAnglePredictor {
 
     }
 
-    private void getBearingOffsets(FireLog<Double> log, List<Double> bearingOffsets, BattleSnapshot predicate, double firePower) {
-        final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1000);
+    private List<Double> getBearingOffsets(FireLog<Double> log, BattleSnapshot predicate, double firePower) {
+        final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getAttrValue(AttributesManager.myVelocityModule), toRadians(predicate.getAttrValue(AttributesManager.myAbsoluteHeading)));
         final double lateralDirection = signum(lateralVelocity);
-        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
+        final List<Double> bearingOffsets = new LinkedList<Double>();
         if (matches.size() > 0) {
             for (EntryMatch<Double> match : matches) {
-                if (bearingOffsets.size() > ceil(log.getEntryCount() * 0.2)) {
+                if (bearingOffsets.size() > 0) {
                     break;
                 }
 
-                bearingOffsets.add(match.result * lateralDirection * maxEscapeAngle);
+                bearingOffsets.add(match.result * lateralDirection);
             }
         } else {
-            bearingOffsets.add(0D);
+            final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
             bearingOffsets.add(maxEscapeAngle * lateralDirection);
         }
+
+        return bearingOffsets;
     }
 
     private static FireLog<Double> getLog(String enemyName) {
@@ -133,15 +134,10 @@ public class EnemyFireAnglePredictor {
 
     private static FireLog<Double> createLog() {
         final Attribute[] splitAttributes = {
-                AttributesManager.myVelocityModule, AttributesManager.myRelativeHeading,
-                AttributesManager.distBetween, AttributesManager.myDistToForwardWall};
-        final double[] attrWeights = new double[AttributesManager.attributesCount()];
-        double weight = 1;
-        for (Attribute a : splitAttributes) {
-            attrWeights[a.getId()] = weight;
-            weight = (weight * 2) + 0.5;
-        }
-        return new FireLog<Double>(splitAttributes, splitAttributes, attrWeights, 2, 0.02);
+                AttributesManager.myLateralVelocity, AttributesManager.distBetween,
+                AttributesManager.myDistToForwardWall,
+        };
+        return new FireLog<Double>(splitAttributes, 2, 0.02);
     }
 
 }

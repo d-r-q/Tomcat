@@ -144,8 +144,30 @@ public class BattleField {
         return smoothWall(getWall(pos, heading), pos, heading, isClockwise);
     }
 
+    public double randomSmoothWalls(APoint pos, double heading, boolean isClockwise, double randomWallStickDelta) {
+        return randomSmoothWall(getWall(pos, heading), pos, heading, isClockwise, randomWallStickDelta);
+    }
+
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
         final double hypotenuse = getWallSmoothStickLength(pos, heading);
+        final double adjacentLeg = getDistanceToWall(wall, pos) - 2;
+        if (hypotenuse < adjacentLeg) {
+            return heading;
+        }
+        final double smoothAngle = (QuickMath.acos((adjacentLeg) / (hypotenuse))) *
+                (isClockwise ? 1 : -1);
+        final double baseAngle = wall.wallType.fromCenterAngle;
+        double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
+        if (!contains(pos.project(smoothedAngle, hypotenuse))) {
+            final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
+            return smoothWall(secondWall, pos, smoothedAngle, isClockwise);
+        }
+        return smoothedAngle;
+    }
+
+    private double randomSmoothWall(Wall wall, APoint pos, double heading, boolean isClockwise,
+                                    double randomWallStickDelta) {
+        final double hypotenuse = getWallSmoothStickLength(pos, heading) + randomWallStickDelta;
         final double adjacentLeg = getDistanceToWall(wall, pos) - 2;
         if (hypotenuse < adjacentLeg) {
             return heading;

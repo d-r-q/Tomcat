@@ -37,11 +37,11 @@ public class AttributesManager {
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
-    public static final Attribute myVelocity = new Attribute("My velocity", 0, 8, new MyVelocityModuleVE());
-    public static final Attribute myVelocityModule = new Attribute("My velocity module", -8, 8, new MyVelocityVE());
-    public static final Attribute myLateralVelocityModule = new Attribute("My lateral velocity module * 4", 0, 32, new MyLateralVelocityModuleVE());
+    public static final Attribute myVelocity = new Attribute("My velocity", -8, 8, new MyVelocityVE());
+    public static final Attribute myVelocityModule = new Attribute("My velocity module", 0, 8, new MyVelocityModuleVE());
+    public static final Attribute myLateralVelocity = new Attribute("My lateral velocity * 3", -24, 24, new MyLateralVelocityVE());
     public static final Attribute myAbsoluteHeading = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
-    public final static Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
+    public static final Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
     public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse wall", 0, 1700, new MyDistanceToReverseWallVE());
@@ -71,7 +71,7 @@ public class AttributesManager {
             myY,
             myVelocity,
             myVelocityModule,
-            myLateralVelocityModule,
+            myLateralVelocity,
             myAbsoluteHeading,
             myRelativeHeading,
             myAcceleration,

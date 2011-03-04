@@ -70,7 +70,7 @@ public class WaveManager implements RobotListener {
     public void onEvent(Event event) {
         if (event instanceof TickEvent) {
             for (Set<Wave> ws : waves.values()) {
-                List<Wave> toRemove = new ArrayList<Wave>();
+                List<Wave> toRemove = new LinkedList<Wave>();
                 for (Wave w : ws) {
                     try {
                         if (!w.getTargetStateAtFireTime().getRobot().isAlive() || !w.getSourceStateAtFireTime().getRobot().isAlive()) {

@@ -8,10 +8,7 @@ import lxx.model.BattleSnapshot;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.toRadians;
@@ -26,7 +23,7 @@ public class PatternTreeNode {
 
     private Map<EnemyMovementDecision, PatternTreeNode> children = new HashMap<EnemyMovementDecision, PatternTreeNode>();
 
-    private final List<PredicateResult> predicateResults = new ArrayList<PredicateResult>();
+    private final List<PredicateResult> predicateResults = new LinkedList<PredicateResult>();
 
     private final EnemyMovementDecision link;
     private final PatternTreeNode parent;
@@ -55,9 +52,10 @@ public class PatternTreeNode {
         child.visitCount++;
         predicateResults.add(new PredicateResult(predicate, link));
         if (predicateResults.size() > 2000) {
-            for (int i = 0; i < predicateResults.size(); i++) {
-                if (predicateResults.get(i).enemyMovementDecision.equals(link)) {
-                    predicateResults.remove(i);
+            for (Iterator<PredicateResult> predicateResultIterator = predicateResults.iterator(); predicateResultIterator.hasNext();) {
+                PredicateResult pr = predicateResultIterator.next();
+                if (pr.enemyMovementDecision.equals(link)) {
+                    predicateResultIterator.remove();
                     break;
                 }
             }
@@ -93,7 +91,7 @@ public class PatternTreeNode {
         return selectionData;
     }
 
-    private boolean isValidEnemyDecision(PredicateResult pr, BattleSnapshot bs) {
+    private static boolean isValidEnemyDecision(PredicateResult pr, BattleSnapshot bs) {
         final double acceleration = pr.enemyMovementDecision.acceleration;
         final double newVelocity = bs.getEnemyVelocityModule() + acceleration;
         return acceleration >= -Rules.DECELERATION &&

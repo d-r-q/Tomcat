@@ -6,13 +6,13 @@ package lxx.model.attributes.attribute_extractors.my;
 
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.LXXRobot;
-import robocode.util.Utils;
+import lxx.utils.LXXUtils;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.round;
 
-public class MyLateralVelocityModuleVE implements AttributeValueExtractor {
+public class MyLateralVelocityVE implements AttributeValueExtractor {
     public int getAttributeValue(LXXRobot enemy, LXXRobot me) {
-        return (int) abs(me.getState().getVelocityModule() * Math.sin(Utils.normalRelativeAngle(me.getState().getAbsoluteHeadingRadians() - enemy.angleTo(me))) * 4);
+        return (int) round(LXXUtils.lateralVelocity(enemy, me.getState()) * 3);
 
     }
 }

@@ -37,7 +37,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final Map<Wave, Bullet> hittedBullets = new HashMap<Wave, Bullet>();
     private final Map<Wave, Bullet> interceptedBullets = new HashMap<Wave, Bullet>();
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
-    private final List<BulletManagerListener> listeners = new ArrayList<BulletManagerListener>();
+    private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
     private final EnemyFireAnglePredictor enemyFireAnglePredictor;
 
     private final WaveManager waveManager;
@@ -140,8 +140,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         return new LXXBullet(bullet, wave, lxxBullet.getAimPredictionData());
     }
 
-    public Collection<Wave> getWaves() {
-        final List<Wave> res = new ArrayList<Wave>();
+    private Collection<Wave> getWaves() {
+        final List<Wave> res = new LinkedList<Wave>();
         for (Set<Wave> waves : this.waves.values()) {
             res.addAll(waves);
         }

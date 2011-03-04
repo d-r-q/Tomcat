@@ -6,15 +6,11 @@ package lxx.fire_log;
 
 import lxx.model.BattleSnapshot;
 import lxx.model.attributes.Attribute;
-import lxx.office.AttributesManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
-
-import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -26,22 +22,10 @@ public class FireLog<T extends Serializable> {
 
     protected final FireLogNode<T> root;
 
-    private final Attribute[] matchAttributes;
-    private final int[] attributeIds;
-    private final double[] attributeWeights;
-
     protected int entryCount;
 
-    public FireLog(Attribute[] splitAttributes, Attribute[] matchAttributes, double[] weights,
-                   int loadFactor, double maxIntervalLength) {
-        this.matchAttributes = matchAttributes;
+    public FireLog(Attribute[] splitAttributes, int loadFactor, double maxIntervalLength) {
         root = new FireLogNode<T>(loadFactor, splitAttributes[0].getRange(), -1, splitAttributes, maxIntervalLength);
-
-        attributeIds = new int[matchAttributes.length];
-        for (int i = 0; i < matchAttributes.length; i++) {
-            attributeIds[i] = matchAttributes[i].getId();
-        }
-        attributeWeights = weights;
     }
 
     public void addEntry(FireLogEntry<T> fireLogEntry) {
@@ -55,23 +39,12 @@ public class FireLog<T extends Serializable> {
     }
 
     public List<EntryMatch<T>> getSimilarEntries(BattleSnapshot predicate, int limit) {
-        final double[] scaledFactors = new double[AttributesManager.attributesCount()];
-        for (Attribute a : matchAttributes) {
-            scaledFactors[a.getId()] = (1000D / a.getActualRange()) * attributeWeights[a.getId()];
-        }
-        final List<EntryMatch<T>> matches = new ArrayList<EntryMatch<T>>();
+        final List<EntryMatch<T>> matches = new LinkedList<EntryMatch<T>>();
 
+        int idx = 0;
         for (FireLogEntry<T> e : getEntries(predicate, limit)) {
-            matches.add(new EntryMatch<T>(e.result, e.predicate.quickDistance(attributeIds, predicate, scaledFactors), e.predicate));
+            matches.add(new EntryMatch<T>(e.result, idx++, e.predicate));
         }
-
-        Collections.sort(matches, new Comparator<EntryMatch>() {
-
-            public int compare(EntryMatch o1, EntryMatch o2) {
-                return (int) signum(o1.match - o2.match);
-            }
-        });
-
 
         return matches;
     }

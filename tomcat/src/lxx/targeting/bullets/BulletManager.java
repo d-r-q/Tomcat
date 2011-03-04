@@ -13,6 +13,7 @@ import lxx.utils.LXXGraphics;
 import robocode.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public class BulletManager implements RobotListener {
     private static boolean paintEnabled = false;
 
     private final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
-    private final List<BulletManagerListener> listeners = new ArrayList<BulletManagerListener>();
+    private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
 
     private void addBullet(LXXBullet bullet) {
         bullets.add(bullet);

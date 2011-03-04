@@ -30,7 +30,7 @@ public class TargetManager implements RobotListener {
     private final Map<String, Target> targets = new HashMap<String, Target>();
 
     private final List<Target> aliveTargets = new ArrayList<Target>();
-    private final List<TargetManagerListener> listeners = new ArrayList<TargetManagerListener>();
+    private final List<TargetManagerListener> listeners = new LinkedList<TargetManagerListener>();
     private final Set<Target> updatedTargets = new HashSet<Target>();
 
     private final BasicRobot robot;

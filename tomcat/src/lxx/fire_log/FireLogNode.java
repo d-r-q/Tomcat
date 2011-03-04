@@ -10,6 +10,7 @@ import lxx.utils.Interval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -20,7 +21,7 @@ import static java.lang.Math.abs;
  */
 public class FireLogNode<T extends Serializable> {
 
-    private final List<FireLogEntry<T>> entries = new ArrayList<FireLogEntry<T>>();
+    private final LinkedList<FireLogEntry<T>> entries = new LinkedList<FireLogEntry<T>>();
     private final List<FireLogNode<T>> children = new ArrayList<FireLogNode<T>>();
 
     private final int loadFactor;
@@ -70,7 +71,7 @@ public class FireLogNode<T extends Serializable> {
         } else {
             mediana = (mediana * entries.size() + getAttrValue(fireLogEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
         }
-        entries.add(0, fireLogEntry);
+        entries.addFirst(fireLogEntry);
         final int value = getAttrValue(fireLogEntry.predicate, attributes[attributeIdx]);
         if (value < range.a) {
             range.a = value;
@@ -165,11 +166,15 @@ public class FireLogNode<T extends Serializable> {
             if (idx == children.size()) {
                 idx--;
             }
-            List<FireLogEntry<T>> res = new ArrayList<FireLogEntry<T>>(children.get(idx).getEntries(bs, limit));
+            final List<FireLogEntry<T>> res = new ArrayList<FireLogEntry<T>>(children.get(idx).getEntries(bs, limit));
             int step = 1;
             while (res.size() < limit && (idx - step >= 0 || idx + step < children.size())) {
-                FireLogNode<T> n1 = idx - step >= 0 ? children.get(idx - step) : null;
-                FireLogNode<T> n2 = idx + step < children.size() ? children.get(idx + step) : null;
+                final FireLogNode<T> n1 = idx - step >= 0 ?
+                        children.get(idx - step)
+                        : null;
+                final FireLogNode<T> n2 = idx + step < children.size()
+                        ? children.get(idx + step)
+                        : null;
 
                 try {
                     if (n1 != null && n1.mediana != null) {

@@ -33,7 +33,7 @@ public class StrategySelector {
         strategies.add(new FindEnemiesStrategy(robot, targetManager, robot.getInitialOthers()));
 
         final DuelStrategy waveSurfingDuelStrategy = new DuelStrategy(robot,
-                new WaveSurfingMovement(robot, targetManager, enemyBulletManager),
+                new WaveSurfingMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
                 createDuelGun(robot, office, tomcatEyes),
                 new DuelFirePowerSelector(), targetManager, enemyBulletManager);
         strategies.add(waveSurfingDuelStrategy);
