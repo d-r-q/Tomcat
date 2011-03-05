@@ -87,7 +87,7 @@ public class BattleSnapshot implements Serializable {
     }
 
     public double getMyAbsoluteHeadingRadians() {
-        return bsAttributes[AttributesManager.myAbsoluteHeadingDegrees.getId()];
+        return toRadians(bsAttributes[AttributesManager.myAbsoluteHeadingDegrees.getId()]);
     }
 
     public double getMyLateralVelocity() {

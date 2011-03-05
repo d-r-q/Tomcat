@@ -8,7 +8,10 @@ import lxx.model.BattleSnapshot;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.toRadians;
@@ -23,7 +26,7 @@ public class PatternTreeNode {
 
     private Map<EnemyMovementDecision, PatternTreeNode> children = new HashMap<EnemyMovementDecision, PatternTreeNode>();
 
-    private final List<PredicateResult> predicateResults = new LinkedList<PredicateResult>();
+    private final LinkedList<PredicateResult> predicateResults = new LinkedList<PredicateResult>();
 
     private final EnemyMovementDecision link;
     private final PatternTreeNode parent;
@@ -50,7 +53,7 @@ public class PatternTreeNode {
             children.put(link, child);
         }
         child.visitCount++;
-        predicateResults.add(new PredicateResult(predicate, link));
+        predicateResults.addFirst(new PredicateResult(predicate, link));
         if (predicateResults.size() > 2000) {
             for (Iterator<PredicateResult> predicateResultIterator = predicateResults.iterator(); predicateResultIterator.hasNext();) {
                 PredicateResult pr = predicateResultIterator.next();

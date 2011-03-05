@@ -182,8 +182,14 @@ public class FireLogNode<T extends Serializable> {
                             res.addAll(n1.getEntries(bs, limit));
                         } else if (abs(n1.mediana - value) < abs(n2.mediana - value)) {
                             res.addAll(n1.getEntries(bs, limit));
+                            if (res.size() < limit) {
+                                res.addAll(n2.getEntries(bs, limit));
+                            }
                         } else {
                             res.addAll(n2.getEntries(bs, limit));
+                            if (res.size() < limit) {
+                                res.addAll(n1.getEntries(bs, limit));
+                            }
                         }
                     } else {
                         if (n2 != null && n2.mediana != null) {

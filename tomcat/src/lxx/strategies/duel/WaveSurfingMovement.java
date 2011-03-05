@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.random;
+import static java.lang.Math.*;
 
 public class WaveSurfingMovement implements Movement {
 
@@ -41,7 +40,6 @@ public class WaveSurfingMovement implements Movement {
     private double distanceToTravel;
     private long timeToTravel;
     private double randomWallStickDelta = 0;
-    private int randomDistanceDelta = 0;
 
     public WaveSurfingMovement(Tomcat robot, TargetManager targetManager,
                                EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
@@ -54,9 +52,6 @@ public class WaveSurfingMovement implements Movement {
     public MovementDecision getMovementDecision() {
         if (robot.getTime() % 31 == 0) {
             randomWallStickDelta = 100 * random();
-        }
-        if (robot.getTime() % 29 == 0) {
-            randomDistanceDelta = (int) (50 - 100 * random());
         }
         final List<LXXBullet> lxxBullets = getBullets();
         final Target.TargetState opponent = targetManager.getDuelOpponent() == null ? null : targetManager.getDuelOpponent().getState();
@@ -187,12 +182,13 @@ public class WaveSurfingMovement implements Movement {
         if (opponent != null && tomcatEyes.getEnemyGunType(opponent) == GunType.ADVANCED) {
             int enemyPreferredDistance = tomcatEyes.getEnemyPreferredDistance(opponent);
             if (enemyPreferredDistance == -1) {
-                enemyPreferredDistance = DEFAULT_DISTANCE_AGAINST_ADVANCED + randomDistanceDelta;
+                enemyPreferredDistance = DEFAULT_DISTANCE_AGAINST_ADVANCED;
             }
+            enemyPreferredDistance = (int) min(enemyPreferredDistance - 75, opponent.getPosition().distanceToWall(robot.getBattleField(), opponent.angleTo(robot)) - 75);
             double distanceBetween = robot.aDistance(surfPoint);
-            if (distanceBetween > enemyPreferredDistance - randomDistanceDelta + 10) {
-                return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_95 * orbitDirection.sign);
-            } else if (distanceBetween < enemyPreferredDistance - randomDistanceDelta - 10) {
+            if (distanceBetween > enemyPreferredDistance + 10) {
+                return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_110 * orbitDirection.sign);
+            } else if (distanceBetween < enemyPreferredDistance - 10) {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_60 * orbitDirection.sign);
             } else {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign);
