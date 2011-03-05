@@ -23,7 +23,6 @@ import robocode.util.Utils;
 import java.util.*;
 
 import static java.lang.Math.signum;
-import static java.lang.Math.toRadians;
 
 public class EnemyFireAnglePredictor {
 
@@ -104,7 +103,7 @@ public class EnemyFireAnglePredictor {
     private List<Double> getBearingOffsets(FireLog<Double> log, BattleSnapshot predicate, double firePower) {
         final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
-                predicate.getAttrValue(AttributesManager.myVelocityModule), toRadians(predicate.getAttrValue(AttributesManager.myAbsoluteHeading)));
+                predicate.getMyVelocityModule(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
         final List<Double> bearingOffsets = new LinkedList<Double>();
         if (matches.size() > 0) {

@@ -25,7 +25,7 @@ public interface Office {
 
     long getTime();
 
-    Tomcat getTomcat();
+    Tomcat getRobot();
 
     boolean isDebugMode();
 }

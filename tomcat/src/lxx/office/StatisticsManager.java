@@ -4,8 +4,8 @@
 
 package lxx.office;
 
-import lxx.Tomcat;
 import lxx.RobotListener;
+import lxx.Tomcat;
 import lxx.events.TickEvent;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;

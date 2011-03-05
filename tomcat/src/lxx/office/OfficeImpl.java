@@ -88,7 +88,7 @@ public class OfficeImpl implements Office {
         return tomcat.getTime();
     }
 
-    public Tomcat getTomcat() {
+    public Tomcat getRobot() {
         return tomcat;
     }
 

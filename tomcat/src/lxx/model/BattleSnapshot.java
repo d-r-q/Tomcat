@@ -11,6 +11,7 @@ import lxx.utils.LXXUtils;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import static java.lang.Math.signum;
 import static java.lang.Math.toRadians;
 
 /**
@@ -80,4 +81,22 @@ public class BattleSnapshot implements Serializable {
     public double getEnemyVelocityModule() {
         return bsAttributes[AttributesManager.enemyVelocityModule.getId()];
     }
+
+    public double getMyVelocityModule() {
+        return bsAttributes[AttributesManager.myVelocityModule.getId()];
+    }
+
+    public double getMyAbsoluteHeadingRadians() {
+        return bsAttributes[AttributesManager.myAbsoluteHeadingDegrees.getId()];
+    }
+
+    public double getMyLateralVelocity() {
+        return LXXUtils.lateralVelocity2(LXXUtils.getEnemyPos(this), LXXUtils.getMyPos(this),
+                getMyVelocityModule(), getMyAbsoluteHeadingRadians());
+    }
+
+    public double getMyLateralDirection() {
+        return signum(getMyLateralVelocity());
+    }
+
 }

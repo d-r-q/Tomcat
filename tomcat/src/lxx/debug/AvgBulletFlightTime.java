@@ -34,7 +34,7 @@ public class AvgBulletFlightTime implements Debugger, WaveCallback {
     }
 
     public void tick() {
-        final Tomcat tomcat = office.getTomcat();
+        final Tomcat tomcat = office.getRobot();
         if (!office.getTargetManager().hasDuelOpponent()) {
             return;
         }

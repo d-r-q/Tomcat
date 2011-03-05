@@ -61,7 +61,7 @@ public class TomcatClaws implements RobotListener, Gun {
         this.timer = office.getBattleTimeManager();
         this.tomcatEyes = tomcatEyes;
 
-        robot = office.getTomcat();
+        robot = office.getRobot();
     }
 
     public void onEvent(Event event) {

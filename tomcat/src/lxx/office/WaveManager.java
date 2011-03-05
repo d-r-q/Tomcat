@@ -89,7 +89,12 @@ public class WaveManager implements RobotListener {
                     } else if (w.getTraveledDistance() > w.getSourceStateAtFireTime().aDistance(w.getTargetStateAtFireTime().getRobot())) {
                         toRemove.add(w);
                         for (WaveCallback callback : callbacks) {
-                            callback.waveBroken(w);
+                            try {
+                                callback.waveBroken(w);
+                            } catch (RuntimeException e) {
+                                // don't let clients break life cycle
+                                e.printStackTrace();
+                            }
                         }
                         waveCallbacks.remove(w);
                     }
