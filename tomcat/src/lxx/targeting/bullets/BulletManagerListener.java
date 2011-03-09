@@ -14,4 +14,6 @@ public interface BulletManagerListener {
 
     void bulletMiss(LXXBullet bullet);
 
+    void bulletIntercepted(LXXBullet bullet);
+
 }

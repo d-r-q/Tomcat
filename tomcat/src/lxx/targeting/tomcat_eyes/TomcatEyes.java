@@ -168,10 +168,11 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     }
 
     public GunType getEnemyGunType(LXXRobot enemy) {
-        TargetingProfile tp = getTargetingProfile(enemy);
+        final TargetingProfile tp = getTargetingProfile(enemy);
         if (tp.zeroGFHitCount > tp.totalHits * 0.8 || tp.totalHits == 0) {
             return GunType.HEAD_ON;
-        } else if (tp.positiveGFHitCount > tp.negativeGFHitCount * 3) {
+        } else if ((tp.positiveGFHitCount + tp.zeroGFHitCount) > tp.totalHits * 0.75 ||
+                tp.totalHits < (robot.getRoundNum() + 1) * 2) {
             return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;
@@ -179,6 +180,16 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     }
 
     public void bulletMiss(LXXBullet bullet) {
+    }
+
+    public void bulletIntercepted(LXXBullet bullet) {
+        final Wave w = bullet.getWave();
+        final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
+                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
+        final double lateralDirection = signum(lateralVelocity);
+        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetPosAtFireTime(), bullet.getTarget());
+
+        getTargetingProfile(bullet.getOwner()).addBearingOffset((bearingOffset * lateralDirection));
     }
 
     public int getEnemyPreferredDistance(LXXRobot enemy) {

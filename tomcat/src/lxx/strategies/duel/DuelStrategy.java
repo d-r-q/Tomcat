@@ -8,7 +8,9 @@ import lxx.Tomcat;
 import lxx.office.EnemyBulletManager;
 import lxx.office.TargetManager;
 import lxx.strategies.*;
+import lxx.targeting.GunType;
 import lxx.targeting.Target;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.LXXConstants;
 import robocode.util.Utils;
 
@@ -18,29 +20,36 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
 
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
+    private final TomcatEyes tomcatEyes;
 
-    private final Movement movement;
+    private final Movement simpleMovement;
+    private final Movement advancedMovement;
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
 
     protected Target target;
 
-    public DuelStrategy(Tomcat robot, Movement movement, Gun gun, FirePowerSelector firePowerSelector,
-                        TargetManager targetManager, EnemyBulletManager enemyBulletManager) {
+    private GunType enemyGunType;
+
+    public DuelStrategy(Tomcat robot, Movement simpleMovement, Movement advancedMovement, Gun gun, FirePowerSelector firePowerSelector,
+                        TargetManager targetManager, EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
         super(robot);
 
-        this.movement = movement;
+        this.simpleMovement = simpleMovement;
+        this.advancedMovement = advancedMovement;
         this.gun = gun;
+        this.firePowerSelector = firePowerSelector;
 
         this.targetManager = targetManager;
         this.enemyBulletManager = enemyBulletManager;
-        this.firePowerSelector = firePowerSelector;
+        this.tomcatEyes = tomcatEyes;
     }
 
     public boolean match() {
         final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.hasBulletsOnAir();
         if (match) {
             target = targetManager.getDuelOpponent();
+            enemyGunType = tomcatEyes.getEnemyGunType(target);
         }
         return match;
     }
@@ -62,7 +71,11 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
-        return movement.getMovementDecision();
+        if (enemyGunType == GunType.ADVANCED) {
+            return advancedMovement.getMovementDecision();
+        } else {
+            return simpleMovement.getMovementDecision();
+        }
     }
 
     protected GunDecision getGunDecision(Target target, double firePower) {

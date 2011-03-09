@@ -129,7 +129,7 @@ public class TomcatClaws implements RobotListener, Gun {
             LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
             final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyState));
             duelSimulator.setEnemyMovementDecision(movementDecision);
-            duelSimulator.setMyMovementDecision(new MovementDecision(0, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
+            duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
             enemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot()));
             if (timeDelta >= AIMING_TIME) {

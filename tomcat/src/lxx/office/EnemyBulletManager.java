@@ -133,9 +133,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         if (lxxBullet == null) {
             return null;
         }
-        final double angleToTarget = lxxBullet.getHeadingRadians();
-        final APoint bulletPos = wave.getSourceStateAtFireTime().project(angleToTarget, wave.getTraveledDistance());
-        final Bullet bullet = new Bullet(angleToTarget, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+        final double bulletHeading = lxxBullet.getHeadingRadians();
+        final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
+        final Bullet bullet = new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
         return new LXXBullet(bullet, wave, lxxBullet.getAimPredictionData());
     }
@@ -159,6 +159,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
         enemyFireAnglePredictor.updateWaveState(w, e.getHitBullet().getHeadingRadians());
         interceptedBullets.put(w, e.getBullet());
+        for (BulletManagerListener listener : listeners) {
+            listener.bulletIntercepted(new LXXBullet(e.getBullet(), w, null));
+        }
     }
 
     public Wave getWave(Bullet b) {

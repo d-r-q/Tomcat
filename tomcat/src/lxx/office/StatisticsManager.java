@@ -98,4 +98,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         }
     }
 
+    public void bulletIntercepted(LXXBullet bullet) {
+    }
+
 }
