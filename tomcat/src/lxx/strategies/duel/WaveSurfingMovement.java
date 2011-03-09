@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static java.lang.Math.min;
 
 public class WaveSurfingMovement implements Movement {
 
     private static final DecreasingActivator distanceActivator = new DecreasingActivator(200, 30, 0);
     private static final int DEFAULT_DISTANCE_AGAINST_ADVANCED = 500;
-    private static final int DEFAULT_DISTANCE_AGAINST_SIMPLE = 300;
+    private static final int DEFAULT_DISTANCE_AGAINST_SIMPLE = 400;
 
     private final Tomcat robot;
     private final TargetManager targetManager;
@@ -39,7 +39,7 @@ public class WaveSurfingMovement implements Movement {
     private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
     private double distanceToTravel;
     private long timeToTravel;
-    private double randomWallStickDelta = 0;
+    private int enemyPreferredDistance;
 
     public WaveSurfingMovement(Tomcat robot, TargetManager targetManager,
                                EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
@@ -50,9 +50,6 @@ public class WaveSurfingMovement implements Movement {
     }
 
     public MovementDecision getMovementDecision() {
-        if (robot.getTime() % 31 == 0) {
-            randomWallStickDelta = 100 * random();
-        }
         final List<LXXBullet> lxxBullets = getBullets();
         final Target.TargetState opponent = targetManager.getDuelOpponent() == null ? null : targetManager.getDuelOpponent().getState();
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
@@ -62,13 +59,27 @@ public class WaveSurfingMovement implements Movement {
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
-
         minDanger = Integer.MAX_VALUE;
-
+        setEnemyPreferredDistance();
         checkPointsInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
-        checkPointsInDirection(lxxBullets, OrbitDirection.STOP);
-        // todo(zhidkov): reuse stop points
         checkPointsInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
+    }
+
+    private void setEnemyPreferredDistance() {
+        final Target opponent = targetManager.getDuelOpponent();
+        if (opponent == null) {
+            return;
+        }
+
+        if (tomcatEyes.getEnemyGunType(opponent) == GunType.ADVANCED) {
+            enemyPreferredDistance = tomcatEyes.getEnemyPreferredDistance(opponent);
+            if (enemyPreferredDistance == -1) {
+                enemyPreferredDistance = DEFAULT_DISTANCE_AGAINST_ADVANCED;
+            }
+            enemyPreferredDistance = (int) min(enemyPreferredDistance - 75, opponent.getPosition().distanceToWall(robot.battleField, opponent.angleTo(robot)) - 75);
+        } else {
+            enemyPreferredDistance = (int) min(DEFAULT_DISTANCE_AGAINST_SIMPLE, opponent.getPosition().distanceToWall(robot.battleField, opponent.angleTo(robot)) - 75);
+        }
     }
 
     private void checkPointsInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
@@ -87,11 +98,12 @@ public class WaveSurfingMovement implements Movement {
             }
             prevPoint = pnt;
         }
-        timeToTravel = time;
+        if (minDangerOrbitDirection == orbitDirection) {
+            timeToTravel = time;
+        }
     }
 
     private double getPointDanger(List<LXXBullet> lxxBullets, LXXPoint pnt) {
-        final Target duelOpponent = targetManager.getDuelOpponent();
         double totalDanger = 0;
         double weight = 1D;
         for (LXXBullet lxxBullet : lxxBullets) {
@@ -105,17 +117,19 @@ public class WaveSurfingMovement implements Movement {
                 bulletDanger = 0;
             }
 
-            totalDanger += bulletDanger * weight;
-            weight /= 25;
+            totalDanger += bulletDanger * bulletDanger * weight;
+            weight /= 10;
         }
-        double distanceToEnemyDanger;
-        if (duelOpponent != null) {
-            distanceToEnemyDanger = 300 / pnt.aDistance(duelOpponent);
-        } else {
-            distanceToEnemyDanger = 0;
+        final Target opponent = targetManager.getDuelOpponent();
+        if (opponent != null && tomcatEyes.getEnemyGunType(opponent) == GunType.ADVANCED) {
+            final double distanceToCenterDanger = pnt.aDistance(robot.battleField.center) / 600;
+            totalDanger += distanceToCenterDanger * distanceToCenterDanger;
+        } else if (opponent != null) {
+            final double distanceEnemyDanger = DEFAULT_DISTANCE_AGAINST_SIMPLE / pnt.aDistance(opponent);
+            totalDanger += distanceEnemyDanger * distanceEnemyDanger / 10;
+            final double distanceToCenterDanger = pnt.aDistance(robot.battleField.center) / 1000;
+            totalDanger += distanceToCenterDanger * distanceToCenterDanger / 10;
         }
-        double distanceToCenterDanger = pnt.aDistance(robot.battleField.center) / 600;
-        totalDanger += distanceToEnemyDanger + distanceToCenterDanger;
         return totalDanger;
     }
 
@@ -131,11 +145,7 @@ public class WaveSurfingMovement implements Movement {
 
         final Target duelOpponent = targetManager.getDuelOpponent();
         if (bullets.size() < 2 && duelOpponent != null) {
-            if (duelOpponent.getGunHeat() > 0 && duelOpponent.getGunHeat() <= 0.11) {
-                bullets.add(enemyBulletManager.getImaginaryBullet(duelOpponent));
-            } else {
-                bullets.add(enemyBulletManager.createSafeBullet(duelOpponent));
-            }
+            bullets.add(enemyBulletManager.createSafeBullet(duelOpponent));
         }
 
         return bullets;
@@ -178,14 +188,9 @@ public class WaveSurfingMovement implements Movement {
     }
 
     private double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
+        final double distanceBetween = robot.aDistance(surfPoint);
         final Target opponent = targetManager.getDuelOpponent();
         if (opponent != null && tomcatEyes.getEnemyGunType(opponent) == GunType.ADVANCED) {
-            int enemyPreferredDistance = tomcatEyes.getEnemyPreferredDistance(opponent);
-            if (enemyPreferredDistance == -1) {
-                enemyPreferredDistance = DEFAULT_DISTANCE_AGAINST_ADVANCED;
-            }
-            enemyPreferredDistance = (int) min(enemyPreferredDistance - 75, opponent.getPosition().distanceToWall(robot.getBattleField(), opponent.angleTo(robot)) - 75);
-            double distanceBetween = robot.aDistance(surfPoint);
             if (distanceBetween > enemyPreferredDistance + 10) {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_110 * orbitDirection.sign);
             } else if (distanceBetween < enemyPreferredDistance - 10) {
@@ -194,11 +199,10 @@ public class WaveSurfingMovement implements Movement {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign);
             }
         } else {
-            double distanceBetween = robot.aDistance(surfPoint);
             if (distanceBetween > DEFAULT_DISTANCE_AGAINST_SIMPLE + 10) {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_100 * orbitDirection.sign);
             } else if (distanceBetween < DEFAULT_DISTANCE_AGAINST_SIMPLE - 10) {
-                return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + (LXXConstants.RADIANS_60 -
+                return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + (LXXConstants.RADIANS_75 -
                         LXXConstants.RADIANS_45 * distanceActivator.activate(surfPoint.aDistance(robot))) * orbitDirection.sign);
             } else {
                 return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign);
@@ -209,18 +213,8 @@ public class WaveSurfingMovement implements Movement {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, double distanceToTravel, long timeToTravel) {
         final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
-
-        if (orbitDirection == OrbitDirection.STOP) {
-            double turnRateRadians = Utils.normalRelativeAngle(targetHeading - robot.getHeadingRadians());
-            if (abs(turnRateRadians) > LXXConstants.RADIANS_90) {
-                turnRateRadians = Utils.normalRelativeAngle(targetHeading - Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180));
-            }
-            return new MovementDecision(-2,
-                    turnRateRadians,
-                    MovementDecision.MovementDirection.FORWARD);
-        }
-        final double smoothedHeading = robot.getBattleField().randomSmoothWalls(robot, targetHeading,
-                orbitDirection == OrbitDirection.CLOCKWISE, randomWallStickDelta);
+        final double smoothedHeading = robot.getBattleField().smoothWalls(robot, targetHeading,
+                orbitDirection == OrbitDirection.CLOCKWISE);
         final MovementDecision.MovementDirection md = LXXUtils.anglesDiff(robot.getHeadingRadians(), smoothedHeading) < LXXConstants.RADIANS_90
                 ? MovementDecision.MovementDirection.FORWARD
                 : MovementDecision.MovementDirection.BACKWARD;
@@ -230,7 +224,6 @@ public class WaveSurfingMovement implements Movement {
     private enum OrbitDirection {
 
         CLOCKWISE(1),
-        STOP(1),
         COUNTER_CLOCKWISE(-1);
 
         public final int sign;

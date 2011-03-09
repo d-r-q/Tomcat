@@ -169,9 +169,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     public GunType getEnemyGunType(LXXRobot enemy) {
         TargetingProfile tp = getTargetingProfile(enemy);
-        if (tp.zeroGFHitCount > tp.totalHits * 0.9 || tp.totalHits == 0) {
+        if (tp.zeroGFHitCount > tp.totalHits * 0.8 || tp.totalHits == 0) {
             return GunType.HEAD_ON;
-        } else if (tp.positiveGFHitCount > tp.totalHits * 0.9) {
+        } else if (tp.positiveGFHitCount > tp.negativeGFHitCount * 3) {
             return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;
