@@ -25,7 +25,7 @@ public class SimpleTargetersMovement extends WaveSurfingMovement {
     }
 
     protected double getEnemyPreferredDistance(Target opponent) {
-        return min(DEFAULT_DISTANCE_AGAINST_SIMPLE, opponent.getPosition().distanceToWall(robot.battleField, opponent.angleTo(robot)) - 75);
+        return DEFAULT_DISTANCE_AGAINST_SIMPLE;
     }
 
     protected double getPointDanger(APoint pnt, Target opponent) {
@@ -33,8 +33,6 @@ public class SimpleTargetersMovement extends WaveSurfingMovement {
 
         final double distanceEnemyDanger = DEFAULT_DISTANCE_AGAINST_SIMPLE / pnt.aDistance(opponent);
         danger += distanceEnemyDanger / 20;
-        final double distanceToCenterDanger = pnt.aDistance(robot.battleField.center) / 2000;
-        danger += distanceToCenterDanger / 20;
 
         return danger;
     }

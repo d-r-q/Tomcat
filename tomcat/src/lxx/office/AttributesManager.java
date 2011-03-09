@@ -8,6 +8,7 @@ import lxx.Tomcat;
 import lxx.model.BattleSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.model.attributes.attribute_extractors.DistanceBetweenVE;
+import lxx.model.attributes.attribute_extractors.DistanceBetween_100VE;
 import lxx.model.attributes.attribute_extractors.RoundTimeVE;
 import lxx.model.attributes.attribute_extractors.my.*;
 import lxx.model.attributes.attribute_extractors.target.*;
@@ -17,6 +18,7 @@ public class AttributesManager {
 
 
     public static final Attribute distBetween = new Attribute("Distance between", 0, 1700, new DistanceBetweenVE());
+    public static final Attribute distBetween_100 = new Attribute("Distance between / 100", 0, 17, new DistanceBetween_100VE());
     public static final Attribute roundTime = new Attribute("Round time", 0, 5000, new RoundTimeVE());
 
     public static final Attribute enemyX = new Attribute("Enemy x", 0, 1200, new EnemyXVE());
@@ -39,7 +41,7 @@ public class AttributesManager {
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
     public static final Attribute myVelocity = new Attribute("My velocity", -8, 8, new MyVelocityVE());
     public static final Attribute myVelocityModule = new Attribute("My velocity module", 0, 8, new MyVelocityModuleVE());
-    public static final Attribute myLateralVelocity = new Attribute("My lateral velocity * 3", -24, 24, new MyLateralVelocityVE());
+    public static final Attribute myLateralVelocity_2 = new Attribute("My lateral velocity module / 2", 0, 4, new MyLateralVelocityModule_2VE());
     public static final Attribute myAbsoluteHeadingDegrees = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
     public static final Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
@@ -49,6 +51,7 @@ public class AttributesManager {
 
     public static final Attribute[] attributes = {
             distBetween,
+            distBetween_100,
             roundTime,
 
             enemyX,
@@ -71,7 +74,7 @@ public class AttributesManager {
             myY,
             myVelocity,
             myVelocityModule,
-            myLateralVelocity,
+            myLateralVelocity_2,
             myAbsoluteHeadingDegrees,
             myRelativeHeading,
             myAcceleration,

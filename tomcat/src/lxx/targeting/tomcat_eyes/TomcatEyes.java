@@ -171,7 +171,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingProfile tp = getTargetingProfile(enemy);
         if (tp.zeroGFHitCount > tp.totalHits * 0.8 || tp.totalHits == 0) {
             return GunType.HEAD_ON;
-        } else if ((tp.positiveGFHitCount + tp.zeroGFHitCount) > tp.totalHits * 0.75 ||
+        } else if ((tp.positiveGFHitCount + tp.zeroGFHitCount) > tp.totalHits * 0.92 ||
                 tp.totalHits < (robot.getRoundNum() + 1) * 2) {
             return GunType.LINEAR;
         } else {

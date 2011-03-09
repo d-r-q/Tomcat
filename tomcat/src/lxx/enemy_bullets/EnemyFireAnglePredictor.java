@@ -108,10 +108,6 @@ public class EnemyFireAnglePredictor {
         final List<Double> bearingOffsets = new LinkedList<Double>();
         if (matches.size() > 0) {
             for (EntryMatch<Double> match : matches) {
-                if (bearingOffsets.size() > 0) {
-                    break;
-                }
-
                 bearingOffsets.add(match.result * lateralDirection);
             }
         } else {
@@ -133,8 +129,7 @@ public class EnemyFireAnglePredictor {
 
     private static FireLog<Double> createLog() {
         final Attribute[] splitAttributes = {
-                AttributesManager.myLateralVelocity, AttributesManager.distBetween,
-                AttributesManager.myDistToForwardWall,
+                AttributesManager.myLateralVelocity_2,
         };
         return new FireLog<Double>(splitAttributes, 2, 0.02);
     }
