@@ -65,6 +65,17 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
         return danger;
     }
 
+    public double getDanger(double baseBearingOffset, double botWidthRadians) {
+        final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
+        final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
+        double danger = 0;
+        for (int i = fromIdx; i <= toIdx; i++) {
+            danger += dangers.get(i).match;
+        }
+
+        return danger;
+    }
+
     public double getDanger(double bearingOffset) {
         final int idx = LXXUtils.limit(0, (int) ((bearingOffset + maxBearingOffset) / step), dangers.size() - 1);
         final SegmentDanger<Double> segmentDanger = dangers.get(idx);

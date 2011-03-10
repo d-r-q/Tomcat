@@ -252,7 +252,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
         final HashMap<Double, Double> matches = new HashMap<Double, Double>();
         for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
-            matches.put(bearingOffset, 0D);
+            matches.put(bearingOffset, 0.01D);
         }
 
         return new LXXBullet(bullet, wave, new EnemyAimingPredictionData(matches));
