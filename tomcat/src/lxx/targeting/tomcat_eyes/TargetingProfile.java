@@ -5,7 +5,7 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.utils.LXXConstants;
-import lxx.utils.Mediana;
+import lxx.utils.Median;
 
 import static java.lang.Math.toDegrees;
 
@@ -15,7 +15,7 @@ public class TargetingProfile {
     public int positiveNormalBearingOffsetsCount = 0;
     public int negativeNormalBearingOffsetsCount = 0;
     public int hitCount = 0;
-    public Mediana bearingOffsetsMediana = new Mediana();
+    public Median bearingOffsetsMedian = new Median();
 
     public void addBearingOffset(double bearingOffsetRadians, boolean isHit) {
         totalNormalBearingOffsets++;
@@ -29,7 +29,7 @@ public class TargetingProfile {
             hitCount++;
         }
 
-        bearingOffsetsMediana.addValue((int) toDegrees(bearingOffsetRadians));
+        bearingOffsetsMedian.addValue((int) toDegrees(bearingOffsetRadians));
     }
 
 }

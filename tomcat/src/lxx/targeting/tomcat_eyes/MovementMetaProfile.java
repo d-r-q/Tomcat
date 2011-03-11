@@ -9,7 +9,7 @@ import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.AvgValue;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
-import lxx.utils.Mediana;
+import lxx.utils.Median;
 import robocode.util.Utils;
 
 import static java.lang.Math.*;
@@ -21,7 +21,7 @@ import static java.lang.Math.*;
 public class MovementMetaProfile {
 
     private static final int DISTANCE_SEGMENTS = 25;
-    private final Mediana[] distancesMedianaAngles = new Mediana[1700 / DISTANCE_SEGMENTS];
+    private final Median[] distancesMedianAngles = new Median[1700 / DISTANCE_SEGMENTS];
 
     private final AvgValue avgVelocity = new AvgValue(10000);
     private final AvgValue avgTurnRate = new AvgValue(10000);
@@ -58,11 +58,11 @@ public class MovementMetaProfile {
         avgDistanceToCenter.addValue(owner.getPosition().aDistance(owner.getState().getBattleField().center));
         if (owner.getState().getVelocityModule() > 0) {
             int idx = (int) round(distanceBetween / DISTANCE_SEGMENTS);
-            if (distancesMedianaAngles[idx] == null) {
-                distancesMedianaAngles[idx] = new Mediana();
+            if (distancesMedianAngles[idx] == null) {
+                distancesMedianAngles[idx] = new Median();
             }
             final double angle = toDegrees(LXXUtils.anglesDiff(viewPoint.angleTo(owner), owner.getState().getAbsoluteHeadingRadians()));
-            distancesMedianaAngles[idx].addValue((int) angle);
+            distancesMedianAngles[idx].addValue((int) angle);
             if (owner.getTime() % 10 == 0) {
                 checkRammer();
             }
@@ -71,11 +71,11 @@ public class MovementMetaProfile {
 
     private void checkRammer() {
         rammer = true;
-        for (Mediana distancesMedianaAngle : distancesMedianaAngles) {
-            if (distancesMedianaAngle == null) {
+        for (Median distancesMedianAngle : distancesMedianAngles) {
+            if (distancesMedianAngle == null) {
                 continue;
             }
-            rammer &= distancesMedianaAngle.getMediana() > 88;
+            rammer &= distancesMedianAngle.getMedian() > 88;
         }
     }
 
@@ -98,13 +98,13 @@ public class MovementMetaProfile {
     }
 
     public int getPreferredDistance() {
-        for (int i = 0; i < distancesMedianaAngles.length - 1; i++) {
-            if (distancesMedianaAngles[i] == null ||
-                    distancesMedianaAngles[i + 1] == null) {
+        for (int i = 0; i < distancesMedianAngles.length - 1; i++) {
+            if (distancesMedianAngles[i] == null ||
+                    distancesMedianAngles[i + 1] == null) {
                 continue;
             }
-            double m1 = distancesMedianaAngles[i].getMediana();
-            double m2 = distancesMedianaAngles[i + 1].getMediana();
+            double m1 = distancesMedianAngles[i].getMedian();
+            double m2 = distancesMedianAngles[i + 1].getMedian();
             if (m1 > 75 && m1 < 90 &&
                     m2 > 90 && m2 < 100) {
                 enemyPreferredDistance = (i + 1) * DISTANCE_SEGMENTS;

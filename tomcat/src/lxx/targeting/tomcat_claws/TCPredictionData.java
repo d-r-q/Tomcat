@@ -14,10 +14,10 @@ import static java.lang.Math.*;
 
 public class TCPredictionData implements AimingPredictionData {
 
-    private final List<TomcatClaws.TurnPrediction> predictedPoses;
+    private final List<APoint> predictedPoses;
     private final APoint predictedFirePosition;
 
-    public TCPredictionData(List<TomcatClaws.TurnPrediction> predictedPoses, APoint predictedFirePosition) {
+    public TCPredictionData(List<APoint> predictedPoses, APoint predictedFirePosition) {
         this.predictedPoses = predictedPoses;
         this.predictedFirePosition = predictedFirePosition;
     }
@@ -83,8 +83,8 @@ public class TCPredictionData implements AimingPredictionData {
 
     private void drawPredictedPath(LXXGraphics g) {
         g.setColor(new Color(255, 0, 0, 175));
-        for (final TomcatClaws.TurnPrediction pnt : predictedPoses) {
-            g.fillCircle(pnt.enemyPos, 3);
+        for (APoint pnt : predictedPoses) {
+            g.fillCircle(pnt, 3);
         }
     }
 

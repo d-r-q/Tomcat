@@ -32,7 +32,7 @@ public class EnemyMovementDecision {
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
 
         EnemyMovementDecision that = (EnemyMovementDecision) o;
 

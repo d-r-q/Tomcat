@@ -40,13 +40,8 @@ public class RobocodeDuelSimulator {
         this.battleTime = battleTime;
 
         this.attributesToSimulate.addAll(Arrays.asList(attributesToSimulate));
-        this.attributesToSimulate.add(AttributesManager.enemyVelocity);
-        this.attributesToSimulate.add(AttributesManager.enemyVelocityModule);
-        this.attributesToSimulate.add(AttributesManager.enemyAbsoluteHeading);
         this.attributesToSimulate.add(AttributesManager.enemyAcceleration);
         this.attributesToSimulate.add(AttributesManager.enemyTurnRate);
-        this.attributesToSimulate.add(AttributesManager.enemyX);
-        this.attributesToSimulate.add(AttributesManager.enemyY);
     }
 
     public void setEnemyMovementDecision(MovementDecision movementDecision) {
@@ -96,7 +91,7 @@ public class RobocodeDuelSimulator {
             avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy);
         }
 
-        return new BattleSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());
+        return new BattleSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, null);
     }
 
     public RobotProxy getEnemyProxy() {

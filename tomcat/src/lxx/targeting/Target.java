@@ -229,7 +229,7 @@ public class Target implements LXXRobot, Serializable {
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
 
         Target target = (Target) o;
 

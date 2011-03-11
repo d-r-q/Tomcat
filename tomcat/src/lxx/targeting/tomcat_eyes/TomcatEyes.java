@@ -130,7 +130,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
         movementMetaProfile.update(target, robot, bulletManager);
         // todo(zhidkov): remove it
-        robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
+        //robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
     }
