@@ -12,19 +12,18 @@ import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import lxx.office.BattleSnapshotManager;
 import lxx.targeting.Target;
+import lxx.targeting.bullets.BulletManagerListener;
+import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
-import lxx.wave.Wave;
 import robocode.Rules;
-import robocode.util.Utils;
 
 import java.util.*;
 
 import static java.lang.Math.signum;
 
-public class EnemyFireAnglePredictor {
+public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     private static final double A = 0.02;
     private static final int B = 20;
@@ -35,42 +34,12 @@ public class EnemyFireAnglePredictor {
 
     private static final Map<String, FireLog<Double>> logs = new HashMap<String, FireLog<Double>>();
 
-    private final Map<Wave, FireLogEntry<Double>> entriesByWaves = new HashMap<Wave, FireLogEntry<Double>>();
+    private final Map<LXXBullet, FireLogEntry<Double>> entriesByBullets = new HashMap<LXXBullet, FireLogEntry<Double>>();
 
     private final BattleSnapshotManager battleSnapshotManager;
 
     public EnemyFireAnglePredictor(BattleSnapshotManager battleSnapshotManager) {
         this.battleSnapshotManager = battleSnapshotManager;
-    }
-
-    public void enemyFire(Wave wave) {
-        FireLogEntry<Double> e = new FireLogEntry<Double>(new LXXPoint(wave.getSourceStateAtFireTime()), wave.getTargetStateAtFireTime(),
-                battleSnapshotManager.getLastSnapshots((Target) wave.getSourceStateAtFireTime().getRobot(), FIRE_DETECTION_LATENCY).get(0));
-        entriesByWaves.put(wave, e);
-    }
-
-    // todo(zhidkov): add flat movement
-    @SuppressWarnings({"UnusedDeclaration"})
-    public void updateWaveState(Wave w) {
-        updateWaveState(w, w.getSourcePosAtFireTime().angleTo(w.getTargetStateAtFireTime().getRobot()));
-    }
-
-    // todo(zhidkov): rename
-    public void updateWaveState(Wave w, double bulletHeading) {
-        final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
-                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
-        final double lateralDirection = signum(lateralVelocity);
-
-        final Double bearingOffset = Utils.normalRelativeAngle(bulletHeading - w.getSourcePosAtFireTime().angleTo(w.getTargetPosAtFireTime())) * lateralDirection;
-        addEntry(w, bearingOffset);
-    }
-
-    private void addEntry(Wave w, Double guessFactor) {
-        final FireLog<Double> log = getLog(w.getSourceStateAtFireTime().getRobot().getName());
-
-        final FireLogEntry<Double> entry = entriesByWaves.get(w);
-        entry.result = guessFactor;
-        log.addEntry(entry);
     }
 
     public AimingPredictionData getPredictionData(Target t) {
@@ -113,6 +82,7 @@ public class EnemyFireAnglePredictor {
         } else {
             final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
             bearingOffsets.add(maxEscapeAngle * lateralDirection);
+            bearingOffsets.add(0D);
         }
 
         return bearingOffsets;
@@ -134,4 +104,35 @@ public class EnemyFireAnglePredictor {
         return new FireLog<Double>(splitAttributes, 2, 0.02);
     }
 
+    public void bulletFired(LXXBullet bullet) {
+        final FireLogEntry<Double> entry = new FireLogEntry<Double>(battleSnapshotManager.getLastSnapshots(bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
+        entriesByBullets.put(bullet, entry);
+    }
+
+    public void bulletHit(LXXBullet bullet) {
+        setBulletBearingOffset(bullet);
+        entriesByBullets.remove(bullet);
+    }
+
+    public void bulletIntercepted(LXXBullet bullet) {
+        setBulletBearingOffset(bullet);
+        entriesByBullets.remove(bullet);
+    }
+
+    public void setBulletBearingOffset(LXXBullet bullet) {
+        final double bearingOffset = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
+        final FireLog<Double> log = getLog(bullet.getOwner().getName());
+
+        final FireLogEntry<Double> entry = entriesByBullets.get(bullet);
+        entry.result = bearingOffset;
+        log.addEntry(entry);
+    }
+
+
+    public void bulletMiss(LXXBullet bullet) {
+        entriesByBullets.remove(bullet);
+    }
+
+    public void bulletPassing(LXXBullet bullet) {
+    }
 }

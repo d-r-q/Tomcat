@@ -8,6 +8,7 @@ import lxx.model.BattleSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
+import lxx.utils.LXXRobot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class BattleSnapshotManager implements TargetManagerListener {
         this.factory = office.getAttributesManager();
     }
 
-    public List<BattleSnapshot> getLastSnapshots(Target t, int... indexes) {
+    public List<BattleSnapshot> getLastSnapshots(LXXRobot t, int... indexes) {
         List<BattleSnapshot> res = new ArrayList<BattleSnapshot>();
 
         List<BattleSnapshot> log = this.log.get(t.getName());

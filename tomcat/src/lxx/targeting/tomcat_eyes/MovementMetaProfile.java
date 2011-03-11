@@ -35,6 +35,7 @@ public class MovementMetaProfile {
     private final AvgValue avgDistanceToCenter = new AvgValue(10000);
 
     private int enemyPreferredDistance = -1;
+    private boolean rammer = false;
 
     public void update(LXXRobot owner, LXXRobot viewPoint, BulletManager bulletManager) {
         avgVelocity.addValue(owner.getState().getVelocity());
@@ -55,12 +56,27 @@ public class MovementMetaProfile {
         }
 
         avgDistanceToCenter.addValue(owner.getPosition().aDistance(owner.getState().getBattleField().center));
-        int idx = (int) round(distanceBetween / DISTANCE_SEGMENTS);
-        if (distancesMedianaAngles[idx] == null) {
-            distancesMedianaAngles[idx] = new Mediana();
+        if (owner.getState().getVelocityModule() > 0) {
+            int idx = (int) round(distanceBetween / DISTANCE_SEGMENTS);
+            if (distancesMedianaAngles[idx] == null) {
+                distancesMedianaAngles[idx] = new Mediana();
+            }
+            final double angle = toDegrees(LXXUtils.anglesDiff(viewPoint.angleTo(owner), owner.getState().getAbsoluteHeadingRadians()));
+            distancesMedianaAngles[idx].addValue((int) angle);
+            if (owner.getTime() % 10 == 0) {
+                checkRammer();
+            }
         }
-        final double angle = toDegrees(LXXUtils.anglesDiff(viewPoint.angleTo(owner), owner.getState().getAbsoluteHeadingRadians()));
-        distancesMedianaAngles[idx].addValue(angle);
+    }
+
+    private void checkRammer() {
+        rammer = true;
+        for (Mediana distancesMedianaAngle : distancesMedianaAngles) {
+            if (distancesMedianaAngle == null) {
+                continue;
+            }
+            rammer &= distancesMedianaAngle.getMediana() > 88;
+        }
     }
 
     public String toShortString() {
@@ -82,7 +98,7 @@ public class MovementMetaProfile {
     }
 
     public int getPreferredDistance() {
-        for (int i = 0; i < distancesMedianaAngles.length; i++) {
+        for (int i = 0; i < distancesMedianaAngles.length - 1; i++) {
             if (distancesMedianaAngles[i] == null ||
                     distancesMedianaAngles[i + 1] == null) {
                 continue;
@@ -99,4 +115,7 @@ public class MovementMetaProfile {
         return enemyPreferredDistance;
     }
 
+    public boolean isRammer() {
+        return rammer;
+    }
 }

@@ -10,10 +10,14 @@ package lxx.targeting.bullets;
  */
 public interface BulletManagerListener {
 
+    void bulletFired(LXXBullet bullet);
+
     void bulletHit(LXXBullet bullet);
 
     void bulletMiss(LXXBullet bullet);
 
     void bulletIntercepted(LXXBullet bullet);
+
+    void bulletPassing(LXXBullet bullet);
 
 }

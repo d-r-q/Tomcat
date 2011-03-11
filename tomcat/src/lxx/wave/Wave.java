@@ -56,7 +56,7 @@ public class Wave {
         return sourceState;
     }
 
-    public LXXRobotState getTargetStateAtFireTime() {
+    public LXXRobotState getTargetStateAtLaunchTime() {
         return targetState;
     }
 
@@ -68,7 +68,6 @@ public class Wave {
         return speed;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -85,7 +84,6 @@ public class Wave {
         return true;
     }
 
-    @Override
     public int hashCode() {
         int result;
         long temp;

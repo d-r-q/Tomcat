@@ -23,6 +23,7 @@ import static java.lang.Math.*;
 public class Target implements LXXRobot, Serializable {
 
     private static final double INITIAL_GUN_HEAT = 3.0;
+    private static final double ROBOT_HIT_DAMAGE = 0.6;
 
     private final List<Event> eventsList = new ArrayList<Event>(15);
 
@@ -66,6 +67,7 @@ public class Target implements LXXRobot, Serializable {
     }
 
     private TargetState mergeEvents() {
+        info.enemyHitRobotEnergyLoss = 0;
         final TargetState newState = createState();
 
         for (Event event : eventsList) {
@@ -106,7 +108,7 @@ public class Target implements LXXRobot, Serializable {
 
     private void processHitByBulletEvent(TargetState newState, HitByBulletEvent e) {
         final double bulletPower = e.getBullet().getPower();
-        newState.energy = prevState.energy + Rules.getBulletHitBonus(bulletPower);
+        newState.energy = prevState.energy + LXXUtils.getReturnedEnergy(bulletPower);
         info.enemyLastHitTime = e.getTime();
         info.enemyLastCollectedEnergy = LXXUtils.getReturnedEnergy(bulletPower);
         info.enemyLastFirePower = bulletPower;
@@ -124,6 +126,7 @@ public class Target implements LXXRobot, Serializable {
 
         newState.position = (LXXPoint) owner.project(absoluteBearing, LXXConstants.ROBOT_SIDE_SIZE);
         newState.energy = e.getEnergy();
+        info.enemyHitRobotEnergyLoss += ROBOT_HIT_DAMAGE;
     }
 
     private void processScannedRobotEvent(TargetState newState, ScannedRobotEvent e) {
@@ -259,6 +262,9 @@ public class Target implements LXXRobot, Serializable {
 
     public boolean isFireLastTick() {
         ensureValid();
+        if (prevState != null && prevState.gunHeat > 0) {
+            return false;
+        }
         double energyDiff = getExpectedEnergy() - state.energy;
         return energyDiff > 0.09 && energyDiff < 3.1;
     }
@@ -281,6 +287,8 @@ public class Target implements LXXRobot, Serializable {
         if (isHitWall()) {
             expectedEnergy -= Rules.getWallHitDamage(prevState.velocity);
         }
+
+        expectedEnergy -= info.enemyHitRobotEnergyLoss;
 
         return expectedEnergy;
     }
@@ -314,7 +322,7 @@ public class Target implements LXXRobot, Serializable {
         return info.lastNotTurnTime;
     }
 
-    public TargetState getPrevState() {
+    public LXXRobotState getPrevState() {
         return prevState;
     }
 
@@ -326,17 +334,7 @@ public class Target implements LXXRobot, Serializable {
         return info.enemyLastFirePower;
     }
 
-    // todo(zhidkov): implement me
-    @SuppressWarnings({"UnusedDeclaration"})
-    public GunType getGunType() {
-        return GunType.HEAD_ON;
-    }
-
-    public double getGunHeat() {
-        return state.gunHeat;
-    }
-
-    public class TargetState implements APoint, LXXRobotState {
+    public class TargetState implements LXXRobotState {
 
         private final Long time;
 
@@ -359,7 +357,7 @@ public class Target implements LXXRobot, Serializable {
             acceleration = calculateAcceleration(prevState);
             if (prevState == null) {
                 gunHeat = INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
-            } else if (Utils.isNear(state.gunHeat, 0) && isFireLastTick()) {
+            } else if (isFireLastTick()) {
                 gunHeat = Rules.getGunHeat(getExpectedEnergy() - state.energy);
             } else {
                 gunHeat = prevState.gunHeat;
@@ -472,6 +470,10 @@ public class Target implements LXXRobot, Serializable {
         public double getTurnRateRadians() {
             return turnRateRadians;
         }
+
+        public double getEnergy() {
+            return energy;
+        }
     }
 
     public class TargetInfo {
@@ -489,6 +491,7 @@ public class Target implements LXXRobot, Serializable {
         private long enemyLastHitTime;
         private double enemyLastCollectedEnergy;
         private double enemyLastFirePower;
+        private double enemyHitRobotEnergyLoss;
 
         private void update(TargetState prevState, TargetState curState) {
             if (lastStopPos == null || curState.velocity == 0) {

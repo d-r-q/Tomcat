@@ -73,7 +73,7 @@ public class WaveManager implements RobotListener {
                 List<Wave> toRemove = new LinkedList<Wave>();
                 for (Wave w : ws) {
                     try {
-                        if (!w.getTargetStateAtFireTime().getRobot().isAlive() || !w.getSourceStateAtFireTime().getRobot().isAlive()) {
+                        if (!w.getTargetStateAtLaunchTime().getRobot().isAlive() || !w.getSourceStateAtFireTime().getRobot().isAlive()) {
                             toRemove.add(w);
                             continue;
                         }
@@ -86,7 +86,7 @@ public class WaveManager implements RobotListener {
                         for (WaveCallback callback : callbacks) {
                             callback.wavePassing(w);
                         }
-                    } else if (w.getTraveledDistance() > w.getSourceStateAtFireTime().aDistance(w.getTargetStateAtFireTime().getRobot())) {
+                    } else if (w.getTraveledDistance() > w.getSourceStateAtFireTime().aDistance(w.getTargetStateAtLaunchTime().getRobot())) {
                         toRemove.add(w);
                         for (WaveCallback callback : callbacks) {
                             try {

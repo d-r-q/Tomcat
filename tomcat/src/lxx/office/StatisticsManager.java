@@ -82,6 +82,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         }
     }
 
+    public void bulletFired(LXXBullet bullet) {
+    }
+
     public void bulletHit(LXXBullet bullet) {
         if (bullet.getOwner().getName().equals(tomcat.getName())) {
             myHitRate.hit();
@@ -99,6 +102,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
+    }
+
+    public void bulletPassing(LXXBullet bullet) {
     }
 
 }

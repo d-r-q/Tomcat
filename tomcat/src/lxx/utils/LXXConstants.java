@@ -4,6 +4,8 @@
 
 package lxx.utils;
 
+import robocode.Rules;
+
 import static java.lang.Math.toRadians;
 
 /**
@@ -61,4 +63,6 @@ public abstract class LXXConstants {
 
     public static final int ROBOT_SIDE_SIZE = 36;
     public static final int ROBOT_SIDE_HALF_SIZE = ROBOT_SIDE_SIZE / 2;
+    public static final double MIN_BULLET_SPEED = Rules.getBulletSpeed(Rules.MAX_BULLET_POWER);
+
 }

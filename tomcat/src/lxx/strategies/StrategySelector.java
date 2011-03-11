@@ -37,7 +37,7 @@ public class StrategySelector {
                 new SimpleTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
                 new AdvancedTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
                 createDuelGun(robot, office, tomcatEyes),
-                new DuelFirePowerSelector(), targetManager, enemyBulletManager, tomcatEyes);
+                new DuelFirePowerSelector(tomcatEyes), targetManager, enemyBulletManager, tomcatEyes);
         strategies.add(waveSurfingDuelStrategy);
 
         strategies.add(new WinStrategy(robot, targetManager, enemyBulletManager));

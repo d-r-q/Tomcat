@@ -160,17 +160,6 @@ public class LXXUtils {
         return Utils.normalRelativeAngle(source.angleTo(dest2) - source.angleTo(dest1));
     }
 
-
-    public static double manhattanDistance(double[] pnt1, double[] pnt2, double[] weights) {
-        double res = 0;
-
-        for (int i = 0; i < pnt1.length; i++) {
-            res += abs(pnt1[i] - pnt2[i]) * weights[i];
-        }
-
-        return res;
-    }
-
     public static APoint[] toPoints(Rectangle2D rect) {
         return new APoint[]{new LXXPoint(rect.getX(), rect.getY()), new LXXPoint(rect.getX(), rect.getY() + rect.getHeight()),
                 new LXXPoint(rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight()), new LXXPoint(rect.getX() + rect.getWidth(), rect.getY())};
@@ -185,34 +174,6 @@ public class LXXUtils {
             maxAngle = max(maxAngle, angle);
         }
         return maxAngle - minAngle;
-    }
-
-    public static long getAccelerationTime(double startVel, double targetVel) {
-        final double velocityDelta = startVel < targetVel ? Rules.ACCELERATION : Rules.DECELERATION;
-        if (startVel > targetVel) {
-            startVel = -startVel;
-            targetVel = -targetVel;
-        }
-        long res = 0;
-        while (startVel < targetVel) {
-            res++;
-            startVel += min(velocityDelta, abs(startVel - targetVel));
-        }
-        return res;
-    }
-
-    public static long getAccelerationDistance(double startVel, double targetVel) {
-        final double velocityDelta = startVel < targetVel ? Rules.ACCELERATION : Rules.DECELERATION;
-        if (startVel > targetVel) {
-            startVel = -startVel;
-            targetVel = -targetVel;
-        }
-        long res = 0;
-        while (startVel < targetVel) {
-            startVel += min(velocityDelta, abs(startVel - targetVel));
-            res += abs(startVel);
-        }
-        return res;
     }
 
     public static double getMaxEscapeAngle(double bulletSpeed) {

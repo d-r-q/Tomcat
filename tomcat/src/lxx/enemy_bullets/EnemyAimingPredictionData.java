@@ -46,25 +46,6 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
         step = (maxBearingOffset * 2 + LXXConstants.RADIANS_1) / matches.size();
     }
 
-    public double getAverangeDanger(double baseBearingOffset, double botWidthRadians) {
-        double totalDanger = 0;
-        for (double delta = -botWidthRadians / 2; delta <= botWidthRadians / 2 + 0.01; delta += botWidthRadians / 10) {
-            totalDanger += getDanger(baseBearingOffset + delta);
-        }
-        return totalDanger / 10;
-    }
-
-    public double getMaxDanger(double baseBearingOffset, double botWidthRadians) {
-        final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
-        final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
-        double danger = 0;
-        for (int i = fromIdx; i <= toIdx; i++) {
-            danger = max(danger, dangers.get(i).match);
-        }
-
-        return danger;
-    }
-
     public double getDanger(double baseBearingOffset, double botWidthRadians) {
         final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
@@ -76,38 +57,15 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
         return danger;
     }
 
-    public double getDanger(double bearingOffset) {
-        final int idx = LXXUtils.limit(0, (int) ((bearingOffset + maxBearingOffset) / step), dangers.size() - 1);
-        final SegmentDanger<Double> segmentDanger = dangers.get(idx);
-        final SegmentDanger<Double> prevSegmentDanger = idx > 0 ? dangers.get(idx - 1) : null;
-        final SegmentDanger<Double> nextSegmentDanger = idx < dangers.size() - 1 ? dangers.get(idx + 1) : null;
-
-        if (bearingOffset < segmentDanger.bearingOffset) {
-            if (prevSegmentDanger == null) {
-                return segmentDanger.match;
-            }
-
-            return (prevSegmentDanger.match * abs(segmentDanger.bearingOffset - bearingOffset) / step +
-                    segmentDanger.match * abs(bearingOffset - prevSegmentDanger.bearingOffset) / step);
-        } else {
-            if (nextSegmentDanger == null) {
-                return segmentDanger.match;
-            }
-
-            return (nextSegmentDanger.match * abs(bearingOffset - segmentDanger.bearingOffset) / step +
-                    segmentDanger.match * abs(nextSegmentDanger.bearingOffset - bearingOffset) / step);
-        }
-    }
-
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
         final APoint firePosition = bullet.getFirePosition();
         final double baseDistance = bullet.getTravelledDistance() - 5;
 
         g.setColor(new Color(255, 255, 255, 240));
-        g.drawLine(firePosition, bullet.angleToTargetPos(), baseDistance, 12);
+        final double baseAlpha = bullet.noBearingOffset();
+        g.drawLine(firePosition, baseAlpha, baseDistance, 12);
 
-        final double baseAlpha = firePosition.angleTo(bullet.getTargetPosAtFireTime());
         final double currentAngle = firePosition.angleTo(bullet.getTarget());
         float currentBearingOffsetDanger = 0;
         for (SegmentDanger<Double> danger : dangers) {
@@ -137,7 +95,7 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
 
         g.setColor(Color.WHITE);
         final double bulletFlightTime = (bullet.getDistanceToTarget() - bullet.getTravelledDistance()) / bullet.getSpeed();
-        final APoint bftLabelPos = firePosition.project(bullet.angleToTargetPos() - LXXConstants.RADIANS_50, baseDistance - 6 - 20);
+        final APoint bftLabelPos = firePosition.project(baseAlpha - LXXConstants.RADIANS_50, baseDistance - 6 - 20);
         g.drawString(bftLabelPos, format.format(bulletFlightTime));
 
         g.setFont(oldFont);

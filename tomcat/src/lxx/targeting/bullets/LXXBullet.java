@@ -4,11 +4,12 @@
 
 package lxx.targeting.bullets;
 
-import lxx.utils.APoint;
-import lxx.utils.AimingPredictionData;
-import lxx.utils.LXXRobot;
+import lxx.utils.*;
 import lxx.wave.Wave;
 import robocode.Bullet;
+import robocode.util.Utils;
+
+import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -16,14 +17,18 @@ import robocode.Bullet;
  */
 public class LXXBullet {
 
-    private final Bullet bullet;
     private final AimingPredictionData aimPredictionData;
     private final Wave wave;
+
+    private Bullet bullet;
+    private LXXBulletState state;
 
     public LXXBullet(Bullet bullet, Wave w, AimingPredictionData aimPredictionData) {
         this.bullet = bullet;
         this.aimPredictionData = aimPredictionData;
         this.wave = w;
+
+        state = LXXBulletState.ON_AIR;
     }
 
     public Bullet getBullet() {
@@ -31,7 +36,7 @@ public class LXXBullet {
     }
 
     public LXXRobot getTarget() {
-        return wave.getTargetStateAtFireTime().getRobot();
+        return wave.getTargetStateAtLaunchTime().getRobot();
     }
 
     public APoint getFirePosition() {
@@ -40,14 +45,6 @@ public class LXXBullet {
 
     public double getTravelledDistance() {
         return wave.getTraveledDistance();
-    }
-
-    public double getDistanceToTarget() {
-        return wave.getSourceStateAtFireTime().aDistance(wave.getTargetStateAtFireTime().getRobot());
-    }
-
-    public APoint getTargetPosAtFireTime() {
-        return wave.getTargetStateAtFireTime();
     }
 
     public AimingPredictionData getAimPredictionData() {
@@ -66,7 +63,43 @@ public class LXXBullet {
         return bullet.getVelocity();
     }
 
-    @Override
+    public LXXBulletState getState() {
+        return state;
+    }
+
+    public LXXRobotState getTargetStateAtFireTime() {
+        return wave.getTargetStateAtLaunchTime();
+    }
+
+    public double getDistanceToTarget() {
+        return wave.getSourceStateAtFireTime().aDistance(wave.getTargetStateAtLaunchTime().getRobot());
+    }
+
+    public double noBearingOffset() {
+        return wave.getSourceStateAtFireTime().angleTo(wave.getTargetPosAtFireTime());
+    }
+
+    public void setBullet(Bullet bullet) {
+        this.bullet = bullet;
+    }
+
+    public void setState(LXXBulletState state) {
+        this.state = state;
+    }
+
+    public double getRealBearingOffsetRadians() {
+        return Utils.normalRelativeAngle(bullet.getHeadingRadians() - noBearingOffset());
+    }
+
+    public double getBearingOffsetRadians(LXXPoint pnt) {
+        return Utils.normalRelativeAngle(getFirePosition().angleTo(pnt) - noBearingOffset());
+    }
+
+    public double getTargetLateralDirection() {
+        final double lateralVelocity = LXXUtils.lateralVelocity(getFirePosition(), getTargetStateAtFireTime());
+        return signum(lateralVelocity);
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -80,19 +113,10 @@ public class LXXBullet {
         return true;
     }
 
-    @Override
     public int hashCode() {
         int result = wave.getSourceStateAtFireTime().hashCode();
         result = 31 * result + (int) (wave.getLaunchTime() ^ (wave.getLaunchTime() >>> 32));
         return result;
-    }
-
-    public double angleToTargetPos() {
-        return wave.getSourceStateAtFireTime().angleTo(wave.getTargetStateAtFireTime());
-    }
-
-    public Wave getWave() {
-        return wave;
     }
 
 }

@@ -15,6 +15,7 @@ import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
+import lxx.targeting.bullets.LXXBulletState;
 import lxx.utils.*;
 import lxx.wave.Wave;
 import lxx.wave.WaveCallback;
@@ -33,9 +34,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private static boolean paintEnabled = false;
 
-    private final Map<String, Set<Wave>> waves = new HashMap<String, Set<Wave>>();
-    private final Map<Wave, Bullet> hittedBullets = new HashMap<Wave, Bullet>();
-    private final Map<Wave, Bullet> interceptedBullets = new HashMap<Wave, Bullet>();
+    private static final int SAFE_BULLET_SPEED = 10;
+
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
     private final EnemyFireAnglePredictor enemyFireAnglePredictor;
@@ -43,159 +43,128 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final WaveManager waveManager;
     private final LXXRobot robot;
 
-    private HitByBulletEvent lastHitEvent;
-    private int bulletsInAir;
+    private int bulletsOnAir;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getBattleSnapshotManager());
+        addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
     }
 
     public void targetUpdated(Target target) {
         if (target.isFireLastTick()) {
-            Set<Wave> ws = waves.get(target.getName());
-            if (ws == null) {
-                ws = new HashSet<Wave>();
-                waves.put(target.getName(), ws);
+            final double bulletPower = target.getExpectedEnergy() - target.getEnergy();
+            final double bulletSpeed = Rules.getBulletSpeed(bulletPower);
+
+            final LXXRobotState targetPrevState = target.getPrevState();
+            final LXXRobotState robotPrevState = robot.getPrevState();
+
+            final double angleToMe = targetPrevState.angleTo(robotPrevState);
+
+            final Bullet fakeBullet = new Bullet(angleToMe, targetPrevState.getX(), targetPrevState.getY(),
+                    bulletPower, target.getName(), robot.getName(), true, -1);
+
+            final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState,
+                    bulletSpeed, this);
+
+            final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave, enemyFireAnglePredictor.getPredictionData(target));
+
+            predictedBullets.put(wave, lxxBullet);
+
+            for (BulletManagerListener listener : listeners) {
+                listener.bulletFired(lxxBullet);
             }
-            final Wave wave = waveManager.launchWave(target.getPrevState(), robot.getPrevState(), Rules.getBulletSpeed(target.getExpectedEnergy() - target.getEnergy()), this);
-            ws.add(wave);
-
-            enemyFireAnglePredictor.enemyFire(wave);
-
-            final double angleToTarget = 0;
-            final APoint bulletPos = wave.getSourceStateAtFireTime().project(angleToTarget, wave.getTraveledDistance());
-            final LXXBullet b = new LXXBullet(
-                    new Bullet(angleToTarget, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()), wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1),
-                    wave, enemyFireAnglePredictor.getPredictionData(target));
-            predictedBullets.put(wave, b);
         }
     }
 
     public void wavePassing(Wave w) {
-        if (!hittedBullets.containsKey(w) && lastHitEvent != null && robot.getTime() == lastHitEvent.getTime() &&
-                w.getSourceStateAtFireTime().getRobot().getName().equals(lastHitEvent.getName())) {
-            hittedBullets.put(w, lastHitEvent.getBullet());
-            for (BulletManagerListener listener : listeners) {
-                listener.bulletHit(new LXXBullet(lastHitEvent.getBullet(), w, null));
-            }
-            enemyFireAnglePredictor.updateWaveState(w, lastHitEvent.getHeadingRadians());
-        } else if (!hittedBullets.containsKey(w)) {
-            // todo(zhidkov): implement flatteners
-            //enemyFireAnglePredictor.updateWaveState(w);
+        final LXXBullet lxxBullet = getLXXBullet(w);
+        for (BulletManagerListener listener : listeners) {
+            listener.bulletPassing(lxxBullet);
         }
     }
 
     public void waveBroken(Wave w) {
-        if (hittedBullets.containsKey(w)) {
-            hittedBullets.remove(w);
-        } else if (!interceptedBullets.containsKey(w)) {
+        final LXXBullet lxxBullet = getLXXBullet(w);
+        if (lxxBullet.getState() == LXXBulletState.ON_AIR) {
+            lxxBullet.setState(LXXBulletState.MISSED);
             for (BulletManagerListener listener : listeners) {
-                listener.bulletMiss(new LXXBullet(null, w, null));
-            }
-        }
-        waves.get(w.getSourceStateAtFireTime().getRobot().getName()).remove(w);
-    }
-
-    public void paint(LXXGraphics g) {
-        if (paintEnabled) {
-            for (LXXBullet bullet : getBullets()) {
-                final AimingPredictionData aimPredictionData = bullet.getAimPredictionData();
-                if (aimPredictionData != null) {
-                    aimPredictionData.paint(g, bullet);
-                }
-            }
-        }
-    }
-
-    public Wave getClosestWave() {
-        Wave res = null;
-        double minTime = Double.MAX_VALUE;
-        for (Set<Wave> ws : waves.values()) {
-            for (Wave w : ws) {
-                double dist = w.getSourceStateAtFireTime().aDistance(robot) - w.getTraveledDistance();
-                if (w.getTraveledDistance() < w.getSourceStateAtFireTime().aDistance(robot) &&
-                        dist / w.getSpeed() < minTime &&
-                        !hittedBullets.containsKey(w) &&
-                        !interceptedBullets.containsKey(w)) {
-                    minTime = dist / w.getSpeed();
-                    res = w;
-                }
+                listener.bulletMiss(lxxBullet);
             }
         }
 
-        return res;
-    }
-
-    private LXXBullet getBullet(Wave wave) {
-        final LXXBullet lxxBullet = predictedBullets.get(wave);
-        if (lxxBullet == null) {
-            return null;
-        }
-        final double bulletHeading = lxxBullet.getHeadingRadians();
-        final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
-        final Bullet bullet = new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
-        return new LXXBullet(bullet, wave, lxxBullet.getAimPredictionData());
-    }
-
-    private Collection<Wave> getWaves() {
-        final List<Wave> res = new LinkedList<Wave>();
-        for (Set<Wave> waves : this.waves.values()) {
-            res.addAll(waves);
-        }
-        return res;
-    }
-
-    public void addListener(BulletManagerListener listener) {
-        listeners.add(listener);
+        predictedBullets.remove(w);
     }
 
     public void onBulletHitBullet(BulletHitBulletEvent e) {
         final Wave w = getWave(e.getHitBullet());
         if (w == null) {
+            System.out.println("[WARN] intercept not detected bullet");
             return;
         }
-        enemyFireAnglePredictor.updateWaveState(w, e.getHitBullet().getHeadingRadians());
-        interceptedBullets.put(w, e.getBullet());
+
+        final LXXBullet lxxBullet = getLXXBullet(w, e.getHitBullet());
+        lxxBullet.setState(LXXBulletState.INTERCEPTED);
+
         for (BulletManagerListener listener : listeners) {
-            listener.bulletIntercepted(new LXXBullet(e.getBullet(), w, null));
+            listener.bulletIntercepted(lxxBullet);
+        }
+    }
+
+    public void onHitByBullet(HitByBulletEvent e) {
+        final Wave w = getWave(e.getBullet());
+        if (w == null) {
+            System.out.println("[WARN] hit by not detected bullet");
+            return;
+        }
+
+        final LXXBullet lxxBullet = getLXXBullet(w, e.getBullet());
+        lxxBullet.setState(LXXBulletState.HITTED);
+        for (BulletManagerListener listener : listeners) {
+            listener.bulletHit(lxxBullet);
         }
     }
 
     public Wave getWave(Bullet b) {
-        final Set<Wave> targetWaves = waves.get(b.getName());
-        if (targetWaves == null) {
-            return null;
-        }
-        for (Wave w : targetWaves) {
+        for (Wave w : predictedBullets.keySet()) {
             if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.0001 &&
-                    abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() * 2) {
+                    abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() + 1) {
                 return w;
             }
         }
         return null;
     }
 
-    public void onHitByBullet(HitByBulletEvent e) {
-        lastHitEvent = e;
+    private LXXBullet getLXXBullet(Wave wave) {
+        final Bullet bullet = getFakeBullet(wave);
+        return getLXXBullet(wave, bullet);
     }
 
-    public List<LXXBullet> getBullets() {
+    private Bullet getFakeBullet(Wave wave) {
+        final double bulletHeading = wave.getSourcePosAtFireTime().angleTo(wave.getTargetPosAtFireTime());
+        final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
+        return new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
+    }
+
+    private LXXBullet getLXXBullet(Wave wave, Bullet bullet) {
+        final LXXBullet lxxBullet = predictedBullets.get(wave);
+        if (lxxBullet == null) {
+            return null;
+        }
+
+        lxxBullet.setBullet(bullet);
+        return lxxBullet;
+    }
+
+    public List<LXXBullet> getBulletsOnAir(int flightTimeLimit) {
         final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
 
-        final Collection<Wave> waves = getWaves();
-        if (waves == null) {
-            return bullets;
-        }
-        for (Wave w : waves) {
-            if (w.getTraveledDistance() < w.getSourceStateAtFireTime().aDistance(robot) &&
-                    !hittedBullets.containsKey(w) && !interceptedBullets.containsKey(w)) {
-                final LXXBullet lxxBullet = getBullet(w);
-                if (lxxBullet != null) {
-                    bullets.add(lxxBullet);
-                }
+        for (LXXBullet lxxBullet : predictedBullets.values()) {
+            double flightTime = (lxxBullet.getFirePosition().aDistance(lxxBullet.getTarget()) - lxxBullet.getTravelledDistance()) / lxxBullet.getSpeed();
+            if (flightTime > flightTimeLimit && lxxBullet.getState() == LXXBulletState.ON_AIR) {
+                bullets.add(lxxBullet);
             }
         }
 
@@ -217,7 +186,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         } else if (event instanceof LXXPaintEvent && paintEnabled) {
             paint(((LXXPaintEvent) event).getGraphics());
         } else if (event instanceof TickEvent) {
-            bulletsInAir = getBullets().size();
+            bulletsOnAir = getBulletsOnAir(2).size();
         } else if (event instanceof LXXKeyEvent) {
             if (Character.toUpperCase(((LXXKeyEvent) event).getKeyChar()) == 'M') {
                 paintEnabled = !paintEnabled;
@@ -225,30 +194,22 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
     }
 
-    public int getBulletsInAirCount() {
-        return bulletsInAir;
+    public int getBulletsOnAirCount() {
+        return bulletsOnAir;
     }
 
     public boolean isNoBulletsInAir() {
-        return getBulletsInAirCount() == 0;
+        return getBulletsOnAirCount() == 0;
     }
 
     public boolean hasBulletsOnAir() {
-        return getBulletsInAirCount() > 0;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public LXXBullet getImaginaryBullet(Target t) {
-        final Wave wave = new Wave(t.getState(), robot.getState(), Rules.getBulletSpeed(t.getFirePower()), robot.getTime() + 1);
-        final Bullet bullet = new Bullet(t.angleTo(robot), t.getX(), t.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
-        return new LXXBullet(bullet, wave, enemyFireAnglePredictor.getPredictionData(t));
+        return getBulletsOnAirCount() > 0;
     }
 
     public LXXBullet createSafeBullet(Target target) {
-        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), robot.getTime() + 1);
+        final Wave wave = new Wave(target.getState(), robot.getState(), SAFE_BULLET_SPEED, robot.getTime() + 1);
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtFireTime().getRobot().getName(), true, -1);
+                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
         final HashMap<Double, Double> matches = new HashMap<Double, Double>();
         for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
@@ -257,4 +218,20 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
         return new LXXBullet(bullet, wave, new EnemyAimingPredictionData(matches));
     }
+
+    public void paint(LXXGraphics g) {
+        if (paintEnabled) {
+            for (LXXBullet bullet : getBulletsOnAir(2)) {
+                final AimingPredictionData aimPredictionData = bullet.getAimPredictionData();
+                if (aimPredictionData != null) {
+                    aimPredictionData.paint(g, bullet);
+                }
+            }
+        }
+    }
+
+    public void addListener(BulletManagerListener listener) {
+        listeners.add(listener);
+    }
+
 }

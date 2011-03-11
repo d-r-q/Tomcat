@@ -161,6 +161,7 @@ public class TargetManager implements RobotListener {
             onEndRound();
         } else if (event instanceof RobotDeathEvent) {
             onTargetKilled(((RobotDeathEvent) event).getName());
+            updateTarget(event, ((RobotDeathEvent) event).getName());
         } else if (event instanceof HitByBulletEvent) {
             updateTarget(event, ((HitByBulletEvent) event).getName());
         } else if (event instanceof BulletHitEvent) {

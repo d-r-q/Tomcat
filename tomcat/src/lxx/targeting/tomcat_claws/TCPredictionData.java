@@ -41,7 +41,7 @@ public class TCPredictionData implements AimingPredictionData {
 
         g.setColor(getColor(bullet, targetPredictedPos, bulletHeadingRadians));
         final double angleToTarget = firePosition.angleTo(target);
-        final double angleToTargetAtFireTime = bullet.angleToTargetPos();
+        final double angleToTargetAtFireTime = bullet.noBearingOffset();
         final double robotWidthAtRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), target);
         final double robotHalfWidthAtRadians = robotWidthAtRadians / 2;
         final double baseArcDistance = travelledDistance - 10;

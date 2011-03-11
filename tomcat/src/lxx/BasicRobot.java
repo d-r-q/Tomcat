@@ -33,6 +33,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     public BattleField battleField;
 
     private LXXRobotState prevState;
+    private LXXRobotState currentState;
 
     private long lastStopTime;
     private long lastTravelTime;
@@ -51,6 +52,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         setAdjustRadarForRobotTurn(true);
 
         prevState = new RobotSnapshot(this);
+        currentState = new RobotSnapshot(this);
     }
 
     public double angleTo(APoint point) {
@@ -156,7 +158,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     }
 
     public LXXRobotState getState() {
-        return new RobotSnapshot(this);
+        return currentState;
     }
 
     public int getInitialOthers() {
@@ -172,12 +174,14 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     }
 
     public void onStatus(StatusEvent e) {
+        prevState = currentState;
+        currentState = new RobotSnapshot(this);
         acceleration = abs(e.getStatus().getVelocity()) - getVelocityModule();
         if (acceleration < -Rules.DECELERATION - 0.01) {
-            System.out.println("[WARN] acceleration: " + acceleration);
+            System.out.println("[WARN] my acceleration: " + acceleration);
             acceleration = -Rules.DECELERATION;
         } else if (acceleration > Rules.ACCELERATION + 0.01) {
-            System.out.println("[WARN] acceleration: " + acceleration);
+            System.out.println("[WARN] my acceleration: " + acceleration);
             acceleration = Rules.ACCELERATION;
         }
         if (Utils.isNear(getVelocity(), 0)) {
@@ -192,13 +196,12 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             lastDirection = (int) signum(e.getStatus().getVelocity());
         }
 
-        final double prevTurnRateSign = signum(getTurnRateRadians());
-        prevState = new RobotSnapshot(this);
+        final double prevTurnRateSign = prevState == null ? 0 : signum(prevState.getTurnRateRadians());
 
         super.onStatus(e);
 
-        final double turnRateSignum = signum(getTurnRateRadians());
-        if (turnRateSignum == 0 || turnRateSignum != prevTurnRateSign) {
+        final double turnRateSign = signum(getTurnRateRadians());
+        if (turnRateSign == 0 || turnRateSign != prevTurnRateSign) {
             lastTurnTime = getTime() - 1;
         } else {
             lastNotTurnTime = getTime() - 1;

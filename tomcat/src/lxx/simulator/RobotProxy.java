@@ -27,7 +27,8 @@ public class RobotProxy implements LXXRobot {
         this.original = original;
         this.time = time;
         currentState = new RobotImage(original.getPosition(), original.getState().getVelocity(),
-                original.getState().getHeadingRadians(), original.getState().getBattleField(), original.getState().getTurnRateRadians());
+                original.getState().getHeadingRadians(), original.getState().getBattleField(), original.getState().getTurnRateRadians(),
+                original.getState().getEnergy());
         lastTravelTime = original.getLastTravelTime();
         lastStopTime = original.getLastStopTime();
         lastTurnTime = original.getLastTurnTime();

@@ -21,13 +21,15 @@ public final class RobotImage implements LXXRobotState {
     private double heading;
     private BattleField battleField;
     private double turnRateRadians;
+    private double energy;
 
-    public RobotImage(APoint position, double velocity, double heading, BattleField battleField, double turnRateRadians) {
+    public RobotImage(APoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
         this.position = position;
         this.velocity = velocity;
         this.heading = heading;
         this.battleField = battleField;
         this.turnRateRadians = turnRateRadians;
+        this.energy = energy;
     }
 
     // todo(zhidkov): use RobocodeDuelSimulator
@@ -101,4 +103,7 @@ public final class RobotImage implements LXXRobotState {
         return velocity;
     }
 
+    public double getEnergy() {
+        return energy;
+    }
 }

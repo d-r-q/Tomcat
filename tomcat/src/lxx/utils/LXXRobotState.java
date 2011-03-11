@@ -24,4 +24,5 @@ public interface LXXRobotState extends APoint {
 
     BattleField getBattleField();
 
+    double getEnergy();
 }

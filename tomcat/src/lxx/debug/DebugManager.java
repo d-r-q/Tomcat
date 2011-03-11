@@ -25,7 +25,8 @@ public class DebugManager implements RobotListener {
     public DebugManager(Office office) {
         if (office.isDebugMode()) {
 
-            debuggers.add(new AvgBulletFlightTime());
+            //debuggers.add(new AvgBulletFlightTime());
+            //debuggers.add(new NoBearingOffsetPainter());
 
             for (Debugger debugger : debuggers) {
                 debugger.roundStarted(office);

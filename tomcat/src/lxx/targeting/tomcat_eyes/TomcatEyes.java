@@ -15,12 +15,9 @@ import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
-import lxx.wave.Wave;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -135,6 +132,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         // todo(zhidkov): remove it
         robot.setDebugProperty("mmp", movementMetaProfile.toShortString());
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
+        robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
@@ -147,14 +145,22 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         return mmp;
     }
 
-    public void bulletHit(LXXBullet bullet) {
-        final Wave w = bullet.getWave();
-        final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
-                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
-        final double lateralDirection = signum(lateralVelocity);
-        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetPosAtFireTime(), bullet.getTarget());
+    public boolean isRammer(Target target) {
+        final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
+        return movementMetaProfile.isRammer();
+    }
 
-        getTargetingProfile(bullet.getOwner()).addBearingOffset((bearingOffset * lateralDirection));
+    public void bulletHit(LXXBullet bullet) {
+        processBullet(bullet);
+    }
+
+    public void bulletIntercepted(LXXBullet bullet) {
+        processBullet(bullet);
+    }
+
+    private void processBullet(LXXBullet bullet) {
+        final double bearingOffset = bullet.getRealBearingOffsetRadians();
+        getTargetingProfile(bullet.getOwner()).addBearingOffset(bearingOffset * bullet.getTargetLateralDirection(), false);
     }
 
     private TargetingProfile getTargetingProfile(LXXRobot t) {
@@ -169,30 +175,25 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     public GunType getEnemyGunType(LXXRobot enemy) {
         final TargetingProfile tp = getTargetingProfile(enemy);
-        if (tp.zeroGFHitCount > tp.totalHits * 0.8 || tp.totalHits == 0) {
-            return GunType.HEAD_ON;
-        } else if ((tp.positiveGFHitCount + tp.zeroGFHitCount) > tp.totalHits * 0.92 ||
-                tp.totalHits < (robot.getRoundNum() + 1) * 2) {
-            return GunType.LINEAR;
+        if (tp.positiveNormalBearingOffsetsCount >= tp.totalNormalBearingOffsets * 0.85 ||
+                tp.hitCount <= robot.getRoundNum() + 1) {
+            return GunType.SIMPLE;
         } else {
             return GunType.ADVANCED;
         }
     }
 
-    public void bulletMiss(LXXBullet bullet) {
-    }
-
-    public void bulletIntercepted(LXXBullet bullet) {
-        final Wave w = bullet.getWave();
-        final double lateralVelocity = LXXUtils.lateralVelocity(w.getSourceStateAtFireTime(), w.getTargetStateAtFireTime(),
-                w.getTargetStateAtFireTime().getVelocityModule(), w.getTargetStateAtFireTime().getAbsoluteHeadingRadians());
-        final double lateralDirection = signum(lateralVelocity);
-        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetPosAtFireTime(), bullet.getTarget());
-
-        getTargetingProfile(bullet.getOwner()).addBearingOffset((bearingOffset * lateralDirection));
-    }
-
     public int getEnemyPreferredDistance(LXXRobot enemy) {
         return getMovementMetaProfile(enemy).getPreferredDistance();
     }
+
+    public void bulletPassing(LXXBullet bullet) {
+    }
+
+    public void bulletMiss(LXXBullet bullet) {
+    }
+
+    public void bulletFired(LXXBullet bullet) {
+    }
+
 }
