@@ -13,7 +13,6 @@ import lxx.office.Office;
 import lxx.office.TargetManager;
 import lxx.office.Timer;
 import lxx.simulator.RobocodeDuelSimulator;
-import lxx.simulator.RobotProxy;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.strategies.MovementDecision;
@@ -31,6 +30,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Math.toDegrees;
+
 /**
  * User: jdev
  * Date: 21.02.11
@@ -39,7 +40,7 @@ public class TomcatClaws implements RobotListener, Gun {
 
     private static PatternTreeNode root = new PatternTreeNode(null, null, 0);
 
-    private static final List<APoint> NO_PREDICTED_POSES = Collections.unmodifiableList(new ArrayList<APoint>());
+    private static final List<TurnPrediction> NO_PREDICTED_POSES = Collections.unmodifiableList(new ArrayList<TurnPrediction>());
     private static final int AIMING_TIME = 2;
     private static final int PATTERN_LENGTH = 4;
     private static final int LOOKUP_TIME = 15;
@@ -50,7 +51,7 @@ public class TomcatClaws implements RobotListener, Gun {
     private final Timer timer;
     private final TomcatEyes tomcatEyes;
 
-    private LinkedList<APoint> predictedPoses = null;
+    private LinkedList<TurnPrediction> predictedPoses = null;
     private RobocodeDuelSimulator duelSimulator;
     private APoint robotPosAtFireTime;
 
@@ -90,7 +91,7 @@ public class TomcatClaws implements RobotListener, Gun {
         }
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
-            predictedPoses = new LinkedList<APoint>();
+            predictedPoses = new LinkedList<TurnPrediction>();
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             robot.setDebugProperty("Enemy gun type", tomcatEyes.getEnemyGunType(t).toString());
             duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes());
@@ -104,7 +105,7 @@ public class TomcatClaws implements RobotListener, Gun {
             }
         }
 
-        final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.getLast(), this.robotPosAtFireTime);
+        final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.getLast().enemyPos, this.robotPosAtFireTime);
 
         return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, robotPosAtFireTime));
     }
@@ -114,37 +115,30 @@ public class TomcatClaws implements RobotListener, Gun {
     }
 
     public void buildPattern(double bulletSpeed) {
-        // this method must be optimal
         final List<EnemyMovementDecision> enemyMovementDecisions = getLastEnemyMovementDecisions();
         final TargetingConfiguration targetingConfiguration = tomcatEyes.getConfiguration(targetManager.getDuelOpponent());
 
         long timeDelta = 0;
-        final MovementDecision myMovementDecision = new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD);
-
-        final int[] indexes = targetingConfiguration.getIndexes();
-        final double[] weights = targetingConfiguration.getWeights();
-        final RobotProxy enemyProxy = duelSimulator.getEnemyProxy();
-        while (true) {
-            if (isBulletHitEnemy(enemyProxy, timeDelta, bulletSpeed)) {
-                break;
+        while (!isBulletHitEnemy(duelSimulator.getEnemyProxy(), timeDelta, bulletSpeed)) {
+            final PatternTreeNode node = getNode(enemyMovementDecisions);
+            final PatternTreeNode.PatternTreeNodeSelectionData n = node.getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), targetingConfiguration.getIndexes(), targetingConfiguration.getWeights());
+            final EnemyMovementDecision emd = n.getDecision();
+            if (emd.acceleration < -Rules.DECELERATION || emd.acceleration > Rules.ACCELERATION) {
+                throw new RuntimeException("Something wrong!");
             }
-            final EnemyMovementDecision emd = getNode(enemyMovementDecisions)
-                    .getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), indexes, weights)
-                    .getDecision();
-            final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyProxy.getState()));
-
+            LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
+            final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyState));
             duelSimulator.setEnemyMovementDecision(movementDecision);
-            duelSimulator.setMyMovementDecision(myMovementDecision);
+            duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
-
             enemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot()));
-            predictedPoses.add(enemyProxy.getPosition());
-
+            if (timeDelta >= AIMING_TIME) {
+                enemyState = duelSimulator.getEnemyProxy().getState();
+                final LXXPoint predictedPos = new LXXPoint(enemyState);
+                predictedPoses.add(new TurnPrediction(predictedPos, enemyState.getVelocity(), toDegrees(enemyState.getAbsoluteHeadingRadians()), node, emd,
+                        PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot())));
+            }
             timeDelta++;
-        }
-
-        for (int i = 0; i < AIMING_TIME && predictedPoses.size() > 0; i++) {
-            predictedPoses.remove(0);
         }
     }
 
@@ -163,7 +157,7 @@ public class TomcatClaws implements RobotListener, Gun {
                 node = node.getChild(enemyMovementDecisions.get(idx));
             }
 
-            if (node != null && node.childrenCount > 2 && node.getVisitCount() > 15) {
+            if (node != null && node.getChildrenCount() > 2 && node.getVisitCount() > 15) {
                 return node;
             }
         }
@@ -184,13 +178,36 @@ public class TomcatClaws implements RobotListener, Gun {
     }
 
     public List<EnemyMovementDecision> getLastEnemyMovementDecisions() {
-        final List<EnemyMovementDecision> lastEnemyMovementDecisions = new ArrayList<EnemyMovementDecision>(200);
+        final List<EnemyMovementDecision> lastEnemyMovementDecisions = new ArrayList<EnemyMovementDecision>();
         final Target opponent = targetManager.getDuelOpponent();
         for (int i = PATTERN_LENGTH; i >= 0; i--) {
             lastEnemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(battleSnapshotManager.getLastSnapshot(opponent, i)));
         }
 
         return lastEnemyMovementDecisions;
+    }
+
+    public final class TurnPrediction {
+
+        public final LXXPoint enemyPos;
+        public final double enemyVelocity;
+        public final double enemyHeading;
+        public final PatternTreeNode node;
+        public final EnemyMovementDecision emd;
+        public final EnemyMovementDecision remd;
+
+        public TurnPrediction(LXXPoint enemyPos, double enemyVelocity, double enemyHeading, PatternTreeNode node, EnemyMovementDecision emd, EnemyMovementDecision remd) {
+            this.enemyPos = enemyPos;
+            this.enemyVelocity = enemyVelocity;
+            this.enemyHeading = enemyHeading;
+            this.node = node;
+            this.emd = emd;
+            this.remd = remd;
+        }
+
+        public String toString() {
+            return String.format("(enemy = %s, %f, %f); node = %s, (emd = %s - %s)", enemyPos.toString(), enemyVelocity, enemyHeading, node.getPath(), emd.key, remd.key);
+        }
     }
 
 }

@@ -8,7 +8,10 @@ import lxx.model.BattleSnapshot;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.toRadians;
@@ -20,19 +23,16 @@ import static java.lang.Math.toRadians;
 public class PatternTreeNode {
 
     public static int nodesCount = 0;
-    private static final EnemyMovementDecision NO_ENEMY_DECISION = new EnemyMovementDecision(0, 0);
 
     private Map<EnemyMovementDecision, PatternTreeNode> children = new HashMap<EnemyMovementDecision, PatternTreeNode>();
 
-    private final ArrayList<PredicateResult> predicateResults = new ArrayList<PredicateResult>();
+    private final LinkedList<PredicateResult> predicateResults = new LinkedList<PredicateResult>();
 
     private final EnemyMovementDecision link;
     private final PatternTreeNode parent;
     private final int level;
 
     public int visitCount = 0;
-    // public for optimization
-    public int childrenCount = 0;
 
     public PatternTreeNode(EnemyMovementDecision link, PatternTreeNode parent, int level) {
         this.link = link;
@@ -51,10 +51,9 @@ public class PatternTreeNode {
         if (child == null) {
             child = new PatternTreeNode(link, this, level + 1);
             children.put(link, child);
-            childrenCount++;
         }
         child.visitCount++;
-        predicateResults.add(0, new PredicateResult(predicate, link));
+        predicateResults.addFirst(new PredicateResult(predicate, link));
         if (predicateResults.size() > 2000) {
             for (Iterator<PredicateResult> predicateResultIterator = predicateResults.iterator(); predicateResultIterator.hasNext();) {
                 PredicateResult pr = predicateResultIterator.next();
@@ -69,8 +68,8 @@ public class PatternTreeNode {
     }
 
     public static EnemyMovementDecision getEnemyMovementDecision(BattleSnapshot predicate) {
-        final double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
-        final double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
+        double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
+        double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
         return new EnemyMovementDecision(acceleration, turnRateRadians);
     }
 
@@ -80,15 +79,9 @@ public class PatternTreeNode {
 
     public PatternTreeNodeSelectionData getChildBySnapshot(BattleSnapshot battleSnapshot, int[] indexes, double[] weights) {
         final PatternTreeNodeSelectionData selectionData = new PatternTreeNodeSelectionData();
-        selectionData.decision = NO_ENEMY_DECISION;
-        // optimization
-        final PredicateResult[] prs = predicateResults.toArray(new PredicateResult[predicateResults.size()]);
-        final int prsLength = prs.length;
-        final double enemyVelocityModule = battleSnapshot.getEnemyVelocityModule();
-        final double maxTurnRateRadians = Rules.getTurnRateRadians(enemyVelocityModule) + 0.01;
-        for (int i = 0; i < prsLength; i++) {
-            final PredicateResult pr = prs[i];
-            if (!isValidEnemyDecision(pr, enemyVelocityModule, maxTurnRateRadians)) {
+        selectionData.decision = new EnemyMovementDecision(0, 0);
+        for (PredicateResult pr : predicateResults) {
+            if (!isValidEnemyDecision(pr, battleSnapshot)) {
                 continue;
             }
             final double dist = pr.predicate.quickDistance(indexes, battleSnapshot, weights);
@@ -101,14 +94,18 @@ public class PatternTreeNode {
         return selectionData;
     }
 
-    private static boolean isValidEnemyDecision(PredicateResult pr, double enemyVelocity, final double maxTurnRateRadians) {
+    private static boolean isValidEnemyDecision(PredicateResult pr, BattleSnapshot bs) {
         final double acceleration = pr.enemyMovementDecision.acceleration;
-        final double newVelocity = enemyVelocity + acceleration;
+        final double newVelocity = bs.getEnemyVelocityModule() + acceleration;
         return acceleration >= -Rules.DECELERATION &&
                 acceleration <= Rules.ACCELERATION &&
-                newVelocity <= Rules.MAX_VELOCITY &&
                 newVelocity >= 0 &&
-                abs(pr.enemyMovementDecision.turnRateRadians) <= maxTurnRateRadians;
+                newVelocity <= Rules.MAX_VELOCITY &&
+                abs(pr.enemyMovementDecision.turnRateRadians) <= Rules.getTurnRateRadians(bs.getEnemyVelocityModule()) + 0.01;
+    }
+
+    public int getChildrenCount() {
+        return children.size();
     }
 
     public String getPath() {

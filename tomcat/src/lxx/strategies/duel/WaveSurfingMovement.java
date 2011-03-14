@@ -38,7 +38,7 @@ public abstract class WaveSurfingMovement implements Movement {
     private double distanceToTravel;
     private long timeToTravel;
     protected double enemyPreferredDistance;
-    private Target opponent;
+    private Target duelOpponent;
 
     public WaveSurfingMovement(Tomcat robot, TargetManager targetManager,
                                EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
@@ -49,9 +49,10 @@ public abstract class WaveSurfingMovement implements Movement {
     }
 
     public MovementDecision getMovementDecision() {
-        opponent = targetManager.getDuelOpponent();
+        duelOpponent = targetManager.getDuelOpponent();
         final List<LXXBullet> lxxBullets = getBullets();
-        final APoint surfPoint = getSurfPoint(opponent.getState(), lxxBullets);
+        final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
+        final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
         selectOrbitDirection(lxxBullets);
 
         return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), distanceToTravel, timeToTravel);
@@ -85,6 +86,7 @@ public abstract class WaveSurfingMovement implements Movement {
     }
 
     private void setEnemyPreferredDistance() {
+        final Target opponent = duelOpponent;
         if (opponent == null) {
             return;
         }
@@ -99,7 +101,7 @@ public abstract class WaveSurfingMovement implements Movement {
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         LXXPoint prevPoint = robot.getPosition();
-        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets, opponent)) {
+        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets, duelOpponent)) {
             distance += prevPoint.aDistance(pnt);
             double danger = getPointDanger(lxxBullets, pnt);
 
@@ -131,6 +133,7 @@ public abstract class WaveSurfingMovement implements Movement {
             totalDanger += round(bulletDanger) * 100 * weight;
             weight /= 20;
         }
+        final Target opponent = duelOpponent;
         if (opponent != null) {
             totalDanger += getPointDanger(pnt, opponent);
         }
@@ -158,8 +161,9 @@ public abstract class WaveSurfingMovement implements Movement {
             bullets.add(bulletsOnAir.get(i));
         }
 
-        if (bullets.size() < 2 && opponent != null) {
-            bullets.add(enemyBulletManager.createSafeBullet(opponent));
+        final Target duelOpponent = this.duelOpponent;
+        if (bullets.size() < 2 && duelOpponent != null) {
+            bullets.add(enemyBulletManager.createSafeBullet(duelOpponent));
         }
 
         return bullets;

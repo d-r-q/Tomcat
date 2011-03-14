@@ -40,6 +40,7 @@ public class RobocodeDuelSimulator {
         this.battleTime = battleTime;
 
         this.attributesToSimulate.addAll(Arrays.asList(attributesToSimulate));
+        this.attributesToSimulate.add(AttributesManager.enemyVelocity);
         this.attributesToSimulate.add(AttributesManager.enemyAcceleration);
         this.attributesToSimulate.add(AttributesManager.enemyTurnRate);
     }
@@ -91,7 +92,7 @@ public class RobocodeDuelSimulator {
             avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy);
         }
 
-        return new BattleSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, null);
+        return new BattleSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());
     }
 
     public RobotProxy getEnemyProxy() {
