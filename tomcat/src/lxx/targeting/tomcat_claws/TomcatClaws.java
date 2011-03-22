@@ -19,7 +19,10 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.tomcat_eyes.TargetingConfiguration;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
-import lxx.utils.*;
+import lxx.utils.APoint;
+import lxx.utils.LXXPoint;
+import lxx.utils.LXXRobotState;
+import lxx.utils.LXXUtils;
 import robocode.Event;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -115,40 +118,29 @@ public class TomcatClaws implements RobotListener, Gun {
     }
 
     public void buildPattern(double bulletSpeed) {
-        final List<EnemyMovementDecision> enemyMovementDecisions = getLastEnemyMovementDecisions();
+        final List<MovementDecision> enemyMovementDecisions = getLastEnemyMovementDecisions();
         final TargetingConfiguration targetingConfiguration = tomcatEyes.getConfiguration(targetManager.getDuelOpponent());
 
         long timeDelta = 0;
         while (!isBulletHitEnemy(duelSimulator.getEnemyProxy(), timeDelta, bulletSpeed)) {
             final PatternTreeNode node = getNode(enemyMovementDecisions);
             final PatternTreeNode.PatternTreeNodeSelectionData n = node.getChildBySnapshot(duelSimulator.getSimulatorSnapshot(), targetingConfiguration.getIndexes(), targetingConfiguration.getWeights());
-            final EnemyMovementDecision emd = n.getDecision();
-            if (emd.acceleration < -Rules.DECELERATION || emd.acceleration > Rules.ACCELERATION) {
-                throw new RuntimeException("Something wrong!");
-            }
-            LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
-            final MovementDecision movementDecision = new MovementDecision(emd.acceleration, emd.turnRateRadians, getMovementDirection(enemyState));
+            final MovementDecision movementDecision = n.getDecision();
             duelSimulator.setEnemyMovementDecision(movementDecision);
             duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
-            enemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot()));
+            enemyMovementDecisions.add(PatternTreeNode.getMovementDecision(duelSimulator.getSimulatorSnapshot()));
             if (timeDelta >= AIMING_TIME) {
-                enemyState = duelSimulator.getEnemyProxy().getState();
+                final LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
                 final LXXPoint predictedPos = new LXXPoint(enemyState);
-                predictedPoses.add(new TurnPrediction(predictedPos, enemyState.getVelocity(), toDegrees(enemyState.getAbsoluteHeadingRadians()), node, emd,
-                        PatternTreeNode.getEnemyMovementDecision(duelSimulator.getSimulatorSnapshot())));
+                predictedPoses.add(new TurnPrediction(predictedPos, enemyState.getVelocity(), toDegrees(enemyState.getAbsoluteHeadingRadians()), node, movementDecision,
+                        PatternTreeNode.getMovementDecision(duelSimulator.getSimulatorSnapshot())));
             }
             timeDelta++;
         }
     }
 
-    private MovementDecision.MovementDirection getMovementDirection(LXXRobotState duelOpponent) {
-        return LXXUtils.anglesDiff(duelOpponent.getAbsoluteHeadingRadians(), duelOpponent.getHeadingRadians()) < LXXConstants.RADIANS_90
-                ? MovementDecision.MovementDirection.FORWARD
-                : MovementDecision.MovementDirection.BACKWARD;
-    }
-
-    public PatternTreeNode getNode(List<EnemyMovementDecision> enemyMovementDecisions) {
+    public PatternTreeNode getNode(List<MovementDecision> enemyMovementDecisions) {
         PatternTreeNode node;
         for (int predicateLength = PATTERN_LENGTH; predicateLength >= 0; predicateLength--) {
             node = root;
@@ -157,7 +149,7 @@ public class TomcatClaws implements RobotListener, Gun {
                 node = node.getChild(enemyMovementDecisions.get(idx));
             }
 
-            if (node != null && node.getChildrenCount() > 2 && node.getVisitCount() > 15) {
+            if (node != null && node.getChildrenCount() > 4 && node.getVisitCount() > 30) {
                 return node;
             }
         }
@@ -177,11 +169,11 @@ public class TomcatClaws implements RobotListener, Gun {
         return enemyRectAtPredictedPos.contains(bulletPos);
     }
 
-    public List<EnemyMovementDecision> getLastEnemyMovementDecisions() {
-        final List<EnemyMovementDecision> lastEnemyMovementDecisions = new ArrayList<EnemyMovementDecision>();
+    public List<MovementDecision> getLastEnemyMovementDecisions() {
+        final List<MovementDecision> lastEnemyMovementDecisions = new ArrayList<MovementDecision>();
         final Target opponent = targetManager.getDuelOpponent();
         for (int i = PATTERN_LENGTH; i >= 0; i--) {
-            lastEnemyMovementDecisions.add(PatternTreeNode.getEnemyMovementDecision(battleSnapshotManager.getLastSnapshot(opponent, i)));
+            lastEnemyMovementDecisions.add(PatternTreeNode.getMovementDecision(battleSnapshotManager.getLastSnapshot(opponent, i)));
         }
 
         return lastEnemyMovementDecisions;
@@ -193,10 +185,10 @@ public class TomcatClaws implements RobotListener, Gun {
         public final double enemyVelocity;
         public final double enemyHeading;
         public final PatternTreeNode node;
-        public final EnemyMovementDecision emd;
-        public final EnemyMovementDecision remd;
+        public final MovementDecision emd;
+        public final MovementDecision remd;
 
-        public TurnPrediction(LXXPoint enemyPos, double enemyVelocity, double enemyHeading, PatternTreeNode node, EnemyMovementDecision emd, EnemyMovementDecision remd) {
+        public TurnPrediction(LXXPoint enemyPos, double enemyVelocity, double enemyHeading, PatternTreeNode node, MovementDecision emd, MovementDecision remd) {
             this.enemyPos = enemyPos;
             this.enemyVelocity = enemyVelocity;
             this.enemyHeading = enemyHeading;

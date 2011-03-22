@@ -18,10 +18,14 @@ public class MovementDecision {
     private final double turnRateRadians;
     private final MovementDirection movementDirection;
 
+    public final String key;
+
     public MovementDecision(double acceleration, double turnRateRadians, MovementDirection movementDirection) {
         this.acceleration = acceleration;
         this.turnRateRadians = turnRateRadians;
         this.movementDirection = movementDirection;
+
+        key = movementDirection.sign + ":" + acceleration + ":" + round(toDegrees(turnRateRadians) / 2);
     }
 
     public double getAcceleration() {
@@ -105,6 +109,21 @@ public class MovementDecision {
         return String.format("(acceleration = %3.2f, turnRate %3.2f, direction = %s)", acceleration, toDegrees(turnRateRadians), movementDirection);
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MovementDecision that = (MovementDecision) o;
+
+        if (key != null ? !key.equals(that.key) : that.key != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        return key != null ? key.hashCode() : 0;
+    }
+
     public static enum MovementDirection {
 
         FORWARD(1),
@@ -114,6 +133,10 @@ public class MovementDecision {
 
         MovementDirection(int sign) {
             this.sign = sign;
+        }
+
+        public static MovementDirection get(int velocity) {
+            return velocity < 0 ? BACKWARD : FORWARD;
         }
     }
 

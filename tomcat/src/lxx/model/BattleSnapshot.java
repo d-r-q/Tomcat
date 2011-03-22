@@ -99,4 +99,7 @@ public class BattleSnapshot implements Serializable {
         return signum(getMyLateralVelocity());
     }
 
+    public int getEnemyVelocity() {
+        return bsAttributes[AttributesManager.enemyVelocity.getId()];
+    }
 }

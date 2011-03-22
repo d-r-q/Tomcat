@@ -6,6 +6,7 @@ package lxx.targeting.tomcat_claws;
 
 import lxx.model.BattleSnapshot;
 import lxx.office.AttributesManager;
+import lxx.strategies.MovementDecision;
 import robocode.Rules;
 
 import java.util.HashMap;
@@ -24,17 +25,17 @@ public class PatternTreeNode {
 
     public static int nodesCount = 0;
 
-    private Map<EnemyMovementDecision, PatternTreeNode> children = new HashMap<EnemyMovementDecision, PatternTreeNode>();
+    private Map<MovementDecision, PatternTreeNode> children = new HashMap<MovementDecision, PatternTreeNode>();
 
     private final LinkedList<PredicateResult> predicateResults = new LinkedList<PredicateResult>();
 
-    private final EnemyMovementDecision link;
+    private final MovementDecision link;
     private final PatternTreeNode parent;
     private final int level;
 
     public int visitCount = 0;
 
-    public PatternTreeNode(EnemyMovementDecision link, PatternTreeNode parent, int level) {
+    public PatternTreeNode(MovementDecision link, PatternTreeNode parent, int level) {
         this.link = link;
         this.parent = parent;
         this.level = level;
@@ -46,7 +47,7 @@ public class PatternTreeNode {
     }
 
     public PatternTreeNode addChild(BattleSnapshot predicate, BattleSnapshot currentState) {
-        final EnemyMovementDecision link = getEnemyMovementDecision(currentState);
+        final MovementDecision link = getMovementDecision(currentState);
         PatternTreeNode child = children.get(link);
         if (child == null) {
             child = new PatternTreeNode(link, this, level + 1);
@@ -57,7 +58,7 @@ public class PatternTreeNode {
         if (predicateResults.size() > 2000) {
             for (Iterator<PredicateResult> predicateResultIterator = predicateResults.iterator(); predicateResultIterator.hasNext();) {
                 PredicateResult pr = predicateResultIterator.next();
-                if (pr.enemyMovementDecision.equals(link)) {
+                if (pr.movementDecision.equals(link)) {
                     predicateResultIterator.remove();
                     break;
                 }
@@ -67,19 +68,19 @@ public class PatternTreeNode {
         return child;
     }
 
-    public static EnemyMovementDecision getEnemyMovementDecision(BattleSnapshot predicate) {
+    public static MovementDecision getMovementDecision(BattleSnapshot predicate) {
         double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
         double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
-        return new EnemyMovementDecision(acceleration, turnRateRadians);
+        return new MovementDecision(acceleration, turnRateRadians, MovementDecision.MovementDirection.get(predicate.getEnemyVelocity()));
     }
 
-    public PatternTreeNode getChild(EnemyMovementDecision enemyMovementDecision) {
+    public PatternTreeNode getChild(MovementDecision enemyMovementDecision) {
         return children.get(enemyMovementDecision);
     }
 
     public PatternTreeNodeSelectionData getChildBySnapshot(BattleSnapshot battleSnapshot, int[] indexes, double[] weights) {
         final PatternTreeNodeSelectionData selectionData = new PatternTreeNodeSelectionData();
-        selectionData.decision = new EnemyMovementDecision(0, 0);
+        selectionData.decision = new MovementDecision(0, 0, MovementDecision.MovementDirection.FORWARD);
         for (PredicateResult pr : predicateResults) {
             if (!isValidEnemyDecision(pr, battleSnapshot)) {
                 continue;
@@ -87,7 +88,7 @@ public class PatternTreeNode {
             final double dist = pr.predicate.quickDistance(indexes, battleSnapshot, weights);
             if (dist < selectionData.minDist) {
                 selectionData.minDist = dist;
-                selectionData.decision = pr.enemyMovementDecision;
+                selectionData.decision = pr.movementDecision;
             }
         }
 
@@ -95,13 +96,13 @@ public class PatternTreeNode {
     }
 
     private static boolean isValidEnemyDecision(PredicateResult pr, BattleSnapshot bs) {
-        final double acceleration = pr.enemyMovementDecision.acceleration;
+        final double acceleration = pr.movementDecision.getAcceleration();
         final double newVelocity = bs.getEnemyVelocityModule() + acceleration;
         return acceleration >= -Rules.DECELERATION &&
                 acceleration <= Rules.ACCELERATION &&
                 newVelocity >= 0 &&
                 newVelocity <= Rules.MAX_VELOCITY &&
-                abs(pr.enemyMovementDecision.turnRateRadians) <= Rules.getTurnRateRadians(bs.getEnemyVelocityModule()) + 0.01;
+                abs(pr.movementDecision.getTurnRateRadians()) <= Rules.getTurnRateRadians(bs.getEnemyVelocityModule()) + 0.01;
     }
 
     public int getChildrenCount() {
@@ -129,11 +130,11 @@ public class PatternTreeNode {
     private class PredicateResult {
 
         private final BattleSnapshot predicate;
-        private final EnemyMovementDecision enemyMovementDecision;
+        private final MovementDecision movementDecision;
 
-        private PredicateResult(BattleSnapshot predicate, EnemyMovementDecision enemyMovementDecision) {
+        private PredicateResult(BattleSnapshot predicate, MovementDecision movementDecision) {
             this.predicate = predicate;
-            this.enemyMovementDecision = enemyMovementDecision;
+            this.movementDecision = movementDecision;
         }
 
     }
@@ -141,10 +142,10 @@ public class PatternTreeNode {
     // todo(zhidkov): rename me
     public class PatternTreeNodeSelectionData {
 
-        private EnemyMovementDecision decision;
+        private MovementDecision decision;
         private double minDist = Integer.MAX_VALUE;
 
-        public EnemyMovementDecision getDecision() {
+        public MovementDecision getDecision() {
             return decision;
         }
     }

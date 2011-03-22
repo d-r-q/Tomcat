@@ -18,6 +18,11 @@ public class Interval {
         this.b = b;
     }
 
+    public Interval(Interval original) {
+        this.a = original.a;
+        this.b = original.b;
+    }
+
     public int getLength() {
         return b - a + 1;
     }
@@ -41,5 +46,9 @@ public class Interval {
 
     public boolean contains(Interval another) {
         return another.a >= a && another.b <= b;
+    }
+
+    public int center() {
+        return (a + b) / 2;
     }
 }
