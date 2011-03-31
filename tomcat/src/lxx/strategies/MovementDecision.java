@@ -4,7 +4,7 @@
 
 package lxx.strategies;
 
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 import lxx.office.AttributesManager;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXRobotState;
@@ -32,7 +32,7 @@ public class MovementDecision implements Serializable {
         key = movementDirection.sign + ":" + acceleration + ":" + round(toDegrees(turnRateRadians) / 2);
     }
 
-    public static MovementDecision getMovementDecision(BattleSnapshot predicate) {
+    public static MovementDecision getMovementDecision(TurnSnapshot predicate) {
         double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
         double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
         return new MovementDecision(acceleration, turnRateRadians, MovementDirection.get(predicate.getEnemyVelocity()));

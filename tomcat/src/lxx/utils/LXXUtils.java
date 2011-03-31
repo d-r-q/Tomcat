@@ -4,7 +4,7 @@
 
 package lxx.utils;
 
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -35,20 +35,6 @@ public class LXXUtils {
 
     public static double angle(APoint p1, APoint p2) {
         return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-    }
-
-    public static double weightedManhattanDistance(int[] indexes, int[] a, int[] b, double[] weights) {
-        double res = 0;
-
-        final int len = indexes.length;
-        for (int i = 0; i < len; i++) {
-            res += ((b[indexes[i]] > a[indexes[i]])
-                    ? b[indexes[i]] - a[indexes[i]]
-                    : a[indexes[i]] - b[indexes[i]])
-                    * weights[indexes[i]];
-        }
-
-        return res;
     }
 
     public static double weightedManhattanDistance(double[] a, double[] b, double[] weights) {
@@ -132,11 +118,11 @@ public class LXXUtils {
         return abs(velocity) * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
     }
 
-    public static APoint getMyPos(BattleSnapshot bs) {
+    public static APoint getMyPos(TurnSnapshot bs) {
         return new LXXPoint(bs.getAttrValue(AttributesManager.myX), bs.getAttrValue(AttributesManager.myY));
     }
 
-    public static APoint getEnemyPos(BattleSnapshot bs) {
+    public static APoint getEnemyPos(TurnSnapshot bs) {
         return new LXXPoint(bs.getAttrValue(AttributesManager.enemyX), bs.getAttrValue(AttributesManager.enemyY));
     }
 

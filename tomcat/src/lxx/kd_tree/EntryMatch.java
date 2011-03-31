@@ -2,17 +2,17 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.fire_log;
+package lxx.kd_tree;
 
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 
 public class EntryMatch<T> {
 
-    public final BattleSnapshot predicate;
+    public final TurnSnapshot predicate;
     public final T result;
     public final double match;
 
-    public EntryMatch(T result, double match, BattleSnapshot predicate) {
+    public EntryMatch(T result, double match, TurnSnapshot predicate) {
         this.result = result;
         this.match = match;
         this.predicate = predicate;

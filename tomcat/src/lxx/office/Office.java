@@ -13,7 +13,7 @@ public interface Office {
 
     Timer getBattleTimeManager();
 
-    BattleSnapshotManager getBattleSnapshotManager();
+    TurnSnapshotsLog getTurnSnapshotsLog();
 
     WaveManager getWaveManager();
 

@@ -46,7 +46,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private int bulletsOnAir;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getBattleSnapshotManager());
+        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog());
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;

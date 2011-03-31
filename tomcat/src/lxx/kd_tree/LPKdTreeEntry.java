@@ -2,27 +2,27 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.fire_log;
+package lxx.kd_tree;
 
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 
 import java.io.Serializable;
 
-public class FireLogEntry<T extends Serializable> implements Serializable {
+public class LPKdTreeEntry<T extends Serializable> implements Serializable {
 
-    public BattleSnapshot predicate;
+    public TurnSnapshot predicate;
 
     public T result;
 
-    public FireLogEntry(BattleSnapshot predicate) {
+    public LPKdTreeEntry(TurnSnapshot predicate) {
         this.predicate = predicate;
     }
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FireLogEntry)) return false;
+        if (!(o instanceof LPKdTreeEntry)) return false;
 
-        FireLogEntry that = (FireLogEntry) o;
+        LPKdTreeEntry that = (LPKdTreeEntry) o;
 
         if (predicate != null ? !predicate.equals(that.predicate) : that.predicate != null) return false;
 

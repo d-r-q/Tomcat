@@ -4,13 +4,13 @@
 
 package lxx.enemy_bullets;
 
-import lxx.fire_log.EntryMatch;
-import lxx.fire_log.FireLog;
-import lxx.fire_log.FireLogEntry;
-import lxx.model.BattleSnapshot;
+import lxx.kd_tree.EntryMatch;
+import lxx.kd_tree.LPKdTreeEntry;
+import lxx.kd_tree.LimitedPriorityKdTree;
+import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
-import lxx.office.BattleSnapshotManager;
+import lxx.office.TurnSnapshotsLog;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
@@ -32,20 +32,20 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
-    private static final Map<String, FireLog<Double>> logs = new HashMap<String, FireLog<Double>>();
+    private static final Map<String, LimitedPriorityKdTree<Double>> logs = new HashMap<String, LimitedPriorityKdTree<Double>>();
 
-    private final Map<LXXBullet, FireLogEntry<Double>> entriesByBullets = new HashMap<LXXBullet, FireLogEntry<Double>>();
+    private final Map<LXXBullet, LPKdTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, LPKdTreeEntry<Double>>();
 
-    private final BattleSnapshotManager battleSnapshotManager;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
-    public EnemyFireAnglePredictor(BattleSnapshotManager battleSnapshotManager) {
-        this.battleSnapshotManager = battleSnapshotManager;
+    public EnemyFireAnglePredictor(TurnSnapshotsLog turnSnapshotsLog) {
+        this.turnSnapshotsLog = turnSnapshotsLog;
     }
 
     public AimingPredictionData getPredictionData(Target t) {
-        final FireLog<Double> log = getLog(t.getName());
+        final LimitedPriorityKdTree<Double> log = getLog(t.getName());
 
-        final BattleSnapshot predicate = battleSnapshotManager.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
+        final TurnSnapshot predicate = turnSnapshotsLog.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
         final List<Double> bearingOffsets = getBearingOffsets(log, predicate, t.getFirePower());
 
         final int bearingOffsetsCount = bearingOffsets.size();
@@ -69,7 +69,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     }
 
-    private List<Double> getBearingOffsets(FireLog<Double> log, BattleSnapshot predicate, double firePower) {
+    private List<Double> getBearingOffsets(LimitedPriorityKdTree<Double> log, TurnSnapshot predicate, double firePower) {
         final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getMyVelocityModule(), predicate.getMyAbsoluteHeadingRadians());
@@ -88,8 +88,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return bearingOffsets;
     }
 
-    private static FireLog<Double> getLog(String enemyName) {
-        FireLog<Double> log = logs.get(enemyName);
+    private static LimitedPriorityKdTree<Double> getLog(String enemyName) {
+        LimitedPriorityKdTree<Double> log = logs.get(enemyName);
         if (log == null) {
             log = createLog();
             logs.put(enemyName, log);
@@ -97,15 +97,15 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return log;
     }
 
-    private static FireLog<Double> createLog() {
+    private static LimitedPriorityKdTree<Double> createLog() {
         final Attribute[] splitAttributes = {
                 AttributesManager.myLateralVelocity_2,
         };
-        return new FireLog<Double>(splitAttributes, 2, 0.02);
+        return new LimitedPriorityKdTree<Double>(splitAttributes, 2, 0.02);
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final FireLogEntry<Double> entry = new FireLogEntry<Double>(battleSnapshotManager.getLastSnapshots(bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
+        final LPKdTreeEntry<Double> entry = new LPKdTreeEntry<Double>(turnSnapshotsLog.getLastSnapshots((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
         entriesByBullets.put(bullet, entry);
     }
 
@@ -121,9 +121,9 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     public void setBulletBearingOffset(LXXBullet bullet) {
         final double bearingOffset = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
-        final FireLog<Double> log = getLog(bullet.getOwner().getName());
+        final LimitedPriorityKdTree<Double> log = getLog(bullet.getOwner().getName());
 
-        final FireLogEntry<Double> entry = entriesByBullets.get(bullet);
+        final LPKdTreeEntry<Double> entry = entriesByBullets.get(bullet);
         entry.result = bearingOffset;
         log.addEntry(entry);
     }

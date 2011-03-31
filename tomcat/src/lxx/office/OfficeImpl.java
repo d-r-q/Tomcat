@@ -14,7 +14,7 @@ public class OfficeImpl implements Office {
 
     private final TargetManager targetManager;
     private final Timer timer;
-    private final BattleSnapshotManager battleSnapshotManager;
+    private final TurnSnapshotsLog turnSnapshotsLog;
     private final WaveManager waveManager;
     private final EnemyBulletManager enemyBulletManager;
     private final AttributesManager attributesManager;
@@ -33,8 +33,8 @@ public class OfficeImpl implements Office {
         targetManager = new TargetManager(tomcat);
         tomcat.addListener(targetManager);
 
-        battleSnapshotManager = new BattleSnapshotManager(this);
-        targetManager.addListener(battleSnapshotManager);
+        turnSnapshotsLog = new TurnSnapshotsLog(this);
+        targetManager.addListener(turnSnapshotsLog);
 
         waveManager = new WaveManager();
         tomcat.addListener(waveManager);
@@ -72,8 +72,8 @@ public class OfficeImpl implements Office {
         return timer;
     }
 
-    public BattleSnapshotManager getBattleSnapshotManager() {
-        return battleSnapshotManager;
+    public TurnSnapshotsLog getTurnSnapshotsLog() {
+        return turnSnapshotsLog;
     }
 
     public WaveManager getWaveManager() {

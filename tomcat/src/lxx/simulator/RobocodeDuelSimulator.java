@@ -5,7 +5,7 @@
 package lxx.simulator;
 
 import lxx.Tomcat;
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import lxx.strategies.MovementDecision;
@@ -85,14 +85,14 @@ public class RobocodeDuelSimulator {
         proxy.doTurn(new RobotImage(newPosition, newVelocity, newHeading, state.getBattleField(), movementDecision.getTurnRateRadians(), state.getEnergy()));
     }
 
-    public BattleSnapshot getSimulatorSnapshot() {
+    public TurnSnapshot getSimulatorSnapshot() {
         final int[] avs = new int[AttributesManager.attributesCount()];
 
         for (Attribute a : attributesToSimulate) {
             avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy);
         }
 
-        return new BattleSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());
+        return new TurnSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());
     }
 
     public RobotProxy getEnemyProxy() {

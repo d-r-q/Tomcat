@@ -11,21 +11,20 @@ import lxx.utils.LXXUtils;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import static java.lang.Math.signum;
 import static java.lang.Math.toRadians;
 
 /**
  * User: jdev
  * Date: 10.03.2010
  */
-public class BattleSnapshot implements Serializable {
+public class TurnSnapshot implements Serializable {
 
     private final int[] bsAttributes;
     private final long time;
     private final long battleTime;
     private final String targetName;
 
-    public BattleSnapshot(int[] bsAttributes, long time, long battleTime, String targetName) {
+    public TurnSnapshot(int[] bsAttributes, long time, long battleTime, String targetName) {
         this.bsAttributes = bsAttributes;
         this.time = time;
         this.battleTime = battleTime;
@@ -34,14 +33,6 @@ public class BattleSnapshot implements Serializable {
 
     public int getAttrValue(Attribute a) {
         return bsAttributes[a.getId()];
-    }
-
-    public String getTargetName() {
-        return targetName;
-    }
-
-    public final double quickDistance(int[] indexes, BattleSnapshot bs, double[] weights) {
-        return LXXUtils.weightedManhattanDistance(indexes, bsAttributes, bs.bsAttributes, weights);
     }
 
     public long getTime() {
@@ -60,7 +51,7 @@ public class BattleSnapshot implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BattleSnapshot that = (BattleSnapshot) o;
+        TurnSnapshot that = (TurnSnapshot) o;
 
         if (battleTime != that.battleTime) return false;
         if (targetName != null ? !targetName.equals(that.targetName) : that.targetName != null) return false;
@@ -74,14 +65,6 @@ public class BattleSnapshot implements Serializable {
         return result;
     }
 
-    public double getEnemyAbsoluteHeadingRadians() {
-        return toRadians(bsAttributes[AttributesManager.enemyAbsoluteHeading.getId()]);
-    }
-
-    public double getEnemyVelocityModule() {
-        return bsAttributes[AttributesManager.enemyVelocityModule.getId()];
-    }
-
     public double getMyVelocityModule() {
         return bsAttributes[AttributesManager.myVelocityModule.getId()];
     }
@@ -93,10 +76,6 @@ public class BattleSnapshot implements Serializable {
     public double getMyLateralVelocity() {
         return LXXUtils.lateralVelocity2(LXXUtils.getEnemyPos(this), LXXUtils.getMyPos(this),
                 getMyVelocityModule(), getMyAbsoluteHeadingRadians());
-    }
-
-    public double getMyLateralDirection() {
-        return signum(getMyLateralVelocity());
     }
 
     public int getEnemyVelocity() {

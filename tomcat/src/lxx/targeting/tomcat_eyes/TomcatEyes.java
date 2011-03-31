@@ -5,11 +5,11 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.Tomcat;
-import lxx.fire_log.FireLogEntry;
-import lxx.model.BattleSnapshot;
+import lxx.kd_tree.LPKdTreeEntry;
+import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
-import lxx.office.BattleSnapshotManager;
+import lxx.office.TurnSnapshotsLog;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.GunType;
 import lxx.targeting.Target;
@@ -101,12 +101,12 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     private final Tomcat robot;
     private final BulletManager bulletManager;
-    private final BattleSnapshotManager battleSnapshotManager;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
-    public TomcatEyes(Tomcat robot, BulletManager bulletManager, BattleSnapshotManager battleSnapshotManager) {
+    public TomcatEyes(Tomcat robot, BulletManager bulletManager, TurnSnapshotsLog turnSnapshotsLog) {
         this.robot = robot;
         this.bulletManager = bulletManager;
-        this.battleSnapshotManager = battleSnapshotManager;
+        this.turnSnapshotsLog = turnSnapshotsLog;
     }
 
     private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes) {
@@ -133,9 +133,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
 
-        final BattleSnapshot snapshot = battleSnapshotManager.getLastSnapshot(target, 1);
-        FireLogEntry<MovementDecision> entry = new FireLogEntry<MovementDecision>(snapshot);
-        entry.result = MovementDecision.getMovementDecision(battleSnapshotManager.getLastSnapshot(target));
+        final TurnSnapshot snapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
+        LPKdTreeEntry<MovementDecision> entry = new LPKdTreeEntry<MovementDecision>(snapshot);
+        entry.result = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
         if (abs(entry.result.getAcceleration()) > 2) {
             return;
         }

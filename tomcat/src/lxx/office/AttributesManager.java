@@ -5,7 +5,7 @@
 package lxx.office;
 
 import lxx.Tomcat;
-import lxx.model.BattleSnapshot;
+import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.model.attributes.attribute_extractors.DistanceBetweenVE;
 import lxx.model.attributes.attribute_extractors.DistanceBetween_100VE;
@@ -91,7 +91,7 @@ public class AttributesManager {
         this.robot = robot;
     }
 
-    public BattleSnapshot getBattleSnapshot(Target t) {
+    public TurnSnapshot getBattleSnapshot(Target t) {
         int[] attrValues = new int[attributes.length];
         for (final Attribute a : attributes) {
             if (a.getId() >= attributes.length) {
@@ -111,7 +111,7 @@ public class AttributesManager {
             attrValues[a.getId()] = av;
         }
 
-        return new BattleSnapshot(attrValues, robot.getTime(), office.getBattleTimeManager().getBattleTime(), t.getName());
+        return new TurnSnapshot(attrValues, robot.getTime(), office.getBattleTimeManager().getBattleTime(), t.getName());
     }
 
     public static int attributesCount() {
