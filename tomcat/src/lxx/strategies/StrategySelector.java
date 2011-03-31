@@ -27,7 +27,7 @@ public class StrategySelector {
     public StrategySelector(Tomcat robot, Office office) {
         final TargetManager targetManager = office.getTargetManager();
         final EnemyBulletManager enemyBulletManager = office.getEnemyBulletManager();
-        final TomcatEyes tomcatEyes = new TomcatEyes(robot, office.getBulletManager());
+        final TomcatEyes tomcatEyes = new TomcatEyes(robot, office.getBulletManager(), office.getBattleSnapshotManager());
         targetManager.addListener(tomcatEyes);
         enemyBulletManager.addListener(tomcatEyes);
 
@@ -36,17 +36,11 @@ public class StrategySelector {
         final DuelStrategy waveSurfingDuelStrategy = new DuelStrategy(robot,
                 new SimpleTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
                 new AdvancedTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
-                createDuelGun(robot, office, tomcatEyes),
+                new TomcatClaws(office, tomcatEyes),
                 new DuelFirePowerSelector(tomcatEyes), targetManager, enemyBulletManager, tomcatEyes);
         strategies.add(waveSurfingDuelStrategy);
 
         strategies.add(new WinStrategy(robot, targetManager, enemyBulletManager));
-    }
-
-    private Gun createDuelGun(Tomcat robot, Office office, TomcatEyes tomcatEyes) {
-        final TomcatClaws tomcatClaws = new TomcatClaws(office, tomcatEyes);
-        robot.addListener(tomcatClaws);
-        return tomcatClaws;
     }
 
     public Strategy selectStrategy() {

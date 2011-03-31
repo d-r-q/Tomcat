@@ -4,7 +4,9 @@
 
 package lxx.targeting.tomcat_eyes;
 
+import lxx.fire_log.FireLog;
 import lxx.model.attributes.Attribute;
+import lxx.strategies.MovementDecision;
 
 /**
  * User: jdev
@@ -14,14 +16,12 @@ public class TargetingConfiguration {
 
     private final String name;
     private final Attribute[] attributes;
-    private final double[] weights;
-    private final int[] indexes;
+    private final FireLog<MovementDecision> log;
 
-    public TargetingConfiguration(String name, Attribute[] attributes, double[] weights, int[] indexes) {
+    public TargetingConfiguration(String name, Attribute[] attributes) {
         this.name = name;
         this.attributes = attributes;
-        this.weights = weights;
-        this.indexes = indexes;
+        log = new FireLog<MovementDecision>(attributes, 2, 0.001);
     }
 
     public String getName() {
@@ -32,11 +32,8 @@ public class TargetingConfiguration {
         return attributes;
     }
 
-    public double[] getWeights() {
-        return weights;
+    public FireLog<MovementDecision> getLog() {
+        return log;
     }
 
-    public int[] getIndexes() {
-        return indexes;
-    }
 }

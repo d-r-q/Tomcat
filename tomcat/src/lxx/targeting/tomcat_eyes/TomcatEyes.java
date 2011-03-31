@@ -5,8 +5,12 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.Tomcat;
+import lxx.fire_log.FireLogEntry;
+import lxx.model.BattleSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
+import lxx.office.BattleSnapshotManager;
+import lxx.strategies.MovementDecision;
 import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
@@ -19,6 +23,8 @@ import lxx.utils.LXXUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.abs;
+
 /**
  * User: jdev
  * Date: 01.03.2011
@@ -26,53 +32,55 @@ import java.util.Map;
 public class TomcatEyes implements TargetManagerListener, BulletManagerListener {
 
     private static final Attribute[] wallsAttributes = new Attribute[]{
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.enemyDistanceToCenter,
-            AttributesManager.enemyStopTime,
+            AttributesManager.enemyVelocity,
             AttributesManager.enemyBearingToForwardWall,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyStopTime,
+            AttributesManager.enemyDistanceToCenter,
+            AttributesManager.enemyBearingToMe,
     };
 
     private static final Attribute[] crazyAttributes = new Attribute[]{
-            AttributesManager.enemyBearingToForwardWall,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyDistanceToCenter,
-            AttributesManager.enemyTurnRate,
             AttributesManager.enemyVelocity,
             AttributesManager.enemyTurnTime,
+            AttributesManager.enemyTurnRate,
+            AttributesManager.enemyDistanceToCenter,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToForwardWall,
     };
 
     private static final Attribute[] drussAttributes = new Attribute[]{
-            AttributesManager.enemyStopTime,
-            AttributesManager.enemyTurnTime,
-            AttributesManager.enemyTravelTime,
-            AttributesManager.enemyBearingToForwardWall,
-            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyVelocity,
+            AttributesManager.enemyAcceleration,
             AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyTravelTime,
+            AttributesManager.enemyTurnTime,
+            AttributesManager.enemyStopTime,
     };
 
     private static final Attribute[] doctorBobAttributes = new Attribute[]{
-            AttributesManager.enemyBearingToForwardWall,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyStopTime,
-            AttributesManager.enemyTravelTime,
-            AttributesManager.distBetween,
+            AttributesManager.enemyVelocity,
             AttributesManager.enemyBearingToMe,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.distBetween,
+            AttributesManager.enemyTravelTime,
+            AttributesManager.enemyStopTime,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToForwardWall,
     };
 
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
-        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes, 10));
+        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes));
 
-        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 4);
+        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
-        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 4);
+        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes);
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
-        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 4);
+        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes);
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
@@ -93,23 +101,16 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     private final Tomcat robot;
     private final BulletManager bulletManager;
+    private final BattleSnapshotManager battleSnapshotManager;
 
-    public TomcatEyes(Tomcat robot, BulletManager bulletManager) {
+    public TomcatEyes(Tomcat robot, BulletManager bulletManager, BattleSnapshotManager battleSnapshotManager) {
         this.robot = robot;
         this.bulletManager = bulletManager;
+        this.battleSnapshotManager = battleSnapshotManager;
     }
 
-    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes, int weightMultiplier) {
-        int[] indexes = new int[attributes.length];
-        double[] weights = new double[AttributesManager.attributesCount()];
-        double weight = 1;
-        int idx = 0;
-        for (Attribute a : attributes) {
-            indexes[idx++] = a.getId();
-            weights[a.getId()] = weight / a.getActualRange();
-            weight = weight * weightMultiplier + 1;
-        }
-        return new TargetingConfiguration(name, attributes, weights, indexes);
+    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes) {
+        return new TargetingConfiguration(name, attributes);
     }
 
     public TargetingConfiguration getConfiguration(Target t) {
@@ -131,6 +132,17 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         movementMetaProfile.update(target, robot, bulletManager);
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
+
+        final BattleSnapshot snapshot = battleSnapshotManager.getLastSnapshot(target, 1);
+        FireLogEntry<MovementDecision> entry = new FireLogEntry<MovementDecision>(snapshot);
+        entry.result = MovementDecision.getMovementDecision(battleSnapshotManager.getLastSnapshot(target));
+        if (abs(entry.result.getAcceleration()) > 2) {
+            return;
+        }
+
+        for (TargetingConfiguration tc : targetingConfigurations.values()) {
+            tc.getLog().addEntry(entry);
+        }
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {

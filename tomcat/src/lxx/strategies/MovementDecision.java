@@ -4,15 +4,19 @@
 
 package lxx.strategies;
 
+import lxx.model.BattleSnapshot;
+import lxx.office.AttributesManager;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXRobotState;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
 import robocode.util.Utils;
 
+import java.io.Serializable;
+
 import static java.lang.Math.*;
 
-public class MovementDecision {
+public class MovementDecision implements Serializable {
 
     private final double acceleration;
     private final double turnRateRadians;
@@ -26,6 +30,12 @@ public class MovementDecision {
         this.movementDirection = movementDirection;
 
         key = movementDirection.sign + ":" + acceleration + ":" + round(toDegrees(turnRateRadians) / 2);
+    }
+
+    public static MovementDecision getMovementDecision(BattleSnapshot predicate) {
+        double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
+        double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
+        return new MovementDecision(acceleration, turnRateRadians, MovementDirection.get(predicate.getEnemyVelocity()));
     }
 
     public double getAcceleration() {
