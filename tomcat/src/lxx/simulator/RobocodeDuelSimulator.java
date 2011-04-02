@@ -10,7 +10,9 @@ import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
+import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.*;
+import robocode.Bullet;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -25,15 +27,17 @@ import static java.lang.Math.*;
 public class RobocodeDuelSimulator {
 
     private final Map<RobotProxy, MovementDecision> movementDecisions = new HashMap<RobotProxy, MovementDecision>();
+    private final Set<Attribute> attributesToSimulate = new HashSet<Attribute>();
+
     private final RobotProxy enemyProxy;
     private final RobotProxy meProxy;
     private final long time;
     private final long battleTime;
-    private final Set<Attribute> attributesToSimulate = new HashSet<Attribute>();
+    private final List<LXXBullet> myBullets;
 
     private long timeElapsed = 0;
 
-    public RobocodeDuelSimulator(Target enemy, Tomcat robot, long time, long battleTime, Attribute[] attributesToSimulate) {
+    public RobocodeDuelSimulator(Target enemy, Tomcat robot, long time, long battleTime, Attribute[] attributesToSimulate, List<LXXBullet> myBullets) {
         this.enemyProxy = new RobotProxy(enemy, time);
         this.meProxy = new RobotProxy(robot, time);
         this.time = time;
@@ -43,6 +47,11 @@ public class RobocodeDuelSimulator {
         this.attributesToSimulate.add(AttributesManager.enemyVelocity);
         this.attributesToSimulate.add(AttributesManager.enemyAcceleration);
         this.attributesToSimulate.add(AttributesManager.enemyTurnRate);
+
+        this.myBullets = new ArrayList<LXXBullet>();
+        for (LXXBullet bullet : myBullets) {
+            this.myBullets.add(new LXXBullet(bullet.getBullet(), bullet.getWave(), bullet.getAimPredictionData()));
+        }
     }
 
     public void setEnemyMovementDecision(MovementDecision movementDecision) {
@@ -58,7 +67,24 @@ public class RobocodeDuelSimulator {
             final MovementDecision md = movementDecisions.get(proxy);
             apply(proxy, md);
         }
+        processBullets();
         timeElapsed++;
+    }
+
+    private void processBullets() {
+        final List<LXXBullet> toRemove = new ArrayList<LXXBullet>();
+        for (LXXBullet bullet : myBullets) {
+            final Bullet oldBulletState = bullet.getBullet();
+            final LXXPoint newBulletPos = bullet.getCurrentPosition().project(bullet.getHeadingRadians(), bullet.getSpeed());
+            if (bullet.getFirePosition().aDistance(newBulletPos) > bullet.getFirePosition().aDistance(bullet.getTarget())) {
+                toRemove.add(bullet);
+            }
+            final Bullet newBulletState = new Bullet(oldBulletState.getHeadingRadians(), newBulletPos.x, newBulletPos.y, oldBulletState.getPower(),
+                    oldBulletState.getName(), oldBulletState.getVictim(), true, -2);
+            bullet.setBullet(newBulletState);
+        }
+
+        myBullets.removeAll(toRemove);
     }
 
     private void apply(RobotProxy proxy, MovementDecision movementDecision) {
@@ -89,7 +115,7 @@ public class RobocodeDuelSimulator {
         final int[] avs = new int[AttributesManager.attributesCount()];
 
         for (Attribute a : attributesToSimulate) {
-            avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy);
+            avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy, myBullets);
         }
 
         return new TurnSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());

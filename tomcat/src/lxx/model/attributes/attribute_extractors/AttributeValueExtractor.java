@@ -4,7 +4,10 @@
 
 package lxx.model.attributes.attribute_extractors;
 
+import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.LXXRobot;
+
+import java.util.List;
 
 /**
  * User: jdev
@@ -12,6 +15,6 @@ import lxx.utils.LXXRobot;
  */
 public interface AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me);
+    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets);
 
 }

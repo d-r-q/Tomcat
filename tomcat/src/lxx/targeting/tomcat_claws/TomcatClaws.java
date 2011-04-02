@@ -13,6 +13,7 @@ import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
+import lxx.targeting.bullets.BulletManager;
 import lxx.targeting.tomcat_eyes.TargetingConfiguration;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.APoint;
@@ -41,6 +42,7 @@ public class TomcatClaws implements Gun {
     private final TargetManager targetManager;
     private final Timer timer;
     private final TomcatEyes tomcatEyes;
+    private final BulletManager bulletManager;
 
     private LinkedList<LXXPoint> predictedPoses = null;
     private RobocodeDuelSimulator duelSimulator;
@@ -50,6 +52,7 @@ public class TomcatClaws implements Gun {
         this.targetManager = office.getTargetManager();
         this.timer = office.getBattleTimeManager();
         this.tomcatEyes = tomcatEyes;
+        bulletManager = office.getBulletManager();
 
         robot = office.getRobot();
     }
@@ -66,7 +69,7 @@ public class TomcatClaws implements Gun {
             predictedPoses = new LinkedList<LXXPoint>();
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             robot.setDebugProperty("Enemy gun type", tomcatEyes.getEnemyGunType(t).toString());
-            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes());
+            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes(), bulletManager.getBullets());
             robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
 
             final double bulletSpeed = Rules.getBulletSpeed(firePower);

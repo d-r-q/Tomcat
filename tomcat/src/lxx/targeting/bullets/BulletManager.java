@@ -127,4 +127,8 @@ public class BulletManager implements RobotListener {
             }
         }
     }
+
+    public List<LXXBullet> getBullets() {
+        return bullets;
+    }
 }

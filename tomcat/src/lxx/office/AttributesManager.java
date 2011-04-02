@@ -13,6 +13,9 @@ import lxx.model.attributes.attribute_extractors.RoundTimeVE;
 import lxx.model.attributes.attribute_extractors.my.*;
 import lxx.model.attributes.attribute_extractors.target.*;
 import lxx.targeting.Target;
+import lxx.targeting.bullets.LXXBullet;
+
+import java.util.List;
 
 public class AttributesManager {
 
@@ -36,6 +39,8 @@ public class AttributesManager {
     public static final Attribute enemyTravelTime = new Attribute("Enemy travel time", 0, 2000, new EnemyTravelTimeVE());
     public static final Attribute enemyTurnTime = new Attribute("Enemy turn time", 0, 2000, new EnemyTurnTimeVE());
     public static final Attribute enemyDistanceToCenter = new Attribute("Enemy distance to center", 0, 850, new EnemyDistanceToCenterVE());
+
+    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -4, 4, new FirstBulletBearingOffsetVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
@@ -70,6 +75,8 @@ public class AttributesManager {
             enemyTurnTime,
             enemyDistanceToCenter,
 
+            firstBulletBearingOffset,
+
             myX,
             myY,
             myVelocity,
@@ -93,13 +100,14 @@ public class AttributesManager {
 
     public TurnSnapshot getBattleSnapshot(Target t) {
         int[] attrValues = new int[attributes.length];
+        List<LXXBullet> myBullets = office.getBulletManager().getBullets();
         for (final Attribute a : attributes) {
             if (a.getId() >= attributes.length) {
                 throw new RuntimeException("Something wrong!");
             }
-            final int av = a.getExtractor().getAttributeValue(t, robot);
+            final int av = a.getExtractor().getAttributeValue(t, robot, myBullets);
             if (av < a.getMinValue() || av > a.getMaxValue()) {
-                a.getExtractor().getAttributeValue(t, robot);
+                a.getExtractor().getAttributeValue(t, robot, myBullets);
                 throw new RuntimeException(a + " = " + av);
             }
             if (a.getActualMin() > av) {

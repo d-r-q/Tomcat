@@ -119,4 +119,11 @@ public class LXXBullet {
         return result;
     }
 
+    public Wave getWave() {
+        return wave;
+    }
+
+    public LXXPoint getCurrentPosition() {
+        return new LXXPoint(bullet.getX(), bullet.getY());
+    }
 }
