@@ -18,7 +18,7 @@ import robocode.util.Utils;
 
 import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -92,13 +92,7 @@ public class RobocodeDuelSimulator {
         final double newHeading = Utils.normalAbsoluteAngle(state.getHeadingRadians() + movementDecision.getTurnRateRadians());
         final double maxVelocity = LXXUtils.limit(0, abs(state.getVelocity()) + movementDecision.getAcceleration(), Rules.MAX_VELOCITY);
 
-        double newVelocity;
-        if (signum(state.getVelocity()) == signum(movementDecision.getMovementDirection().sign) ||
-                state.getVelocity() == 0) {
-            newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
-        } else {
-            newVelocity = max(0, abs(state.getVelocity()) - Rules.DECELERATION);
-        }
+        double newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
 
         final double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());
         final APoint newPosition;

@@ -50,10 +50,12 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     private static final Attribute[] drussAttributes = new Attribute[]{
             AttributesManager.firstBulletBearingOffset,
-            AttributesManager.enemyVelocity,
             AttributesManager.enemyAcceleration,
+            AttributesManager.enemyVelocity,
             AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyDistanceToReverceWall,
             AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyBearingToForwardWall,
     };
 
     private static final Attribute[] doctorBobAttributes = new Attribute[]{
@@ -69,15 +71,15 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
-        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes));
+        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes, 0.001));
 
-        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes);
+        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
-        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes);
+        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 0.0588);
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
-        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes);
+        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 0.001);
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
@@ -106,8 +108,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         this.turnSnapshotsLog = turnSnapshotsLog;
     }
 
-    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes) {
-        return new TargetingConfiguration(name, attributes);
+    private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes, double maxIntervalLength) {
+        return new TargetingConfiguration(name, attributes, maxIntervalLength);
     }
 
     public TargetingConfiguration getConfiguration(Target t) {
@@ -131,7 +133,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
 
         final TurnSnapshot snapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
-        LPKdTreeEntry<MovementDecision> entry = new LPKdTreeEntry<MovementDecision>(snapshot);
+        final LPKdTreeEntry<MovementDecision> entry = new LPKdTreeEntry<MovementDecision>(snapshot);
         entry.result = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
         if (abs(entry.result.getAcceleration()) > 2) {
             return;

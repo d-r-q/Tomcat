@@ -20,7 +20,7 @@ import static java.lang.Math.*;
  * User: jdev
  * Date: 07.09.2010
  */
-public class EnemyAimingPredictionData implements AimingPredictionData {
+public class GFAimingPredictionData implements AimingPredictionData {
 
     private static final NumberFormat format = new DecimalFormat("###.###");
 
@@ -30,7 +30,7 @@ public class EnemyAimingPredictionData implements AimingPredictionData {
     private double maxDanger;
     private double maxBearingOffset = 0;
 
-    public EnemyAimingPredictionData(Map<Double, Double> matches) {
+    public GFAimingPredictionData(Map<Double, Double> matches) {
         for (Double bearingOffset : matches.keySet()) {
             double danger = matches.get(bearingOffset);
             if (danger == -1) {

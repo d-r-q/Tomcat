@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.model.attributes.attribute_extractors.target;
 
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.targeting.bullets.LXXBullet;
-import lxx.utils.LXXConstants;
 import lxx.utils.LXXPoint;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
@@ -11,8 +14,7 @@ import robocode.util.Utils;
 
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
@@ -25,16 +27,23 @@ public class FirstBulletBearingOffsetVE implements AttributeValueExtractor {
             return 0;
         }
 
-        final LXXBullet firstBullet = myBullets.get(0);
-        final double bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getFirePosition().aDistance(firstBullet.getCurrentPosition())) /
-                firstBullet.getSpeed();
-        final double latDir = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), enemy, enemy.getState().getVelocityModule(), enemy.getState().getAbsoluteHeadingRadians()));
-        final LXXPoint maxEnemyPos = enemy.getPosition().project(firstBullet.getFirePosition().angleTo(enemy) + LXXConstants.RADIANS_90 * latDir, Rules.MAX_VELOCITY * bulletFlightTime);
+        LXXBullet firstBullet;
+        int idx = 0;
+        double bulletFlightTime;
+        do {
+            if (idx == myBullets.size()) {
+                return 0;
+            }
+            firstBullet = myBullets.get(idx++);
+            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getFirePosition().aDistance(firstBullet.getCurrentPosition())) /
+                    firstBullet.getSpeed();
+        } while (bulletFlightTime < 1);
+        final LXXPoint maxEnemyPos = enemy.getPosition().project(enemy.getState().getAbsoluteHeadingRadians(), Rules.MAX_VELOCITY * bulletFlightTime);
         final double maxEscapeAngle = abs(Utils.normalRelativeAngle(firstBullet.getCurrentPosition().angleTo(maxEnemyPos) - firstBullet.getCurrentPosition().angleTo(enemy)));
         final double bearingOffset = Utils.normalRelativeAngle(firstBullet.getHeadingRadians() - firstBullet.getCurrentPosition().angleTo(enemy)) / maxEscapeAngle;
+        final double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getCurrentPosition(), enemy, enemy.getState().getVelocityModule(), enemy.getState().getAbsoluteHeadingRadians()));
 
-
-        return (int) LXXUtils.limit(-4, bearingOffset * 2, 4);
+        return (int) LXXUtils.limit(-2, round(bearingOffset) * lateralDirection, 2);
     }
 
 }

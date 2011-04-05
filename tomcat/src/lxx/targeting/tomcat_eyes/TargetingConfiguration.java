@@ -18,10 +18,10 @@ public class TargetingConfiguration {
     private final Attribute[] attributes;
     private final LimitedPriorityKdTree<MovementDecision> log;
 
-    public TargetingConfiguration(String name, Attribute[] attributes) {
+    public TargetingConfiguration(String name, Attribute[] attributes, double maxIntervalLength) {
         this.name = name;
         this.attributes = attributes;
-        log = new LimitedPriorityKdTree<MovementDecision>(attributes, 2, 0.001);
+        log = new LimitedPriorityKdTree<MovementDecision>(attributes, 2, maxIntervalLength);
     }
 
     public String getName() {

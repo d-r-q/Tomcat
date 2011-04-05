@@ -6,8 +6,8 @@ package lxx.office;
 
 import lxx.RobotListener;
 import lxx.Tomcat;
-import lxx.enemy_bullets.EnemyAimingPredictionData;
 import lxx.enemy_bullets.EnemyFireAnglePredictor;
+import lxx.enemy_bullets.GFAimingPredictionData;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
@@ -216,7 +216,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             matches.put(bearingOffset, 0.01D);
         }
 
-        return new LXXBullet(bullet, wave, new EnemyAimingPredictionData(matches));
+        return new LXXBullet(bullet, wave, new GFAimingPredictionData(matches));
     }
 
     public void paint(LXXGraphics g) {

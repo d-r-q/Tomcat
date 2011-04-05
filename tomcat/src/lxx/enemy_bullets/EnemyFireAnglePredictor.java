@@ -65,7 +65,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
         }
 
-        return new EnemyAimingPredictionData(bearingOffsetDangers);
+        return new GFAimingPredictionData(bearingOffsetDangers);
 
     }
 

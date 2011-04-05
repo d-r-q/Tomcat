@@ -47,7 +47,7 @@ public class WaveManager implements RobotListener {
         addCallback(callback, w);
     }
 
-    private void addCallback(WaveCallback callback, Wave w) {
+    public void addCallback(WaveCallback callback, Wave w) {
         Set<WaveCallback> callbacks = waveCallbacks.get(w);
         if (callbacks == null) {
             callbacks = new HashSet<WaveCallback>();

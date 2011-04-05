@@ -32,7 +32,8 @@ public class AttributesManager {
     public static final Attribute enemyAbsoluteHeading = new Attribute("Enemy heading", 0, 360, new EnemyHeadingVE());
     public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10, 10, new EnemyTurnRateVE());
 
-    public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy heading wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());
+    public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());
+    public static final Attribute enemyDistanceToReverceWall = new Attribute("Enemy reverce wall distance", 0, 1700, new EnemyDistanceToReverceWallVE());
     public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on wall", -90, 90, new EnemyBearingToHOWallVE());
     public static final Attribute enemyBearingToMe = new Attribute("Enemy bearing to me", -180, 180, new EnemyBearingToMeVE());
     public static final Attribute enemyStopTime = new Attribute("Enemy stop time", 0, 2000, new EnemyStopTimeVE());
@@ -40,7 +41,8 @@ public class AttributesManager {
     public static final Attribute enemyTurnTime = new Attribute("Enemy turn time", 0, 2000, new EnemyTurnTimeVE());
     public static final Attribute enemyDistanceToCenter = new Attribute("Enemy distance to center", 0, 850, new EnemyDistanceToCenterVE());
 
-    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -4, 4, new FirstBulletBearingOffsetVE());
+    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -2, 2, new FirstBulletBearingOffsetVE());
+    public static final Attribute firstBulletFlightTime = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
@@ -68,6 +70,7 @@ public class AttributesManager {
             enemyTurnRate,
 
             enemyDistanceToForwardWall,
+            enemyDistanceToReverceWall,
             enemyBearingToForwardWall,
             enemyBearingToMe,
             enemyStopTime,
@@ -76,6 +79,7 @@ public class AttributesManager {
             enemyDistanceToCenter,
 
             firstBulletBearingOffset,
+            firstBulletFlightTime,
 
             myX,
             myY,

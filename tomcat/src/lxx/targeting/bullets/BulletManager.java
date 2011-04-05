@@ -57,7 +57,7 @@ public class BulletManager implements RobotListener {
     }
 
     private void onBulletMissed(BulletMissedEvent event) {
-        LXXBullet b = getBullet(event.getBullet());
+        final LXXBullet b = getBullet(event.getBullet());
         if (b != null && b.getTarget() != null && b.getTarget().isAlive()) {
             for (BulletManagerListener lst : listeners) {
                 lst.bulletMiss(b);

@@ -5,7 +5,7 @@
 package lxx.strategies.duel;
 
 import lxx.Tomcat;
-import lxx.enemy_bullets.EnemyAimingPredictionData;
+import lxx.enemy_bullets.GFAimingPredictionData;
 import lxx.office.EnemyBulletManager;
 import lxx.office.TargetManager;
 import lxx.strategies.Movement;
@@ -120,11 +120,11 @@ public abstract class WaveSurfingMovement implements Movement {
         double totalDanger = 0;
         double weight = 1D;
         for (LXXBullet lxxBullet : lxxBullets) {
-            final EnemyAimingPredictionData enemyAimingPredictionData = lxxBullet != null ? (EnemyAimingPredictionData) lxxBullet.getAimPredictionData() : null;
+            final GFAimingPredictionData GFAimingPredictionData = lxxBullet != null ? (GFAimingPredictionData) lxxBullet.getAimPredictionData() : null;
 
             double bulletDanger;
-            if (enemyAimingPredictionData != null) {
-                bulletDanger = enemyAimingPredictionData.getDanger(lxxBullet.getBearingOffsetRadians(pnt),
+            if (GFAimingPredictionData != null) {
+                bulletDanger = GFAimingPredictionData.getDanger(lxxBullet.getBearingOffsetRadians(pnt),
                         LXXUtils.getRobotWidthInRadians(lxxBullet.getFirePosition(), pnt));
             } else {
                 bulletDanger = 0;
