@@ -12,6 +12,7 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.*;
+import lxx.wave.Wave;
 import robocode.Bullet;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -52,6 +53,9 @@ public class RobocodeDuelSimulator {
         for (LXXBullet bullet : myBullets) {
             this.myBullets.add(new LXXBullet(bullet.getBullet(), bullet.getWave(), bullet.getAimPredictionData()));
         }
+        final LXXBullet nextFiredBullet = new LXXBullet(new Bullet(robot.angleTo(enemy), robot.getX(), robot.getY(), robot.firePower(), robot.getName(), enemy.getName(), true, -2),
+                new Wave(robot.getState(), enemy.getState(), Rules.getBulletSpeed(robot.firePower()), time + 2), null);
+        this.myBullets.add(nextFiredBullet);
     }
 
     public void setEnemyMovementDecision(MovementDecision movementDecision) {
@@ -94,12 +98,15 @@ public class RobocodeDuelSimulator {
 
         double newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
 
-        final double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());
-        final APoint newPosition;
+        double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());
+        APoint newPosition;
         if (distanceToWall > newVelocity) {
             newPosition = proxy.getState().project(newVelocity >= 0 ? newHeading : Utils.normalAbsoluteAngle(newHeading + LXXConstants.RADIANS_180), abs(newVelocity));
         } else {
-            newPosition = proxy.getState().project(newVelocity >= 0 ? newHeading : Utils.normalAbsoluteAngle(newHeading + LXXConstants.RADIANS_180), distanceToWall);
+            do {
+                newPosition = proxy.getState().project(newVelocity >= 0 ? newHeading : Utils.normalAbsoluteAngle(newHeading + LXXConstants.RADIANS_180), distanceToWall);
+                distanceToWall -= 1;
+            } while (!proxy.getState().getBattleField().contains(newPosition) && distanceToWall > 0);
             newVelocity = 0;
         }
         proxy.doTurn(new RobotImage(newPosition, newVelocity, newHeading, state.getBattleField(), movementDecision.getTurnRateRadians(), state.getEnergy()));

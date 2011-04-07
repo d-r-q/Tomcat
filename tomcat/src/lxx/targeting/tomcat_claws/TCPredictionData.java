@@ -35,11 +35,9 @@ public class TCPredictionData implements AimingPredictionData {
 
         final LXXRobot target = bullet.getTarget();
         final double travelledDistance = bullet.getTravelledDistance();
-        final double bulletFlightTime = (firePosition.aDistance(target) - travelledDistance) / bullet.getSpeed();
-        final APoint targetPredictedPos = target.project(target.getState().getAbsoluteHeadingRadians(), target.getState().getVelocityModule() * bulletFlightTime);
         final double bulletHeadingRadians = bullet.getHeadingRadians();
 
-        g.setColor(getColor(bullet, targetPredictedPos, bulletHeadingRadians));
+        g.setColor(getColor(bullet, target, bulletHeadingRadians));
         final double angleToTarget = firePosition.angleTo(target);
         final double angleToTargetAtFireTime = bullet.noBearingOffset();
         final double robotWidthAtRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), target);
@@ -92,11 +90,14 @@ public class TCPredictionData implements AimingPredictionData {
         }
     }
 
-    private Color getColor(LXXBullet bullet, APoint targetPredictedPos, double bulletHeadingRadians) {
-        final double anglesDiff = LXXUtils.anglesDiff(bulletHeadingRadians, bullet.getFirePosition().angleTo(targetPredictedPos));
-        double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), targetPredictedPos);
-        final float missProbability = anglesDiff > robotWidthInRadians ? 1 : (float) (anglesDiff < robotWidthInRadians / 3 ? 0 : anglesDiff / robotWidthInRadians);
-        return new Color(Color.HSBtoRGB(28F / 255F, 255F / 255F, (1630F - 100F * missProbability) / 255F));
+    private Color getColor(LXXBullet bullet, APoint targetPos, double bulletHeadingRadians) {
+        final double anglesDiff = LXXUtils.anglesDiff(bulletHeadingRadians, bullet.getFirePosition().angleTo(targetPos));
+        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), targetPos);
+        if (anglesDiff < robotWidthInRadians / 2) {
+            return new Color(255, 200, 200, 170);
+        } else {
+            return new Color(255, 0, 0, 25);
+        }
     }
 
 }
