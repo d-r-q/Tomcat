@@ -6,6 +6,9 @@ package lxx.model.attributes;
 
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.Interval;
+import lxx.utils.IntervalDouble;
+
+import static java.lang.StrictMath.round;
 
 /**
  * User: jdev
@@ -16,15 +19,15 @@ public class Attribute {
     private static int idSequence = 0;
 
     private final String name;
-    private final int minValue;
-    private final int maxValue;
+    private final double minValue;
+    private final double maxValue;
     private final AttributeValueExtractor extractor;
     private final int id;
 
-    private int actualMin = Integer.MAX_VALUE;
-    private int actualMax = Integer.MIN_VALUE;
+    private double actualMin = Integer.MAX_VALUE;
+    private double actualMax = Integer.MIN_VALUE;
 
-    public Attribute(String name, int minValue, int maxValue, AttributeValueExtractor extractor) {
+    public Attribute(String name, double minValue, double maxValue, AttributeValueExtractor extractor) {
         this.name = name;
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -32,11 +35,11 @@ public class Attribute {
         this.id = idSequence++;
     }
 
-    public int getMinValue() {
+    public double getMinValue() {
         return minValue;
     }
 
-    public int getMaxValue() {
+    public double getMaxValue() {
         return maxValue;
     }
 
@@ -48,22 +51,22 @@ public class Attribute {
         return id;
     }
 
-    public int getActualMin() {
+    public double getActualMin() {
         return actualMin;
     }
 
-    public void setActualMin(int actualMin) {
+    public void setActualMin(double actualMin) {
         if (actualMin < minValue) {
             throw new RuntimeException(this + ": " + actualMin + "/" + minValue);
         }
         this.actualMin = actualMin;
     }
 
-    public int getActualMax() {
+    public double getActualMax() {
         return actualMax;
     }
 
-    public void setActualMax(int actualMax) {
+    public void setActualMax(double actualMax) {
         if (actualMax > maxValue) {
             throw new RuntimeException(this + ": " + actualMax + "/" + maxValue);
         }
@@ -74,15 +77,18 @@ public class Attribute {
         return name;
     }
 
-    public int getActualRange() {
+    public double getActualRange() {
         return actualMax - actualMin + 1;
     }
 
-    public Interval getRange() {
-        return new Interval(minValue, maxValue);
+    public IntervalDouble getRange() {
+        return new IntervalDouble(minValue, maxValue);
     }
 
-    @Override
+    public Interval getRoundedRange() {
+        return new Interval((int) round(minValue), (int) round(maxValue));
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -94,7 +100,6 @@ public class Attribute {
         return true;
     }
 
-    @Override
     public int hashCode() {
         return id;
     }

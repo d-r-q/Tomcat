@@ -30,7 +30,7 @@ public class AttributesManager {
     public static final Attribute enemyVelocityModule = new Attribute("Enemy velocity module", 0, 8, new EnemyVelocityModuleVE());
     public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAccelerationVE());
     public static final Attribute enemyAbsoluteHeading = new Attribute("Enemy heading", 0, 360, new EnemyHeadingVE());
-    public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10, 10, new EnemyTurnRateVE());
+    public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10.1, 10.1, new EnemyTurnRateVE());
 
     public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());
     public static final Attribute enemyDistanceToReverceWall = new Attribute("Enemy reverce wall distance", 0, 1700, new EnemyDistanceToReverceWallVE());
@@ -41,7 +41,7 @@ public class AttributesManager {
     public static final Attribute enemyTurnTime = new Attribute("Enemy turn time", 0, 2000, new EnemyTurnTimeVE());
     public static final Attribute enemyDistanceToCenter = new Attribute("Enemy distance to center", 0, 850, new EnemyDistanceToCenterVE());
 
-    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -2, 2, new FirstBulletBearingOffsetVE());
+    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -10, 10, new FirstBulletBearingOffsetVE());
     public static final Attribute firstBulletFlightTime = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
@@ -103,13 +103,13 @@ public class AttributesManager {
     }
 
     public TurnSnapshot getBattleSnapshot(Target t) {
-        int[] attrValues = new int[attributes.length];
+        double[] attrValues = new double[attributes.length];
         List<LXXBullet> myBullets = office.getBulletManager().getBullets();
         for (final Attribute a : attributes) {
             if (a.getId() >= attributes.length) {
                 throw new RuntimeException("Something wrong!");
             }
-            final int av = a.getExtractor().getAttributeValue(t, robot, myBullets);
+            final double av = a.getExtractor().getAttributeValue(t, robot, myBullets);
             if (av < a.getMinValue() || av > a.getMaxValue()) {
                 a.getExtractor().getAttributeValue(t, robot, myBullets);
                 throw new RuntimeException(a + " = " + av);
@@ -123,7 +123,7 @@ public class AttributesManager {
             attrValues[a.getId()] = av;
         }
 
-        return new TurnSnapshot(attrValues, robot.getTime(), office.getBattleTimeManager().getBattleTime(), t.getName());
+        return new TurnSnapshot(attrValues, robot.getTime(), office.getRobot().getRoundNum(), t.getName());
     }
 
     public static int attributesCount() {

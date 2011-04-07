@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.kd_tree;
+package lxx.segmentation_tree;
 
 import lxx.model.TurnSnapshot;
 

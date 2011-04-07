@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.model.attributes.attribute_extractors.target;
 
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
@@ -11,7 +15,7 @@ import java.util.List;
  * Date: 26.02.11
  */
 public class EnemyStopTimeVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) (enemy.getTime() - enemy.getLastTravelTime());
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return (enemy.getTime() - enemy.getLastTravelTime());
     }
 }

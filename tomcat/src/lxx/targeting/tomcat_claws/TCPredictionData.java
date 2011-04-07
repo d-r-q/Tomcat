@@ -82,9 +82,13 @@ public class TCPredictionData implements AimingPredictionData {
     }
 
     private void drawPredictedPath(LXXGraphics g) {
-        g.setColor(new Color(255, 0, 0, 175));
+        int idx = 0;
         for (final LXXPoint pnt : predictedPoses) {
+            g.setColor(new Color(255,
+                    (int) (255 * (1 - ((double) idx / predictedPoses.size()))),
+                    (int) (255 * (1 - ((double) idx / predictedPoses.size()))), 175));
             g.fillCircle(pnt, 3);
+            idx++;
         }
     }
 

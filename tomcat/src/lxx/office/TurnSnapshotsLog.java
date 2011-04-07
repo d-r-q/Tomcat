@@ -57,13 +57,13 @@ public class TurnSnapshotsLog implements TargetManagerListener {
     private void interpolate(List<TurnSnapshot> log, TurnSnapshot turnSnapshot1, TurnSnapshot turnSnapshot2, String targetName) {
         final int steps = (int) (office.getTime() - turnSnapshot1.getTime());
         final long startRoundTime = turnSnapshot1.getTime();
-        final long startGlobalTime = turnSnapshot1.getBattleTime();
+        final int round = turnSnapshot1.getRound();
         for (int i = 1; i < steps; i++) {
-            int[] attrValue = new int[AttributesManager.attributesCount()];
+            double[] attrValue = new double[AttributesManager.attributesCount()];
             for (Attribute a : AttributesManager.attributes) {
                 attrValue[a.getId()] = turnSnapshot1.getAttrValue(a) + (turnSnapshot2.getAttrValue(a) - turnSnapshot1.getAttrValue(a)) / steps * i;
             }
-            log.add(new TurnSnapshot(attrValue, startRoundTime + i, startGlobalTime + i, targetName));
+            log.add(new TurnSnapshot(attrValue, startRoundTime + i, round, targetName));
         }
     }
 

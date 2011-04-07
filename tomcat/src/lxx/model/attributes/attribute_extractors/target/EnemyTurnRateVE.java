@@ -10,7 +10,6 @@ import lxx.utils.LXXRobot;
 
 import java.util.List;
 
-import static java.lang.Math.round;
 import static java.lang.Math.toDegrees;
 
 /**
@@ -19,8 +18,8 @@ import static java.lang.Math.toDegrees;
  */
 public class EnemyTurnRateVE implements AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) round(toDegrees(enemy.getState().getTurnRateRadians()));
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return toDegrees(enemy.getState().getTurnRateRadians());
     }
 
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import static java.lang.Math.toDegrees;
 
 public class MyRelativeHeadingVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) toDegrees(Utils.normalRelativeAngle(me.getState().getAbsoluteHeadingRadians() - enemy.angleTo(me)));
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return toDegrees(Utils.normalRelativeAngle(me.getState().getAbsoluteHeadingRadians() - enemy.angleTo(me)));
     }
 }

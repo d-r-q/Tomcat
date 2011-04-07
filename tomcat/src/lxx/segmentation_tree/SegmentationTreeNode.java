@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.kd_tree;
+package lxx.segmentation_tree;
 
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
@@ -19,10 +19,10 @@ import static java.lang.Math.abs;
  * User: jdev
  * Date: 28.09.2010
  */
-public class LPKdTreeNode<T extends Serializable> {
+public class SegmentationTreeNode<T extends Serializable> {
 
-    private final LinkedList<LPKdTreeEntry<T>> entries = new LinkedList<LPKdTreeEntry<T>>();
-    private final List<LPKdTreeNode<T>> children = new ArrayList<LPKdTreeNode<T>>();
+    private LinkedList<SegmentationTreeEntry<T>> entries = new LinkedList<SegmentationTreeEntry<T>>();
+    private final List<SegmentationTreeNode<T>> children = new ArrayList<SegmentationTreeNode<T>>();
 
     private final int loadFactor;
     private final Interval interval;
@@ -34,8 +34,8 @@ public class LPKdTreeNode<T extends Serializable> {
     private Double mediana = null;
     private boolean isLoaded = false;
 
-    public LPKdTreeNode(int loadFactor, Interval interval, int attributeIdx, Attribute[] attributes,
-                        double maxIntervalLength) {
+    public SegmentationTreeNode(int loadFactor, Interval interval, int attributeIdx, Attribute[] attributes,
+                                double maxIntervalLength) {
         this.loadFactor = loadFactor;
         this.interval = interval;
         this.attributeIdx = attributeIdx;
@@ -47,15 +47,15 @@ public class LPKdTreeNode<T extends Serializable> {
         }
     }
 
-    public List<LPKdTreeNode<T>> addEntry(LPKdTreeEntry<T> LPKdTreeEntry) {
+    public List<SegmentationTreeNode<T>> addEntry(SegmentationTreeEntry<T> SegmentationTreeEntry) {
         if (isLoaded) {
             if (children.size() == 0) {
-                children.add(new LPKdTreeNode<T>(loadFactor, attributes[attributeIdx + 1].getRange(), attributeIdx + 1, attributes, maxIntervalLength));
+                children.add(new SegmentationTreeNode<T>(loadFactor, attributes[attributeIdx + 1].getRoundedRange(), attributeIdx + 1, attributes, maxIntervalLength));
             }
-            final int attrValue = getAttrValue(LPKdTreeEntry.predicate, attributes[attributeIdx + 1]);
-            for (LPKdTreeNode<T> n : children) {
+            final int attrValue = getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx + 1]);
+            for (SegmentationTreeNode<T> n : children) {
                 if (n.interval.contains(attrValue)) {
-                    List<LPKdTreeNode<T>> subRes = n.addEntry(LPKdTreeEntry);
+                    List<SegmentationTreeNode<T>> subRes = n.addEntry(SegmentationTreeEntry);
                     if (subRes != null) {
                         int idx = children.indexOf(n);
                         children.remove(idx);
@@ -67,12 +67,12 @@ public class LPKdTreeNode<T extends Serializable> {
             return null;
         }
         if (mediana == null) {
-            mediana = (double) getAttrValue(LPKdTreeEntry.predicate, attributes[attributeIdx]);
+            mediana = (double) getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx]);
         } else {
-            mediana = (mediana * entries.size() + getAttrValue(LPKdTreeEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
+            mediana = (mediana * entries.size() + getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
         }
-        entries.addFirst(LPKdTreeEntry);
-        final int value = getAttrValue(LPKdTreeEntry.predicate, attributes[attributeIdx]);
+        entries.addFirst(SegmentationTreeEntry);
+        final int value = getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx]);
         if (value < range.a) {
             range.a = value;
         }
@@ -93,8 +93,8 @@ public class LPKdTreeNode<T extends Serializable> {
         return null;
     }
 
-    private List<LPKdTreeNode<T>> divideHor() {
-        List<LPKdTreeNode<T>> res = new ArrayList<LPKdTreeNode<T>>();
+    private List<SegmentationTreeNode<T>> divideHor() {
+        List<SegmentationTreeNode<T>> res = new ArrayList<SegmentationTreeNode<T>>();
 
         int med = mediana.intValue();
         Interval i1 = new Interval(interval.a, interval.getLength() > 2 ? med - 1 : interval.a - 1);
@@ -106,13 +106,13 @@ public class LPKdTreeNode<T extends Serializable> {
             i1 = new Interval(interval.a, interval.b - 1);
             i2 = new Interval(interval.b, interval.b);
         }
-        res.add(new LPKdTreeNode<T>(loadFactor, i1, attributeIdx, attributes, maxIntervalLength));
-        res.add(new LPKdTreeNode<T>(loadFactor, i2, attributeIdx, attributes, maxIntervalLength));
+        res.add(new SegmentationTreeNode<T>(loadFactor, i1, attributeIdx, attributes, maxIntervalLength));
+        res.add(new SegmentationTreeNode<T>(loadFactor, i2, attributeIdx, attributes, maxIntervalLength));
 
-        for (LPKdTreeEntry<T> e : entries) {
-            for (LPKdTreeNode<T> n : res) {
+        for (SegmentationTreeEntry<T> e : entries) {
+            for (SegmentationTreeNode<T> n : res) {
                 if (n.interval.contains(getAttrValue(e.predicate, attributes[attributeIdx]))) {
-                    List<LPKdTreeNode<T>> subRes = n.addEntry(e);
+                    List<SegmentationTreeNode<T>> subRes = n.addEntry(e);
                     if (subRes != null) {
                         int idx = res.indexOf(n);
                         res.remove(idx);
@@ -122,19 +122,20 @@ public class LPKdTreeNode<T extends Serializable> {
                 }
             }
         }
+        entries = null;
 
         return res;
     }
 
     private void divideVer() {
         isLoaded = true;
-        children.add(new LPKdTreeNode<T>(loadFactor, attributes[attributeIdx + 1].getRange(),
+        children.add(new SegmentationTreeNode<T>(loadFactor, attributes[attributeIdx + 1].getRoundedRange(),
                 attributeIdx + 1, attributes, maxIntervalLength));
 
-        for (LPKdTreeEntry<T> e : entries) {
-            for (LPKdTreeNode<T> n : children) {
+        for (SegmentationTreeEntry<T> e : entries) {
+            for (SegmentationTreeNode<T> n : children) {
                 if (n.interval.contains(getAttrValue(e.predicate, attributes[attributeIdx + 1]))) {
-                    List<LPKdTreeNode<T>> subRes = n.addEntry(e);
+                    List<SegmentationTreeNode<T>> subRes = n.addEntry(e);
                     if (subRes != null) {
                         int idx = children.indexOf(n);
                         children.remove(idx);
@@ -144,20 +145,21 @@ public class LPKdTreeNode<T extends Serializable> {
                 }
             }
         }
+        entries = null;
     }
 
     private int getAttrValue(TurnSnapshot bs, Attribute attrIdx) {
-        return bs.getAttrValue(attrIdx);
+        return bs.getRoundedAttrValue(attrIdx);
     }
 
-    public List<LPKdTreeEntry<T>> getEntries(TurnSnapshot bs, int limit) {
+    public List<SegmentationTreeEntry<T>> getEntries(TurnSnapshot bs, int limit) {
         if (isLoaded) {
             if (attributeIdx == -1 && children.size() == 0) {
-                return new ArrayList<LPKdTreeEntry<T>>();
+                return new ArrayList<SegmentationTreeEntry<T>>();
             }
             int idx = 0;
             final int value = getAttrValue(bs, attributes[attributeIdx + 1]);
-            for (LPKdTreeNode n : children) {
+            for (SegmentationTreeNode n : children) {
                 if (n.interval.contains(value)) {
                     break;
                 }
@@ -166,13 +168,13 @@ public class LPKdTreeNode<T extends Serializable> {
             if (idx == children.size()) {
                 idx--;
             }
-            final List<LPKdTreeEntry<T>> res = new ArrayList<LPKdTreeEntry<T>>(children.get(idx).getEntries(bs, limit));
+            final List<SegmentationTreeEntry<T>> res = new ArrayList<SegmentationTreeEntry<T>>(children.get(idx).getEntries(bs, limit));
             int step = 1;
             while (res.size() < limit && (idx - step >= 0 || idx + step < children.size())) {
-                final LPKdTreeNode<T> n1 = idx - step >= 0 ?
+                final SegmentationTreeNode<T> n1 = idx - step >= 0 ?
                         children.get(idx - step)
                         : null;
-                final LPKdTreeNode<T> n2 = idx + step < children.size()
+                final SegmentationTreeNode<T> n2 = idx + step < children.size()
                         ? children.get(idx + step)
                         : null;
 
@@ -206,6 +208,19 @@ public class LPKdTreeNode<T extends Serializable> {
         } else {
             return entries;
         }
+    }
+
+    public int getEntryCount() {
+        int res = 0;
+        if (entries != null) {
+            res += entries.size();
+        }
+
+        for (SegmentationTreeNode child : children) {
+            res += child.getEntryCount();
+        }
+
+        return res;
     }
 
 }

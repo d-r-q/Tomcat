@@ -33,8 +33,8 @@ public class MovementDecision implements Serializable {
     }
 
     public static MovementDecision getMovementDecision(TurnSnapshot predicate) {
-        double turnRateRadians = toRadians(predicate.getAttrValue(AttributesManager.enemyTurnRate));
-        double acceleration = predicate.getAttrValue(AttributesManager.enemyAcceleration);
+        double turnRateRadians = toRadians(predicate.getRoundedAttrValue(AttributesManager.enemyTurnRate));
+        double acceleration = predicate.getRoundedAttrValue(AttributesManager.enemyAcceleration);
         return new MovementDecision(acceleration, turnRateRadians, MovementDirection.get(predicate.getEnemyVelocity()));
     }
 
@@ -48,23 +48,6 @@ public class MovementDecision implements Serializable {
 
     public MovementDirection getMovementDirection() {
         return movementDirection;
-    }
-
-    public static MovementDecision toMovementDecision(LXXRobotState robot, double targetHeading,
-                                                      MovementDirection movementDirection) {
-        final double robotHeading = movementDirection == MovementDirection.FORWARD ? robot.getHeadingRadians() : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
-        final double neededTurnRateRadians = Utils.normalRelativeAngle(targetHeading - robotHeading);
-        double turnRateRadians = neededTurnRateRadians;
-        final double speed = robot.getVelocityModule();
-        final double acceleratedSpeed = min(speed + 1, Rules.MAX_VELOCITY);
-        if (abs(turnRateRadians) > Rules.getTurnRateRadians(acceleratedSpeed)) {
-            turnRateRadians = Rules.getTurnRateRadians(acceleratedSpeed) * signum(turnRateRadians);
-        }
-        final double acceleration = getAcceleration(robot, turnRateRadians, robotHeading);
-        turnRateRadians = min(abs(neededTurnRateRadians),
-                abs(Rules.getTurnRateRadians(LXXUtils.limit(0, speed + acceleration, Rules.MAX_VELOCITY)))) * signum(turnRateRadians);
-
-        return new MovementDecision(acceleration, turnRateRadians, movementDirection);
     }
 
     public static MovementDecision toMovementDecision(LXXRobotState robot, double targetHeading, MovementDirection movementDirection, double distanceToTravel, long timeToTravel) {
@@ -145,7 +128,7 @@ public class MovementDecision implements Serializable {
             this.sign = sign;
         }
 
-        public static MovementDirection get(int velocity) {
+        public static MovementDirection get(double velocity) {
             return velocity < 0 ? BACKWARD : FORWARD;
         }
     }

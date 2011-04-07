@@ -10,14 +10,14 @@ import lxx.utils.LXXRobot;
 
 import java.util.List;
 
-import static java.lang.Math.round;
-
 /**
  * User: jdev
  * Date: 23.09.2010
  */
 public class MyVelocityModuleVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) round(me.getState().getVelocityModule());
+
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return (int) me.getState().getVelocityModule();
     }
+
 }

@@ -7,19 +7,16 @@ package lxx.targeting.tomcat_claws;
 import lxx.Tomcat;
 import lxx.office.Office;
 import lxx.office.TargetManager;
-import lxx.office.Timer;
 import lxx.simulator.RobocodeDuelSimulator;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.BulletManager;
+import lxx.targeting.classification.MovementClassifier;
 import lxx.targeting.tomcat_eyes.TargetingConfiguration;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
-import lxx.utils.APoint;
-import lxx.utils.LXXPoint;
-import lxx.utils.LXXRobotState;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -40,7 +37,6 @@ public class TomcatClaws implements Gun {
 
     private final Tomcat robot;
     private final TargetManager targetManager;
-    private final Timer timer;
     private final TomcatEyes tomcatEyes;
     private final BulletManager bulletManager;
 
@@ -50,7 +46,6 @@ public class TomcatClaws implements Gun {
 
     public TomcatClaws(Office office, TomcatEyes tomcatEyes) {
         this.targetManager = office.getTargetManager();
-        this.timer = office.getBattleTimeManager();
         this.tomcatEyes = tomcatEyes;
         bulletManager = office.getBulletManager();
 
@@ -69,7 +64,7 @@ public class TomcatClaws implements Gun {
             predictedPoses = new LinkedList<LXXPoint>();
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             robot.setDebugProperty("Enemy gun type", tomcatEyes.getEnemyGunType(t).toString());
-            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), timer.getBattleTime(), targetingConfig.getAttributes(), bulletManager.getBullets());
+            duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), robot.getRoundNum(), targetingConfig.getAttributes(), bulletManager.getBullets());
             robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
 
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
@@ -90,15 +85,15 @@ public class TomcatClaws implements Gun {
     }
 
     public void buildPattern(double bulletSpeed) {
-        final TargetingConfiguration targetingConfiguration = tomcatEyes.getConfiguration(targetManager.getDuelOpponent());
+        final MovementClassifier movementClassifier = tomcatEyes.getConfiguration(targetManager.getDuelOpponent()).getMovementClassifier();
 
-        long timeDelta = 0;
+        long timeDelta = -AIMING_TIME;
         while (!isBulletHitEnemy(duelSimulator.getEnemyProxy(), timeDelta, bulletSpeed)) {
-            final MovementDecision movementDecision = targetingConfiguration.getLog().getSimilarEntries(duelSimulator.getSimulatorSnapshot(), 1).get(0).result;
+            final MovementDecision movementDecision = movementClassifier.classify(duelSimulator.getSimulatorSnapshot());
             duelSimulator.setEnemyMovementDecision(movementDecision);
             duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
-            if (timeDelta >= AIMING_TIME) {
+            if (timeDelta >= 0) {
                 final LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
                 final LXXPoint predictedPos = new LXXPoint(enemyState);
                 predictedPoses.add(predictedPos);
@@ -113,10 +108,10 @@ public class TomcatClaws implements Gun {
 
     private boolean isBulletHitEnemy(APoint predictedPos, long timeDelta, double bulletSpeed) {
         final double angleToPredictedPos = robotPosAtFireTime.angleTo(predictedPos);
-        final int bulletTravelledDistance = (int) ((timeDelta - AIMING_TIME) * bulletSpeed);
+        final int bulletTravelledDistance = (int) (timeDelta * bulletSpeed);
         final LXXPoint bulletPos = (LXXPoint) robotPosAtFireTime.project(angleToPredictedPos, bulletTravelledDistance);
         final Rectangle2D enemyRectAtPredictedPos = LXXUtils.getBoundingRectangleAt(predictedPos);
-        return enemyRectAtPredictedPos.contains(bulletPos);
+        return enemyRectAtPredictedPos.contains(bulletPos) || bulletTravelledDistance > robotPosAtFireTime.aDistance(predictedPos) + LXXConstants.ROBOT_SIDE_HALF_SIZE;
     }
 
 }

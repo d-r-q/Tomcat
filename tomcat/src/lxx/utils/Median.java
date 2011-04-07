@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Mediana {
+public class Median {
 
     private List<Integer> values = new ArrayList<Integer>();
 
-    public Mediana() {
+    public Median() {
     }
 
     public void addValue(int value) {
@@ -32,7 +32,7 @@ public class Mediana {
     }
 
     public String toString() {
-        return String.format("Mediana = %10.5f", getMediana());
+        return String.format("Median = %10.5f", getMediana());
     }
 
     public Interval getRange(double width) {

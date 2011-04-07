@@ -11,8 +11,6 @@ public interface Office {
 
     TargetManager getTargetManager();
 
-    Timer getBattleTimeManager();
-
     TurnSnapshotsLog getTurnSnapshotsLog();
 
     WaveManager getWaveManager();

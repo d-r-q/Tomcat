@@ -14,7 +14,9 @@ import java.util.List;
  * Date: 23.02.2010
  */
 public class DistanceBetweenVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) me.aDistance(enemy);
+
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return me.aDistance(enemy);
     }
+
 }

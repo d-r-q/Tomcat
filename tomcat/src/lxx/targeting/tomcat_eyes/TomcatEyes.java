@@ -5,7 +5,6 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.Tomcat;
-import lxx.kd_tree.LPKdTreeEntry;
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
@@ -17,13 +16,12 @@ import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManager;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
+import lxx.targeting.classification.SegmentationTreeMovementClassifier;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -49,13 +47,14 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     };
 
     private static final Attribute[] drussAttributes = new Attribute[]{
+            AttributesManager.enemyVelocity,
+            AttributesManager.enemyTravelTime,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletBearingOffset,
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyVelocity,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyDistanceToReverceWall,
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyDistanceToCenter,
+            AttributesManager.firstBulletFlightTime,
     };
 
     private static final Attribute[] doctorBobAttributes = new Attribute[]{
@@ -73,13 +72,13 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     static {
         targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes, 0.001));
 
-        TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
+        final TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
-        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 0.0588);
+        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 0.01);
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
-        TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 0.001);
+        final TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 0.001);
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
@@ -109,7 +108,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     }
 
     private static TargetingConfiguration getTargetingConfig(String name, Attribute[] attributes, double maxIntervalLength) {
-        return new TargetingConfiguration(name, attributes, maxIntervalLength);
+        return new TargetingConfiguration(name, new SegmentationTreeMovementClassifier(attributes, maxIntervalLength), attributes);
     }
 
     public TargetingConfiguration getConfiguration(Target t) {
@@ -132,15 +131,14 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
 
-        final TurnSnapshot snapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
-        final LPKdTreeEntry<MovementDecision> entry = new LPKdTreeEntry<MovementDecision>(snapshot);
-        entry.result = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
-        if (abs(entry.result.getAcceleration()) > 2) {
+        final TurnSnapshot turnSnapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
+        if (turnSnapshot == null) {
             return;
         }
+        final MovementDecision movementDecision = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
 
         for (TargetingConfiguration tc : targetingConfigurations.values()) {
-            tc.getLog().addEntry(entry);
+            tc.getMovementClassifier().learn(turnSnapshot, movementDecision);
         }
     }
 

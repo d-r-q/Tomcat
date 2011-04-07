@@ -11,7 +11,7 @@ import lxx.utils.LXXRobot;
 import java.util.List;
 
 public class EnemyTurnTimeVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) (enemy.getTime() - enemy.getLastNotTurnTime());
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return (enemy.getTime() - enemy.getLastNotTurnTime());
     }
 }

@@ -22,7 +22,7 @@ import static java.lang.Math.*;
  */
 public class FirstBulletBearingOffsetVE implements AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
         if (myBullets.size() == 0) {
             return 0;
         }
@@ -43,7 +43,7 @@ public class FirstBulletBearingOffsetVE implements AttributeValueExtractor {
         final double bearingOffset = Utils.normalRelativeAngle(firstBullet.getHeadingRadians() - firstBullet.getCurrentPosition().angleTo(enemy)) / maxEscapeAngle;
         final double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getCurrentPosition(), enemy, enemy.getState().getVelocityModule(), enemy.getState().getAbsoluteHeadingRadians()));
 
-        return (int) LXXUtils.limit(-2, round(bearingOffset) * lateralDirection, 2);
+        return LXXUtils.limit(-10D, round(bearingOffset) * lateralDirection * 5, 10D);
     }
 
 }

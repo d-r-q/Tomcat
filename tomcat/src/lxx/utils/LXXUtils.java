@@ -119,11 +119,11 @@ public class LXXUtils {
     }
 
     public static APoint getMyPos(TurnSnapshot bs) {
-        return new LXXPoint(bs.getAttrValue(AttributesManager.myX), bs.getAttrValue(AttributesManager.myY));
+        return new LXXPoint(bs.getRoundedAttrValue(AttributesManager.myX), bs.getRoundedAttrValue(AttributesManager.myY));
     }
 
     public static APoint getEnemyPos(TurnSnapshot bs) {
-        return new LXXPoint(bs.getAttrValue(AttributesManager.enemyX), bs.getAttrValue(AttributesManager.enemyY));
+        return new LXXPoint(bs.getRoundedAttrValue(AttributesManager.enemyX), bs.getRoundedAttrValue(AttributesManager.enemyY));
     }
 
     public static double getReturnedEnergy(double bulletPower) {

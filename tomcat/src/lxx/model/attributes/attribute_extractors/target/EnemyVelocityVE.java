@@ -15,7 +15,7 @@ import java.util.List;
  * Date: 02.03.2010
  */
 public class EnemyVelocityVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) enemy.getState().getVelocity();
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return enemy.getState().getVelocity();
     }
 }

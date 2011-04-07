@@ -13,7 +13,6 @@ public class OfficeImpl implements Office {
     private static final StaticDataManager staticDataManager = new StaticDataManager();
 
     private final TargetManager targetManager;
-    private final Timer timer;
     private final TurnSnapshotsLog turnSnapshotsLog;
     private final WaveManager waveManager;
     private final EnemyBulletManager enemyBulletManager;
@@ -26,9 +25,6 @@ public class OfficeImpl implements Office {
         this.tomcat = tomcat;
 
         attributesManager = new AttributesManager(this, tomcat);
-
-        timer = new Timer(staticDataManager, tomcat.getRoundNum());
-        tomcat.addListener(timer);
 
         targetManager = new TargetManager(tomcat);
         tomcat.addListener(targetManager);
@@ -66,10 +62,6 @@ public class OfficeImpl implements Office {
 
     public TargetManager getTargetManager() {
         return targetManager;
-    }
-
-    public Timer getBattleTimeManager() {
-        return timer;
     }
 
     public TurnSnapshotsLog getTurnSnapshotsLog() {

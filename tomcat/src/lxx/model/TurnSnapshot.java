@@ -6,12 +6,12 @@ package lxx.model;
 
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
-import lxx.utils.LXXUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
 import static java.lang.Math.toRadians;
+import static java.lang.StrictMath.round;
 
 /**
  * User: jdev
@@ -19,32 +19,36 @@ import static java.lang.Math.toRadians;
  */
 public class TurnSnapshot implements Serializable {
 
-    private final int[] bsAttributes;
+    private final double[] attributeValues;
     private final long time;
-    private final long battleTime;
+    private final int round;
     private final String targetName;
 
-    public TurnSnapshot(int[] bsAttributes, long time, long battleTime, String targetName) {
-        this.bsAttributes = bsAttributes;
+    public TurnSnapshot(double[] attributeValues, long time, int round, String targetName) {
+        this.attributeValues = attributeValues;
         this.time = time;
-        this.battleTime = battleTime;
+        this.round = round;
         this.targetName = targetName;
     }
 
-    public int getAttrValue(Attribute a) {
-        return bsAttributes[a.getId()];
+    public int getRoundedAttrValue(Attribute a) {
+        return (int) round(attributeValues[a.getId()]);
+    }
+
+    public double getAttrValue(Attribute a) {
+        return attributeValues[a.getId()];
     }
 
     public long getTime() {
         return time;
     }
 
-    public long getBattleTime() {
-        return battleTime;
+    public int getRound() {
+        return round;
     }
 
     public String toString() {
-        return Arrays.toString(bsAttributes);
+        return Arrays.toString(attributeValues);
     }
 
     public boolean equals(Object o) {
@@ -53,32 +57,30 @@ public class TurnSnapshot implements Serializable {
 
         TurnSnapshot that = (TurnSnapshot) o;
 
-        if (battleTime != that.battleTime) return false;
-        if (targetName != null ? !targetName.equals(that.targetName) : that.targetName != null) return false;
+        if (round != that.round) return false;
+        if (time != that.time) return false;
+        if (!targetName.equals(that.targetName)) return false;
 
         return true;
     }
 
     public int hashCode() {
-        int result = (int) (battleTime ^ (battleTime >>> 32));
-        result = 31 * result + (targetName != null ? targetName.hashCode() : 0);
+        int result = (int) (time ^ (time >>> 32));
+        result = 31 * result + round;
+        result = 31 * result + targetName.hashCode();
         return result;
     }
 
     public double getMyVelocityModule() {
-        return bsAttributes[AttributesManager.myVelocityModule.getId()];
+        return attributeValues[AttributesManager.myVelocityModule.getId()];
     }
 
     public double getMyAbsoluteHeadingRadians() {
-        return toRadians(bsAttributes[AttributesManager.myAbsoluteHeadingDegrees.getId()]);
+        return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.getId()]);
     }
 
-    public double getMyLateralVelocity() {
-        return LXXUtils.lateralVelocity2(LXXUtils.getEnemyPos(this), LXXUtils.getMyPos(this),
-                getMyVelocityModule(), getMyAbsoluteHeadingRadians());
+    public double getEnemyVelocity() {
+        return attributeValues[AttributesManager.enemyVelocity.getId()];
     }
 
-    public int getEnemyVelocity() {
-        return bsAttributes[AttributesManager.enemyVelocity.getId()];
-    }
 }

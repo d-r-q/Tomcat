@@ -11,13 +11,12 @@ import robocode.util.Utils;
 
 import java.util.List;
 
-import static java.lang.Math.round;
 import static java.lang.Math.toDegrees;
 
 public class EnemyBearingToMeVE implements AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) round(toDegrees(Utils.normalRelativeAngle(enemy.angleTo(me) - enemy.getState().getAbsoluteHeadingRadians())));
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return toDegrees(Utils.normalRelativeAngle(enemy.angleTo(me) - enemy.getState().getAbsoluteHeadingRadians()));
     }
 
 }

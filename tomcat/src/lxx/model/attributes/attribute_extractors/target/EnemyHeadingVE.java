@@ -17,7 +17,7 @@ import static java.lang.Math.toDegrees;
  * Date: 23.02.2010
  */
 public class EnemyHeadingVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) toDegrees(enemy.getState().getAbsoluteHeadingRadians());
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return toDegrees(enemy.getState().getAbsoluteHeadingRadians());
     }
 }

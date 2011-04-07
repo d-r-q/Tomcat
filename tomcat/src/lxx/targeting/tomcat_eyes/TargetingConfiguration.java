@@ -4,9 +4,8 @@
 
 package lxx.targeting.tomcat_eyes;
 
-import lxx.kd_tree.LimitedPriorityKdTree;
 import lxx.model.attributes.Attribute;
-import lxx.strategies.MovementDecision;
+import lxx.targeting.classification.MovementClassifier;
 
 /**
  * User: jdev
@@ -15,25 +14,24 @@ import lxx.strategies.MovementDecision;
 public class TargetingConfiguration {
 
     private final String name;
+    private final MovementClassifier movementClassifier;
     private final Attribute[] attributes;
-    private final LimitedPriorityKdTree<MovementDecision> log;
 
-    public TargetingConfiguration(String name, Attribute[] attributes, double maxIntervalLength) {
+    public TargetingConfiguration(String name, MovementClassifier movementClassifier, Attribute[] attributes) {
         this.name = name;
+        this.movementClassifier = movementClassifier;
         this.attributes = attributes;
-        log = new LimitedPriorityKdTree<MovementDecision>(attributes, 2, maxIntervalLength);
     }
 
     public String getName() {
         return name;
     }
 
+    public MovementClassifier getMovementClassifier() {
+        return movementClassifier;
+    }
+
     public Attribute[] getAttributes() {
         return attributes;
     }
-
-    public LimitedPriorityKdTree<MovementDecision> getLog() {
-        return log;
-    }
-
 }

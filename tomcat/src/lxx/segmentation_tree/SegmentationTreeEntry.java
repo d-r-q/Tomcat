@@ -2,27 +2,27 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.kd_tree;
+package lxx.segmentation_tree;
 
 import lxx.model.TurnSnapshot;
 
 import java.io.Serializable;
 
-public class LPKdTreeEntry<T extends Serializable> implements Serializable {
+public class SegmentationTreeEntry<T extends Serializable> implements Serializable {
 
     public TurnSnapshot predicate;
 
     public T result;
 
-    public LPKdTreeEntry(TurnSnapshot predicate) {
+    public SegmentationTreeEntry(TurnSnapshot predicate) {
         this.predicate = predicate;
     }
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof LPKdTreeEntry)) return false;
+        if (!(o instanceof SegmentationTreeEntry)) return false;
 
-        LPKdTreeEntry that = (LPKdTreeEntry) o;
+        SegmentationTreeEntry that = (SegmentationTreeEntry) o;
 
         if (predicate != null ? !predicate.equals(that.predicate) : that.predicate != null) return false;
 

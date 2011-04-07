@@ -15,7 +15,7 @@ import java.util.List;
  * Date: 23.02.2010
  */
 public class EnemyDistanceToForwardWallVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), enemy.getState().getAbsoluteHeadingRadians());
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), enemy.getState().getAbsoluteHeadingRadians());
     }
 }

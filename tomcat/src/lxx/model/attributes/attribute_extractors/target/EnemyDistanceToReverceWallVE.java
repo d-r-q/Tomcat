@@ -12,7 +12,7 @@ import robocode.util.Utils;
 import java.util.List;
 
 public class EnemyDistanceToReverceWallVE implements AttributeValueExtractor {
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), Utils.normalAbsoluteAngle(enemy.getState().getAbsoluteHeadingRadians() + Math.PI));
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), Utils.normalAbsoluteAngle(enemy.getState().getAbsoluteHeadingRadians() + Math.PI));
     }
 }

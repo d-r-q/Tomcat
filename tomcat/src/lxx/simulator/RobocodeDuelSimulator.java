@@ -32,16 +32,16 @@ public class RobocodeDuelSimulator {
     private final RobotProxy enemyProxy;
     private final RobotProxy meProxy;
     private final long time;
-    private final long battleTime;
+    private final int round;
     private final List<LXXBullet> myBullets;
 
     private long timeElapsed = 0;
 
-    public RobocodeDuelSimulator(Target enemy, Tomcat robot, long time, long battleTime, Attribute[] attributesToSimulate, List<LXXBullet> myBullets) {
+    public RobocodeDuelSimulator(Target enemy, Tomcat robot, long time, int round, Attribute[] attributesToSimulate, List<LXXBullet> myBullets) {
         this.enemyProxy = new RobotProxy(enemy, time);
         this.meProxy = new RobotProxy(robot, time);
         this.time = time;
-        this.battleTime = battleTime;
+        this.round = round;
 
         this.attributesToSimulate.addAll(Arrays.asList(attributesToSimulate));
         this.attributesToSimulate.add(AttributesManager.enemyVelocity);
@@ -106,13 +106,13 @@ public class RobocodeDuelSimulator {
     }
 
     public TurnSnapshot getSimulatorSnapshot() {
-        final int[] avs = new int[AttributesManager.attributesCount()];
+        final double[] avs = new double[AttributesManager.attributesCount()];
 
         for (Attribute a : attributesToSimulate) {
             avs[a.getId()] = a.getExtractor().getAttributeValue(enemyProxy, meProxy, myBullets);
         }
 
-        return new TurnSnapshot(avs, time + timeElapsed, battleTime + timeElapsed, enemyProxy.getName());
+        return new TurnSnapshot(avs, time + timeElapsed, round, enemyProxy.getName());
     }
 
     public RobotProxy getEnemyProxy() {

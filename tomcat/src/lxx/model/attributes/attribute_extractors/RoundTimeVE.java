@@ -11,8 +11,8 @@ import java.util.List;
 
 public class RoundTimeVE implements AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) enemy.getTime();
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return enemy.getTime();
     }
 
 }

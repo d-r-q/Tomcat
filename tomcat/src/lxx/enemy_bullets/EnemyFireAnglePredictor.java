@@ -4,13 +4,13 @@
 
 package lxx.enemy_bullets;
 
-import lxx.kd_tree.EntryMatch;
-import lxx.kd_tree.LPKdTreeEntry;
-import lxx.kd_tree.LimitedPriorityKdTree;
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import lxx.office.TurnSnapshotsLog;
+import lxx.segmentation_tree.EntryMatch;
+import lxx.segmentation_tree.SegmentationTree;
+import lxx.segmentation_tree.SegmentationTreeEntry;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
@@ -32,9 +32,9 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
-    private static final Map<String, LimitedPriorityKdTree<Double>> logs = new HashMap<String, LimitedPriorityKdTree<Double>>();
+    private static final Map<String, SegmentationTree<Double>> logs = new HashMap<String, SegmentationTree<Double>>();
 
-    private final Map<LXXBullet, LPKdTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, LPKdTreeEntry<Double>>();
+    private final Map<LXXBullet, SegmentationTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, SegmentationTreeEntry<Double>>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
 
@@ -43,7 +43,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public AimingPredictionData getPredictionData(Target t) {
-        final LimitedPriorityKdTree<Double> log = getLog(t.getName());
+        final SegmentationTree<Double> log = getLog(t.getName());
 
         final TurnSnapshot predicate = turnSnapshotsLog.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
         final List<Double> bearingOffsets = getBearingOffsets(log, predicate, t.getFirePower());
@@ -69,7 +69,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     }
 
-    private List<Double> getBearingOffsets(LimitedPriorityKdTree<Double> log, TurnSnapshot predicate, double firePower) {
+    private List<Double> getBearingOffsets(SegmentationTree<Double> log, TurnSnapshot predicate, double firePower) {
         final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getMyVelocityModule(), predicate.getMyAbsoluteHeadingRadians());
@@ -88,8 +88,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return bearingOffsets;
     }
 
-    private static LimitedPriorityKdTree<Double> getLog(String enemyName) {
-        LimitedPriorityKdTree<Double> log = logs.get(enemyName);
+    private static SegmentationTree<Double> getLog(String enemyName) {
+        SegmentationTree<Double> log = logs.get(enemyName);
         if (log == null) {
             log = createLog();
             logs.put(enemyName, log);
@@ -97,15 +97,15 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return log;
     }
 
-    private static LimitedPriorityKdTree<Double> createLog() {
+    private static SegmentationTree<Double> createLog() {
         final Attribute[] splitAttributes = {
                 AttributesManager.myLateralVelocity_2,
         };
-        return new LimitedPriorityKdTree<Double>(splitAttributes, 2, 0.02);
+        return new SegmentationTree<Double>(splitAttributes, 2, 0.02);
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final LPKdTreeEntry<Double> entry = new LPKdTreeEntry<Double>(turnSnapshotsLog.getLastSnapshots((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
+        final SegmentationTreeEntry<Double> entry = new SegmentationTreeEntry<Double>(turnSnapshotsLog.getLastSnapshots((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
         entriesByBullets.put(bullet, entry);
     }
 
@@ -121,9 +121,9 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     public void setBulletBearingOffset(LXXBullet bullet) {
         final double bearingOffset = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
-        final LimitedPriorityKdTree<Double> log = getLog(bullet.getOwner().getName());
+        final SegmentationTree<Double> log = getLog(bullet.getOwner().getName());
 
-        final LPKdTreeEntry<Double> entry = entriesByBullets.get(bullet);
+        final SegmentationTreeEntry<Double> entry = entriesByBullets.get(bullet);
         entry.result = bearingOffset;
         log.addEntry(entry);
     }

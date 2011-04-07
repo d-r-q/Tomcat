@@ -12,8 +12,8 @@ import java.util.List;
 
 public class EnemyTravelTimeVE implements AttributeValueExtractor {
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (int) (enemy.getTime() - enemy.getLastStopTime());
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+        return (enemy.getTime() - enemy.getLastStopTime());
     }
 
 }

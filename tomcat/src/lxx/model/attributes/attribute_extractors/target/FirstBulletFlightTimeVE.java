@@ -10,12 +10,10 @@ import lxx.utils.LXXRobot;
 
 import java.util.List;
 
-import static java.lang.Math.round;
-
 public class FirstBulletFlightTimeVE implements AttributeValueExtractor {
 
 
-    public int getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
         if (myBullets.size() == 0) {
             return 0;
         }
@@ -32,6 +30,6 @@ public class FirstBulletFlightTimeVE implements AttributeValueExtractor {
                     firstBullet.getSpeed();
         } while (bulletFlightTime < 1);
 
-        return (int) round(bulletFlightTime);
+        return bulletFlightTime;
     }
 }
