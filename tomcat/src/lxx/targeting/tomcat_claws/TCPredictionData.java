@@ -4,6 +4,9 @@
 
 package lxx.targeting.tomcat_claws;
 
+import lxx.model.TurnSnapshot;
+import lxx.office.TurnSnapshotsLog;
+import lxx.targeting.Target;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.*;
 
@@ -16,10 +19,12 @@ public class TCPredictionData implements AimingPredictionData {
 
     private final List<LXXPoint> predictedPoses;
     private final APoint predictedFirePosition;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
-    public TCPredictionData(List<LXXPoint> predictedPoses, APoint predictedFirePosition) {
+    public TCPredictionData(List<LXXPoint> predictedPoses, APoint predictedFirePosition, TurnSnapshotsLog turnSnapshotsLog) {
         this.predictedPoses = predictedPoses;
         this.predictedFirePosition = predictedFirePosition;
+        this.turnSnapshotsLog = turnSnapshotsLog;
     }
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
@@ -27,7 +32,7 @@ public class TCPredictionData implements AimingPredictionData {
             return;
         }
         if (predictedPoses.size() > 0) {
-            drawPredictedPath(g);
+            drawPredictedPath(g, bullet);
         }
 
         final APoint firePosition = bullet.getFirePosition();
@@ -79,7 +84,7 @@ public class TCPredictionData implements AimingPredictionData {
         g.drawCircle(firePosition, 4);
     }
 
-    private void drawPredictedPath(LXXGraphics g) {
+    private void drawPredictedPath(LXXGraphics g, LXXBullet bullet) {
         int idx = 0;
         for (final LXXPoint pnt : predictedPoses) {
             g.setColor(new Color(255,
@@ -87,6 +92,20 @@ public class TCPredictionData implements AimingPredictionData {
                     (int) (255 * (1 - ((double) idx / predictedPoses.size()))), 175));
             g.fillCircle(pnt, 3);
             idx++;
+        }
+
+        int delta = (int) (bullet.getTarget().getTime() - bullet.getWave().getLaunchTime());
+        if (delta == 0) {
+            return;
+        }
+        int initDelta = delta;
+        for (; delta >= 0; delta--) {
+            final TurnSnapshot ts = turnSnapshotsLog.getLastSnapshot((Target) bullet.getTarget(), delta);
+            g.setColor(new Color(
+                    (int) (255 * (1 - ((double) (initDelta - delta) / initDelta))),
+                    (int) (255 * (1 - ((double) (initDelta - delta) / initDelta))),
+                    255, 175));
+            g.fillCircle(LXXUtils.getEnemyPos(ts), 3);
         }
     }
 

@@ -6,6 +6,7 @@ package lxx.simulator;
 
 import lxx.utils.*;
 import robocode.Rules;
+import robocode.util.Utils;
 
 import static java.lang.Math.signum;
 
@@ -40,7 +41,7 @@ public class RobotProxy implements LXXRobot {
         currentState = newState;
 
         time++;
-        if (newState.getVelocityModule() == 0) {
+        if (Utils.isNear(newState.getVelocityModule(), 0)) {
             lastStopTime = time;
         } else {
             lastTravelTime = time;

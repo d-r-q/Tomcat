@@ -7,6 +7,7 @@ package lxx.model.attributes.attribute_extractors.target;
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.LXXRobot;
+import lxx.utils.LXXUtils;
 
 import java.util.List;
 
@@ -16,6 +17,6 @@ import java.util.List;
  */
 public class EnemyDistanceToForwardWallVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), enemy.getState().getAbsoluteHeadingRadians());
+        return LXXUtils.limit(0, enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), enemy.getState().getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
     }
 }

@@ -7,6 +7,7 @@ package lxx.targeting.tomcat_claws;
 import lxx.Tomcat;
 import lxx.office.Office;
 import lxx.office.TargetManager;
+import lxx.office.TurnSnapshotsLog;
 import lxx.simulator.RobocodeDuelSimulator;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
@@ -39,6 +40,7 @@ public class TomcatClaws implements Gun {
     private final TargetManager targetManager;
     private final TomcatEyes tomcatEyes;
     private final BulletManager bulletManager;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
     private LinkedList<LXXPoint> predictedPoses = null;
     private RobocodeDuelSimulator duelSimulator;
@@ -48,6 +50,7 @@ public class TomcatClaws implements Gun {
         this.targetManager = office.getTargetManager();
         this.tomcatEyes = tomcatEyes;
         bulletManager = office.getBulletManager();
+        turnSnapshotsLog = office.getTurnSnapshotsLog();
 
         robot = office.getRobot();
     }
@@ -57,7 +60,7 @@ public class TomcatClaws implements Gun {
         final TargetingConfiguration targetingConfig = tomcatEyes.getConfiguration(t);
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0 || targetingConfig == null) {
             predictedPoses = null;
-            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime));
+            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime, turnSnapshotsLog));
         }
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
@@ -71,13 +74,13 @@ public class TomcatClaws implements Gun {
             buildPattern(bulletSpeed);
 
             if (predictedPoses == null || predictedPoses.size() == 0) {
-                return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime));
+                return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime, turnSnapshotsLog));
             }
         }
 
         final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.getLast(), this.robotPosAtFireTime);
 
-        return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, robotPosAtFireTime));
+        return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, robotPosAtFireTime, turnSnapshotsLog));
     }
 
     private double getGunTurnAngle(double angleToPredictedPos) {

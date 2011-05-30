@@ -43,6 +43,8 @@ public class AttributesManager {
 
     public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -10, 10, new FirstBulletBearingOffsetVE());
     public static final Attribute firstBulletFlightTime = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeVE());
+    public static final Attribute bearingOffsetOnFirstBullet = new Attribute("Bearing offset on first bullet", -50, 50, new BearingOffsetOnFirstBullet());
+    public static final Attribute enemyBearingToFirstBullet = new Attribute("Enemy bearing to first bullet", -180, 180, new EnemyBearingToFirstBullet());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
@@ -80,6 +82,8 @@ public class AttributesManager {
 
             firstBulletBearingOffset,
             firstBulletFlightTime,
+            bearingOffsetOnFirstBullet,
+            enemyBearingToFirstBullet,
 
             myX,
             myY,
