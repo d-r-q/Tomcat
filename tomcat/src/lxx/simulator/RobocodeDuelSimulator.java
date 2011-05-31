@@ -97,7 +97,7 @@ public class RobocodeDuelSimulator {
         final double newHeading = Utils.normalAbsoluteAngle(state.getHeadingRadians() + movementDecision.getTurnRateRadians());
         final double maxVelocity = LXXUtils.limit(0, abs(state.getVelocity()) + movementDecision.getAcceleration(), Rules.MAX_VELOCITY);
 
-        double newVelocity = maxVelocity * (state.getVelocity() == 0 ? movementDecision.getMovementDirection().sign :
+        double newVelocity = maxVelocity * (Utils.isNear(state.getVelocity(), 0) ? movementDecision.getMovementDirection().sign :
                 signum(state.getVelocity()));
 
         double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());

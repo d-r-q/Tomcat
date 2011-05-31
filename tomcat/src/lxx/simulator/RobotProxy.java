@@ -41,7 +41,7 @@ public class RobotProxy implements LXXRobot {
         currentState = newState;
 
         time++;
-        if (Utils.isNear(newState.getVelocityModule(), 0)) {
+        if (Utils.isNear(newState.getVelocityModule(), 0) || signum(currentState.getVelocity()) != signum(prevState.getVelocity())) {
             lastStopTime = time;
         } else {
             lastTravelTime = time;

@@ -504,7 +504,7 @@ public class Target implements LXXRobot, Serializable {
                 lastTurnTime = owner.getTime() - 1;
             }
 
-            if (Utils.isNear(curState.velocity, 0)) {
+            if (Utils.isNear(curState.velocity, 0) || signum(curState.velocity) != signum(prevState.velocity)) {
                 lastStopTime = curState.time;
             } else {
                 lastTravelTime = curState.time;
