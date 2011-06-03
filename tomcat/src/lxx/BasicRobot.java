@@ -176,14 +176,9 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     public void onStatus(StatusEvent e) {
         prevState = currentState;
         currentState = new RobotSnapshot(this);
-        acceleration = abs(e.getStatus().getVelocity()) - getVelocityModule();
-        if (acceleration < -Rules.DECELERATION - 0.01) {
-            System.out.println("[WARN] my acceleration: " + acceleration);
-            acceleration = -Rules.DECELERATION;
-        } else if (acceleration > Rules.ACCELERATION + 0.01) {
-            System.out.println("[WARN] my acceleration: " + acceleration);
-            acceleration = Rules.ACCELERATION;
-        }
+
+        acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
+
         if (Utils.isNear(getVelocity(), 0)) {
             lastStopTime = e.getTime();
         } else {

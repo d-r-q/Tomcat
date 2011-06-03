@@ -169,4 +169,20 @@ public class LXXUtils {
     public static double lateralVelocity(APoint center, LXXRobotState robotState) {
         return lateralVelocity(center, robotState, robotState.getVelocityModule(), robotState.getAbsoluteHeadingRadians());
     }
+
+    public static double calculateAcceleration(LXXRobotState prevState, LXXRobotState curState) {
+        if (prevState == null) {
+            return 0;
+        }
+
+        double acceleration;
+        if (signum(curState.getVelocity()) == signum(prevState.getVelocity()) || Utils.isNear(curState.getVelocity(), 0)) {
+            acceleration = abs(curState.getVelocity()) - abs(prevState.getVelocity());
+        } else {
+            acceleration = abs(curState.getVelocity()) + abs(prevState.getVelocity());
+        }
+
+        return limit(-Rules.MAX_VELOCITY, acceleration, Rules.ACCELERATION);
+    }
+
 }

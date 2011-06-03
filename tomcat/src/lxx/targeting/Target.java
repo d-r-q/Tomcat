@@ -354,7 +354,7 @@ public class Target implements LXXRobot, Serializable {
         private void calculateState(TargetState prevState) {
 
             turnRateRadians = calculateTurnRate(prevState);
-            acceleration = calculateAcceleration(prevState);
+            acceleration = LXXUtils.calculateAcceleration(prevState, this);
             if (prevState == null) {
                 gunHeat = INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
             } else if (isFireLastTick()) {
@@ -386,20 +386,6 @@ public class Target implements LXXRobot, Serializable {
             }
 
             return turnRate;
-        }
-
-        private double calculateAcceleration(TargetState prevState) {
-            if (prevState == null) {
-                return 0;
-            }
-
-            double acceleration = abs(velocity) - abs(prevState.velocity);
-
-            if (acceleration > Rules.ACCELERATION) {
-                acceleration = Rules.ACCELERATION;
-            }
-
-            return acceleration;
         }
 
         public double getX() {

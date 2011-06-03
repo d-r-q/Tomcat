@@ -58,18 +58,18 @@ public class LXXGraphics {
     }
 
     public void drawArrow(APoint from, APoint to, int peakLength) {
-        double angle = from.angleTo(to);
-        double arrowLength = from.aDistance(to);
-        APoint peakBase = from.project(angle, arrowLength - peakLength);
+        final double angle = from.angleTo(to);
+        final double arrowLength = from.aDistance(to);
+        final APoint peakBase = from.project(angle, arrowLength - peakLength);
 
-        APoint empennageBase = from.project(angle, (double) peakLength);
+        final APoint empennageBase = from.project(angle, (double) peakLength);
 
         drawLine(from, peakBase);
         drawLine(empennageBase, angle + Math.PI / 2, (double) peakLength);
         drawLine(peakBase, angle + Math.PI / 2, peakLength);
 
-        APoint peakPnt1 = peakBase.project(robocode.util.Utils.normalAbsoluteAngle(angle + Math.PI / 2), peakLength / 2);
-        APoint peakPnt2 = peakBase.project(robocode.util.Utils.normalAbsoluteAngle(angle - Math.PI / 2), peakLength / 2);
+        final APoint peakPnt1 = peakBase.project(robocode.util.Utils.normalAbsoluteAngle(angle + Math.PI / 2), peakLength / 2);
+        final APoint peakPnt2 = peakBase.project(robocode.util.Utils.normalAbsoluteAngle(angle - Math.PI / 2), peakLength / 2);
 
         drawLine(peakPnt1, to);
         drawLine(peakPnt2, to);

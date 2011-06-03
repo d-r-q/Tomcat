@@ -81,6 +81,7 @@ public class Tomcat extends BasicRobot {
             move();
             turnRadar();
         } catch (Throwable t) {
+            System.out.println("Round time: " + getTime());
             t.printStackTrace();
         }
         isPaintEnabled = false;

@@ -5,7 +5,6 @@
 package lxx.simulator;
 
 import lxx.utils.*;
-import robocode.Rules;
 import robocode.util.Utils;
 
 import static java.lang.Math.signum;
@@ -79,16 +78,7 @@ public class RobotProxy implements LXXRobot {
     }
 
     public double getAcceleration() {
-        if (prevState == null) {
-            return original.getAcceleration();
-        }
-        double acceleration = currentState.getVelocityModule() - prevState.getVelocityModule();
-
-        if (acceleration > Rules.ACCELERATION) {
-            acceleration = Rules.ACCELERATION;
-        }
-
-        return acceleration;
+        return LXXUtils.calculateAcceleration(prevState, currentState);
     }
 
     public LXXPoint getPosition() {

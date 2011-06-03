@@ -47,14 +47,13 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     };
 
     private static final Attribute[] drussAttributes = new Attribute[]{
-            AttributesManager.enemyVelocity,
+            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyAcceleration,
+            AttributesManager.firstBulletFlightTime,
             AttributesManager.enemyTravelTime,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToMe,
-            AttributesManager.firstBulletBearingOffset,
-            AttributesManager.enemyAcceleration,
             AttributesManager.enemyDistanceToCenter,
-            AttributesManager.firstBulletFlightTime,
     };
 
     private static final Attribute[] doctorBobAttributes = new Attribute[]{
