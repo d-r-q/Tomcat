@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.abs;
 
@@ -223,4 +224,28 @@ public class SegmentationTreeNode<T extends Serializable> {
         return res;
     }
 
+    public List<SegmentationTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
+        if (entries != null) {
+            return entries;
+        }
+
+        int fromIdx = 0;
+        int toIdx = 0;
+        Interval limit = limits.get(attributes[attributeIdx]);
+        for (int i = 0; i < children.size(); i++) {
+            if (children.get(i).interval.contains(limit.a)) {
+                fromIdx = i;
+            } else if (children.get(i).interval.contains(limit.b)) {
+                toIdx = i;
+                break;
+            }
+        }
+
+        List<SegmentationTreeEntry<T>> entries = new ArrayList<SegmentationTreeEntry<T>>();
+        for (int i = fromIdx; i <= toIdx; i++) {
+            entries.addAll(children.get(i).getEntries(limits));
+        }
+
+        return entries;
+    }
 }

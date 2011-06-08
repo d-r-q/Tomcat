@@ -50,6 +50,22 @@ public class LXXUtils {
         return res;
     }
 
+
+    public static double factoredManhettanDistance(int[] indexes, double[] a, double[] b, double[] factors) {
+        double res = 0;
+
+        final int len = indexes.length;
+        for (int i = 0; i < len; i++) {
+            res += ((b[indexes[i]] > a[indexes[i]])
+                    ? b[indexes[i]] - a[indexes[i]]
+                    : a[indexes[i]] - b[indexes[i]])
+                    * factors[indexes[i]];
+        }
+
+        return res;
+    }
+
+
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
         // - 3 * firepower = speed - 20

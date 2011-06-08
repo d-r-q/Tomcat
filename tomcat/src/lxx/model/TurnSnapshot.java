@@ -54,6 +54,10 @@ public class TurnSnapshot implements Serializable {
         return prev;
     }
 
+    public double[] toArray() {
+        return attributeValues;
+    }
+
     public void setPrev(TurnSnapshot prev) {
         if (time - 1 != prev.time) {
             throw new RuntimeException("Snapshot skipped");
