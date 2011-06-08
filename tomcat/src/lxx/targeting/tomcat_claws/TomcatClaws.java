@@ -14,7 +14,7 @@ import lxx.strategies.GunDecision;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.BulletManager;
-import lxx.targeting.classification.MovementClassifier;
+import lxx.targeting.classification.ClassificationIterator;
 import lxx.targeting.tomcat_eyes.TargetingConfiguration;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
@@ -88,11 +88,11 @@ public class TomcatClaws implements Gun {
     }
 
     public void buildPattern(double bulletSpeed) {
-        final MovementClassifier movementClassifier = tomcatEyes.getConfiguration(targetManager.getDuelOpponent()).getMovementClassifier();
+        final ClassificationIterator classificationIterator = tomcatEyes.getConfiguration(targetManager.getDuelOpponent()).getMovementClassifier().classificationIterator();
 
         long timeDelta = -AIMING_TIME;
         while (!isBulletHitEnemy(duelSimulator.getEnemyProxy(), timeDelta, bulletSpeed)) {
-            final MovementDecision movementDecision = movementClassifier.classify(duelSimulator.getSimulatorSnapshot());
+            final MovementDecision movementDecision = classificationIterator.next(duelSimulator.getSimulatorSnapshot());
             duelSimulator.setEnemyMovementDecision(movementDecision);
             duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();

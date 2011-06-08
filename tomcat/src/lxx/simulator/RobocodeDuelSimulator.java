@@ -95,10 +95,12 @@ public class RobocodeDuelSimulator {
     private void apply(RobotProxy proxy, MovementDecision movementDecision) {
         final LXXRobotState state = proxy.getState();
         final double newHeading = Utils.normalAbsoluteAngle(state.getHeadingRadians() + movementDecision.getTurnRateRadians());
-        final double maxVelocity = LXXUtils.limit(0, abs(state.getVelocity()) + movementDecision.getAcceleration(), Rules.MAX_VELOCITY);
+        final double accel = movementDecision.getAcceleration();
+        final double maxVelocity = LXXUtils.limit(0, signum(state.getVelocity()) == movementDecision.getMovementDirection().sign
+                ? state.getVelocityModule() + accel
+                : accel, Rules.MAX_VELOCITY);
 
-        double newVelocity = maxVelocity * (Utils.isNear(state.getVelocity(), 0) ? movementDecision.getMovementDirection().sign :
-                signum(state.getVelocity()));
+        double newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
 
         double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());
         APoint newPosition;

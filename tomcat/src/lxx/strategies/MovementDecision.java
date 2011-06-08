@@ -32,10 +32,10 @@ public class MovementDecision implements Serializable {
         key = movementDirection.sign + ":" + acceleration + ":" + round(toDegrees(turnRateRadians) / 2);
     }
 
-    public static MovementDecision getMovementDecision(TurnSnapshot predicate) {
-        double turnRateRadians = toRadians(predicate.getRoundedAttrValue(AttributesManager.enemyTurnRate));
-        double acceleration = predicate.getRoundedAttrValue(AttributesManager.enemyAcceleration);
-        return new MovementDecision(acceleration, turnRateRadians, MovementDirection.get(predicate.getEnemyVelocity()));
+    public static MovementDecision getMovementDecision(TurnSnapshot turnSnapshot) {
+        double turnRateRadians = toRadians(turnSnapshot.getRoundedAttrValue(AttributesManager.enemyTurnRate));
+        double acceleration = turnSnapshot.getAttrValue(AttributesManager.enemyAcceleration);
+        return new MovementDecision(acceleration, turnRateRadians, MovementDirection.get(turnSnapshot.getEnemyVelocity()));
     }
 
     public double getAcceleration() {

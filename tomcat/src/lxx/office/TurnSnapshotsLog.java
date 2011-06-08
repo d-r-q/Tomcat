@@ -63,7 +63,12 @@ public class TurnSnapshotsLog implements TargetManagerListener {
             for (Attribute a : AttributesManager.attributes) {
                 attrValue[a.getId()] = turnSnapshot1.getAttrValue(a) + (turnSnapshot2.getAttrValue(a) - turnSnapshot1.getAttrValue(a)) / steps * i;
             }
-            log.add(new TurnSnapshot(attrValue, startRoundTime + i, round, targetName));
+            final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round, targetName);
+            if (log.size() > 0 && log.get(log.size() - 1) != null) {
+                log.get(log.size() - 1).setNext(turnSnapshot);
+                turnSnapshot.setPrev(log.get(log.size() - 1));
+            }
+            log.add(turnSnapshot);
         }
     }
 
@@ -92,6 +97,10 @@ public class TurnSnapshotsLog implements TargetManagerListener {
             interpolate(log, log.get(log.size() - 1), turnSnapshot, target.getName());
         }
 
+        if (log.size() > 0 && log.get(log.size() - 1) != null) {
+            log.get(log.size() - 1).setNext(turnSnapshot);
+            turnSnapshot.setPrev(log.get(log.size() - 1));
+        }
         log.add(turnSnapshot);
     }
 }

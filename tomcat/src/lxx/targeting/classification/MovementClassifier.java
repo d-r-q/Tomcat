@@ -13,4 +13,6 @@ public interface MovementClassifier {
 
     MovementDecision classify(TurnSnapshot turnSnapshot);
 
+    ClassificationIterator classificationIterator();
+
 }

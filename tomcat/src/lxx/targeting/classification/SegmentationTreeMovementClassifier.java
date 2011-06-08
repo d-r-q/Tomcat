@@ -12,7 +12,7 @@ import lxx.strategies.MovementDecision;
 
 import static java.lang.Math.abs;
 
-public class SegmentationTreeMovementClassifier implements MovementClassifier {
+public class SegmentationTreeMovementClassifier implements MovementClassifier, ClassificationIterator {
 
     private final SegmentationTree<MovementDecision> log;
 
@@ -22,6 +22,10 @@ public class SegmentationTreeMovementClassifier implements MovementClassifier {
 
     public MovementDecision classify(TurnSnapshot turnSnapshot) {
         return log.getClosestEntry(turnSnapshot);
+    }
+
+    public ClassificationIterator classificationIterator() {
+        return this;
     }
 
     public void learn(TurnSnapshot turnSnapshot, MovementDecision decision) {
@@ -34,4 +38,7 @@ public class SegmentationTreeMovementClassifier implements MovementClassifier {
         log.addEntry(entry);
     }
 
+    public MovementDecision next(TurnSnapshot turnSnapshot) {
+        return classify(turnSnapshot);
+    }
 }

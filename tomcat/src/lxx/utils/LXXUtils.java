@@ -176,10 +176,10 @@ public class LXXUtils {
         }
 
         double acceleration;
-        if (signum(curState.getVelocity()) == signum(prevState.getVelocity()) || Utils.isNear(curState.getVelocity(), 0)) {
+        if (signum(curState.getVelocity()) == signum(prevState.getVelocity()) || abs(curState.getVelocity()) < 0.001) {
             acceleration = abs(curState.getVelocity()) - abs(prevState.getVelocity());
         } else {
-            acceleration = abs(curState.getVelocity()) + abs(prevState.getVelocity());
+            acceleration = abs(curState.getVelocity());
         }
 
         return limit(-Rules.MAX_VELOCITY, acceleration, Rules.ACCELERATION);

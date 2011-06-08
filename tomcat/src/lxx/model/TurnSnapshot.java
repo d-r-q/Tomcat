@@ -24,6 +24,9 @@ public class TurnSnapshot implements Serializable {
     private final int round;
     private final String targetName;
 
+    private TurnSnapshot prev;
+    private TurnSnapshot next;
+
     public TurnSnapshot(double[] attributeValues, long time, int round, String targetName) {
         this.attributeValues = attributeValues;
         this.time = time;
@@ -45,6 +48,28 @@ public class TurnSnapshot implements Serializable {
 
     public int getRound() {
         return round;
+    }
+
+    public TurnSnapshot getPrev() {
+        return prev;
+    }
+
+    public void setPrev(TurnSnapshot prev) {
+        if (time - 1 != prev.time) {
+            throw new RuntimeException("Snapshot skipped");
+        }
+        this.prev = prev;
+    }
+
+    public TurnSnapshot getNext() {
+        return next;
+    }
+
+    public void setNext(TurnSnapshot next) {
+        if (time + 1 != next.time) {
+            throw new RuntimeException("Snapshot skipped");
+        }
+        this.next = next;
     }
 
     public String toString() {
