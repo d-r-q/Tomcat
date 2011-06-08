@@ -122,12 +122,10 @@ public abstract class WaveSurfingMovement implements Movement {
         for (LXXBullet lxxBullet : lxxBullets) {
             final GFAimingPredictionData GFAimingPredictionData = lxxBullet != null ? (GFAimingPredictionData) lxxBullet.getAimPredictionData() : null;
 
-            double bulletDanger;
+            double bulletDanger = 0;
             if (GFAimingPredictionData != null) {
                 bulletDanger = GFAimingPredictionData.getDanger(lxxBullet.getBearingOffsetRadians(pnt),
                         LXXUtils.getRobotWidthInRadians(lxxBullet.getFirePosition(), pnt));
-            } else {
-                bulletDanger = 0;
             }
 
             totalDanger += round(bulletDanger) * 100 * weight;
@@ -206,12 +204,8 @@ public abstract class WaveSurfingMovement implements Movement {
         return points;
     }
 
-    private double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
+    protected double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
         final double distanceBetween = robot.aDistance(surfPoint);
-        return getTargetHeading(surfPoint, robot, orbitDirection, distanceBetween);
-    }
-
-    protected double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection, double distanceBetween) {
         if (distanceBetween > DEFAULT_DISTANCE_AGAINST_SIMPLE + 10) {
             return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_95 * orbitDirection.sign);
         } else if (distanceBetween < FEAR_DISTANCE) {
