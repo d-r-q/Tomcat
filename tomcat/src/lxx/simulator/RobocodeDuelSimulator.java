@@ -96,9 +96,12 @@ public class RobocodeDuelSimulator {
         final LXXRobotState state = proxy.getState();
         final double newHeading = Utils.normalAbsoluteAngle(state.getHeadingRadians() + movementDecision.getTurnRateRadians());
         final double accel = movementDecision.getAcceleration();
-        final double maxVelocity = LXXUtils.limit(0, signum(state.getVelocity()) == movementDecision.getMovementDirection().sign
+        if (signum(state.getVelocity()) != movementDecision.getMovementDirection().sign) {
+            System.out.println("AAAAAAAAAAAAAAAAa");
+        }
+        final double maxVelocity = LXXUtils.limit(0, (signum(state.getVelocity()) == movementDecision.getMovementDirection().sign
                 ? state.getVelocityModule() + accel
-                : accel, Rules.MAX_VELOCITY);
+                : accel), Rules.MAX_VELOCITY);
 
         double newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
 

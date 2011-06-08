@@ -72,6 +72,11 @@ public class TomcatClaws implements Gun {
 
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
             buildPattern(bulletSpeed);
+            if (predictedPoses.get(0).aDistance(predictedPoses.get(1)) < targetManager.getDuelOpponent().getVelocityModule() - 0.5) {
+                predictedPoses = new LinkedList<LXXPoint>();
+                duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), robot.getRoundNum(), targetingConfig.getAttributes(), bulletManager.getBullets());
+                buildPattern(bulletSpeed);
+            }
 
             if (predictedPoses == null || predictedPoses.size() == 0) {
                 return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime, turnSnapshotsLog));

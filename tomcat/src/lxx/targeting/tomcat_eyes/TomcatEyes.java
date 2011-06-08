@@ -16,6 +16,7 @@ import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManager;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
+import lxx.targeting.classification.ComplexMovementClassifier;
 import lxx.targeting.classification.SegmentationTreeMovementClassifier;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
@@ -47,7 +48,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     };
 
     private static final Attribute[] drussAttributes = new Attribute[]{
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyVelocity,
             AttributesManager.enemyAcceleration,
             AttributesManager.firstBulletFlightTime,
             AttributesManager.enemyTravelTime,
@@ -74,7 +75,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
-        final TargetingConfiguration drussTC = getTargetingConfig("Druss", drussAttributes, 0.01);
+        final TargetingConfiguration drussTC =
+                new TargetingConfiguration("druss", new ComplexMovementClassifier(), ComplexMovementClassifier.getAttributes());
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
         final TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 0.001);
