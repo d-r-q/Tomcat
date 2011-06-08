@@ -225,13 +225,13 @@ public class SegmentationTreeNode<T extends Serializable> {
     }
 
     public List<SegmentationTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
-        if (entries != null) {
+        if (children.size() == 0) {
             return entries;
         }
 
         int fromIdx = 0;
         int toIdx = 0;
-        Interval limit = limits.get(attributes[attributeIdx]);
+        Interval limit = limits.get(attributes[attributeIdx + 1]);
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).interval.contains(limit.a)) {
                 fromIdx = i;
