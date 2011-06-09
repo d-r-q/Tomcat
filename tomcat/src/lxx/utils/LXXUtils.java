@@ -5,6 +5,7 @@
 package lxx.utils;
 
 import lxx.model.TurnSnapshot;
+import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -121,6 +122,10 @@ public class LXXUtils {
         }
 
         return value;
+    }
+
+    public static double limit(Attribute a, double value) {
+        return limit(a.getActualMin(), value, a.getActualMax());
     }
 
     public static double lateralVelocity2(APoint center, APoint pos, double velocity, double heading) {

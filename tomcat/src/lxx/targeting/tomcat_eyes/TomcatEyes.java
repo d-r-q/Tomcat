@@ -16,6 +16,7 @@ import lxx.targeting.TargetManagerListener;
 import lxx.targeting.bullets.BulletManager;
 import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
+import lxx.targeting.classification.AdjustingClassifier;
 import lxx.targeting.classification.ComplexMovementClassifier;
 import lxx.targeting.classification.SegmentationTreeMovementClassifier;
 import lxx.utils.LXXRobot;
@@ -23,8 +24,6 @@ import lxx.utils.LXXUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -81,7 +80,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
                 new TargetingConfiguration("druss", new ComplexMovementClassifier(), ComplexMovementClassifier.getAttributes());
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
-        final TargetingConfiguration doctorBobTC = getTargetingConfig("DoctorBob", doctorBobAttributes, 0.001);
+        final TargetingConfiguration doctorBobTC =
+                new TargetingConfiguration("doctorBob", new AdjustingClassifier(), AdjustingClassifier.getAttributes());
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
     }
 
@@ -140,10 +140,6 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         }
         final MovementDecision movementDecision = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
 
-        if (movementDecision.getMovementDirection().sign != signum(turnSnapshot.getEnemyVelocity()) ||
-                movementDecision.getMovementDirection().sign != signum(turnSnapshotsLog.getLastSnapshot(target).getEnemyVelocity())) {
-            System.out.println("AAAAAAAAAAAAAAAAAAAA");
-        }
         for (TargetingConfiguration tc : targetingConfigurations.values()) {
             tc.getMovementClassifier().learn(turnSnapshot, movementDecision);
         }

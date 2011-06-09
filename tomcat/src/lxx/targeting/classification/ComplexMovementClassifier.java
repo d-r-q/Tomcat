@@ -7,13 +7,16 @@ package lxx.targeting.classification;
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
+import lxx.segmentation_tree.EntryMatch;
 import lxx.segmentation_tree.SegmentationTree;
 import lxx.segmentation_tree.SegmentationTreeEntry;
 import lxx.strategies.MovementDecision;
+import lxx.utils.Interval;
+import lxx.utils.LXXUtils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import static java.lang.Math.round;
 
 public class ComplexMovementClassifier implements MovementClassifier, ClassificationIterator {
 
@@ -21,10 +24,26 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
             AttributesManager.enemyVelocity,
             AttributesManager.enemyAcceleration,
             AttributesManager.firstBulletFlightTime,
-            AttributesManager.enemyTravelTime,
+            AttributesManager.firstBulletBearingOffset,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.bearingOffsetOnFirstBullet
+            AttributesManager.bearingOffsetOnFirstBullet,
+            AttributesManager.bearingOffsetOnSecondBullet,
+            AttributesManager.enemyTravelTime,
     };
+
+    private static final Map<Attribute, Integer> attrRanges = new HashMap<Attribute, Integer>();
+
+    static {
+        attrRanges.put(AttributesManager.enemyVelocity, 0);
+        attrRanges.put(AttributesManager.enemyAcceleration, 0);
+        attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
+        attrRanges.put(AttributesManager.bearingOffsetOnFirstBullet, 10);
+        attrRanges.put(AttributesManager.bearingOffsetOnSecondBullet, 15);
+        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
+        attrRanges.put(AttributesManager.enemyTravelTime, 3);
+        attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);
+
+    }
 
     private final SegmentationTree<MovementDecision> accelLog = new SegmentationTree<MovementDecision>(accelAttrs, 2, 0.01);
 
@@ -45,7 +64,14 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
     }
 
     public MovementDecision classify(TurnSnapshot turnSnapshot) {
-        final MovementDecision md = accelLog.getClosestEntry(turnSnapshot);
+        final List<EntryMatch<MovementDecision>> sortedSimilarEntries = accelLog.getSortedSimilarEntries(turnSnapshot, getLimits(turnSnapshot));
+
+        final MovementDecision md;
+        if (sortedSimilarEntries.size() == 0) {
+            md = accelLog.getClosestEntry(turnSnapshot);
+        } else {
+            md = sortedSimilarEntries.get(0).result;
+        }
         if (md == null) {
             return null;
         }
@@ -71,4 +97,19 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
     public MovementDecision next(TurnSnapshot turnSnapshot) {
         return classify(turnSnapshot);
     }
+
+    private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
+        Map<Attribute, Interval> limits = new HashMap<Attribute, Interval>();
+
+        for (Attribute a : accelAttrs) {
+            Interval interval = new Interval(
+                    (int) round(LXXUtils.limit(a, ts.getAttrValue(a) - attrRanges.get(a))),
+                    (int) round(LXXUtils.limit(a, ts.getAttrValue(a) + attrRanges.get(a)))
+            );
+            limits.put(a, interval);
+        }
+
+        return limits;
+    }
+
 }

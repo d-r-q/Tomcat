@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.model.attributes.attribute_extractors.target;
 
 import lxx.model.attributes.attribute_extractors.AttributeValueExtractor;
@@ -15,7 +19,7 @@ import static java.lang.Math.toDegrees;
  * User: jdev
  * Date: 30.04.11
  */
-public class BearingOffsetOnFirstBullet implements AttributeValueExtractor {
+public class EnemyBearingOffsetOnFirstBullet implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
         if (myBullets.size() == 0) {
             return 0;

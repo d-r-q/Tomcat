@@ -235,7 +235,8 @@ public class SegmentationTreeNode<T extends Serializable> {
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).interval.contains(limit.a)) {
                 fromIdx = i;
-            } else if (children.get(i).interval.contains(limit.b)) {
+            }
+            if (children.get(i).interval.contains(limit.b)) {
                 toIdx = i;
                 break;
             }
