@@ -6,11 +6,14 @@ package lxx.targeting.tomcat_claws;
 
 import lxx.model.TurnSnapshot;
 import lxx.office.TurnSnapshotsLog;
+import lxx.simulator.RobotProxy;
+import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.*;
 
 import java.awt.*;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -20,11 +23,21 @@ public class TCPredictionData implements AimingPredictionData {
     private final List<LXXPoint> predictedPoses;
     private final APoint predictedFirePosition;
     private final TurnSnapshotsLog turnSnapshotsLog;
+    private LinkedList<MovementDecision> predictedDecs;
+    private LinkedList<LXXRobotState> predictedStates;
+    private LXXRobotState duelOpponent;
+    private LinkedList<TurnSnapshot> predictedTSs;
+    private LXXRobotState enemyProxy;
 
-    public TCPredictionData(List<LXXPoint> predictedPoses, APoint predictedFirePosition, TurnSnapshotsLog turnSnapshotsLog) {
+    public TCPredictionData(List<LXXPoint> predictedPoses, LinkedList<MovementDecision> predictedDecs, LinkedList<LXXRobotState> predictedStates, APoint predictedFirePosition, TurnSnapshotsLog turnSnapshotsLog, LXXRobotState duelOpponent, LinkedList<TurnSnapshot> predictedTSs, LXXRobotState enemyProxy) {
         this.predictedPoses = predictedPoses;
         this.predictedFirePosition = predictedFirePosition;
         this.turnSnapshotsLog = turnSnapshotsLog;
+        this.predictedDecs = predictedDecs;
+        this.predictedStates = predictedStates;
+        this.duelOpponent = duelOpponent;
+        this.predictedTSs = predictedTSs;
+        this.enemyProxy = enemyProxy;
     }
 
     public void paint(LXXGraphics g, LXXBullet bullet) {

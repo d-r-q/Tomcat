@@ -5,6 +5,7 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
+import lxx.model.TurnSnapshot;
 import lxx.office.Office;
 import lxx.office.TargetManager;
 import lxx.office.TurnSnapshotsLog;
@@ -27,6 +28,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 /**
  * User: jdev
  * Date: 21.02.11
@@ -43,8 +46,13 @@ public class TomcatClaws implements Gun {
     private final TurnSnapshotsLog turnSnapshotsLog;
 
     private LinkedList<LXXPoint> predictedPoses = null;
+    private LinkedList<MovementDecision> predictedDecs = null;
+    private LinkedList<LXXRobotState> predictedStates = null;
+    private LinkedList<TurnSnapshot> predictedTSs = null;
     private RobocodeDuelSimulator duelSimulator;
     private APoint robotPosAtFireTime;
+    private LXXRobotState enemyProxyState;
+    private Target.TargetState duelOpponentState;
 
     public TomcatClaws(Office office, TomcatEyes tomcatEyes) {
         this.targetManager = office.getTargetManager();
@@ -60,32 +68,57 @@ public class TomcatClaws implements Gun {
         final TargetingConfiguration targetingConfig = tomcatEyes.getConfiguration(t);
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0 || targetingConfig == null) {
             predictedPoses = null;
-            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime, turnSnapshotsLog));
+            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, predictedDecs, predictedStates, robotPosAtFireTime, turnSnapshotsLog, targetManager.getDuelOpponent().getState(), predictedTSs, null));
         }
 
         if (predictedPoses == null || predictedPoses.size() == 0) {
             predictedPoses = new LinkedList<LXXPoint>();
+            predictedDecs = new LinkedList<MovementDecision>();
+            predictedStates = new LinkedList<LXXRobotState>();
+            predictedTSs = new LinkedList<TurnSnapshot>();
             robot.setDebugProperty("Use targeting config", targetingConfig.getName());
             robot.setDebugProperty("Enemy gun type", tomcatEyes.getEnemyGunType(t).toString());
             duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), robot.getRoundNum(), targetingConfig.getAttributes(), bulletManager.getBullets());
+            enemyProxyState = duelSimulator.getEnemyProxy().getState();
+            duelOpponentState = targetManager.getDuelOpponent().getState();
+            if (enemyProxyState.getVelocity() != targetManager.getDuelOpponent().getVelocity()) {
+                System.out.println("BBBBBBBBBBBBBBBBBBB");
+            }
             robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
 
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
             buildPattern(bulletSpeed);
+            for (int i = 0; i < predictedPoses.size() - 3; i++) {
+                double dist1 = predictedPoses.get(i).aDistance(predictedPoses.get(i + 1));
+                double dist2 = predictedPoses.get(i + 1).aDistance(predictedPoses.get(i + 2));
+                if (abs(dist1 - dist2) > 2.2) {
+                    predictedPoses = new LinkedList<LXXPoint>();
+                    predictedDecs = new LinkedList<MovementDecision>();
+                    predictedStates = new LinkedList<LXXRobotState>();
+                    duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), robot.getRoundNum(), targetingConfig.getAttributes(), bulletManager.getBullets());
+                    buildPattern(bulletSpeed);
+                }
+            }
             if (predictedPoses.get(0).aDistance(predictedPoses.get(1)) < targetManager.getDuelOpponent().getVelocityModule() - 0.5) {
                 predictedPoses = new LinkedList<LXXPoint>();
+                predictedDecs = new LinkedList<MovementDecision>();
+                predictedStates = new LinkedList<LXXRobotState>();
                 duelSimulator = new RobocodeDuelSimulator(t, robot, t.getTime(), robot.getRoundNum(), targetingConfig.getAttributes(), bulletManager.getBullets());
                 buildPattern(bulletSpeed);
             }
 
             if (predictedPoses == null || predictedPoses.size() == 0) {
-                return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, robotPosAtFireTime, turnSnapshotsLog));
+                return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, predictedDecs, predictedStates, robotPosAtFireTime, turnSnapshotsLog, targetManager.getDuelOpponent().getState(), predictedTSs, enemyProxyState));
             }
         }
 
+        if (enemyProxyState.getVelocity() != targetManager.getDuelOpponent().getVelocity()) {
+                System.out.println("BBBBBBBBBBBBBBBBBBB");
+            }
+
         final double angleToPredictedPos = getAngleToPredictedPos(predictedPoses.getLast(), this.robotPosAtFireTime);
 
-        return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, robotPosAtFireTime, turnSnapshotsLog));
+        return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(predictedPoses, predictedDecs, predictedStates, robotPosAtFireTime, turnSnapshotsLog, duelOpponentState, predictedTSs, enemyProxyState));
     }
 
     private double getGunTurnAngle(double angleToPredictedPos) {
@@ -101,11 +134,12 @@ public class TomcatClaws implements Gun {
             duelSimulator.setEnemyMovementDecision(movementDecision);
             duelSimulator.setMyMovementDecision(new MovementDecision(1, 0, robot.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
             duelSimulator.doTurn();
-            if (timeDelta >= 0) {
-                final LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
-                final LXXPoint predictedPos = new LXXPoint(enemyState);
-                predictedPoses.add(predictedPos);
-            }
+            final LXXRobotState enemyState = duelSimulator.getEnemyProxy().getState();
+            final LXXPoint predictedPos = new LXXPoint(enemyState);
+            predictedPoses.add(predictedPos);
+            predictedDecs.add(movementDecision);
+            predictedStates.addLast(duelSimulator.getEnemyProxy().getState());
+            predictedTSs.addLast(duelSimulator.getSimulatorSnapshot());
             timeDelta++;
         }
     }

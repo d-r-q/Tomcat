@@ -24,6 +24,8 @@ import lxx.utils.LXXUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.signum;
+
 /**
  * User: jdev
  * Date: 01.03.2011
@@ -138,6 +140,10 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         }
         final MovementDecision movementDecision = MovementDecision.getMovementDecision(turnSnapshotsLog.getLastSnapshot(target));
 
+        if (movementDecision.getMovementDirection().sign != signum(turnSnapshot.getEnemyVelocity()) ||
+                movementDecision.getMovementDirection().sign != signum(turnSnapshotsLog.getLastSnapshot(target).getEnemyVelocity())) {
+            System.out.println("AAAAAAAAAAAAAAAAAAAA");
+        }
         for (TargetingConfiguration tc : targetingConfigurations.values()) {
             tc.getMovementClassifier().learn(turnSnapshot, movementDecision);
         }
