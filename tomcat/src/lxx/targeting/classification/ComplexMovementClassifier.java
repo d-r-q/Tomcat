@@ -26,8 +26,8 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
             AttributesManager.firstBulletFlightTime,
             AttributesManager.firstBulletBearingOffset,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.bearingOffsetOnFirstBullet,
-            AttributesManager.bearingOffsetOnSecondBullet,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.enemyBearingOffsetOnSecondBullet,
             AttributesManager.enemyTravelTime,
     };
 
@@ -37,8 +37,8 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
         attrRanges.put(AttributesManager.enemyVelocity, 0);
         attrRanges.put(AttributesManager.enemyAcceleration, 0);
         attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
-        attrRanges.put(AttributesManager.bearingOffsetOnFirstBullet, 10);
-        attrRanges.put(AttributesManager.bearingOffsetOnSecondBullet, 15);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
         attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
         attrRanges.put(AttributesManager.enemyTravelTime, 3);
         attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);

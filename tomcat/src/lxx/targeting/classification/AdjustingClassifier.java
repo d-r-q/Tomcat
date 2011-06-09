@@ -31,8 +31,8 @@ public class AdjustingClassifier implements MovementClassifier {
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.enemyBearingToFirstBullet,
-            AttributesManager.bearingOffsetOnFirstBullet,
-            AttributesManager.bearingOffsetOnSecondBullet,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.enemyBearingOffsetOnSecondBullet,
     };
 
     private static final Map<Attribute, Integer> attrRanges = new HashMap<Attribute, Integer>();
@@ -41,8 +41,8 @@ public class AdjustingClassifier implements MovementClassifier {
         attrRanges.put(AttributesManager.enemyVelocity, 0);
         attrRanges.put(AttributesManager.enemyAcceleration, 0);
         attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
-        attrRanges.put(AttributesManager.bearingOffsetOnFirstBullet, 10);
-        attrRanges.put(AttributesManager.bearingOffsetOnSecondBullet, 15);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
         attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
         attrRanges.put(AttributesManager.enemyTravelTime, 3);
         attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);
