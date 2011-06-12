@@ -7,6 +7,7 @@ package lxx.targeting.classification;
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
+import lxx.segmentation_tree.EntryMatch;
 import lxx.segmentation_tree.SegmentationTree;
 import lxx.segmentation_tree.SegmentationTreeEntry;
 import lxx.strategies.MovementDecision;
@@ -23,9 +24,11 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
             AttributesManager.enemyVelocity,
             AttributesManager.enemyAcceleration,
             AttributesManager.firstBulletFlightTime,
+            AttributesManager.firstBulletBearingOffset,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingOffsetOnFirstBullet,
             AttributesManager.enemyBearingOffsetOnSecondBullet,
+            AttributesManager.enemyTravelTime,
     };
 
     private static final Map<Attribute, Integer> attrRanges = new HashMap<Attribute, Integer>();
@@ -33,10 +36,13 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
     static {
         attrRanges.put(AttributesManager.enemyVelocity, 0);
         attrRanges.put(AttributesManager.enemyAcceleration, 0);
-        attrRanges.put(AttributesManager.firstBulletFlightTime, 1);
-        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 40);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 5);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 5);
+        attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
+        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
+        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
+        attrRanges.put(AttributesManager.enemyTravelTime, 3);
+        attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);
+
     }
 
     private final SegmentationTree<MovementDecision> accelLog = new SegmentationTree<MovementDecision>(accelAttrs, 2, 0.01);
@@ -58,15 +64,7 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
     }
 
     public MovementDecision classify(TurnSnapshot turnSnapshot) {
-        final List<SegmentationTreeEntry<MovementDecision>> sortedSimilarEntries = accelLog.getSimilarEntries(getLimits(turnSnapshot));
-        Collections.sort(sortedSimilarEntries, new Comparator<SegmentationTreeEntry<MovementDecision>>() {
-            public int compare(SegmentationTreeEntry<MovementDecision> o1, SegmentationTreeEntry<MovementDecision> o2) {
-                if (o1.predicate.getRound() == o2.predicate.getRound()) {
-                    return (int) (o2.predicate.getTime() - o1.predicate.getTime());
-                }
-                return o2.predicate.getRound() - o1.predicate.getRound();
-            }
-        });
+        final List<EntryMatch<MovementDecision>> sortedSimilarEntries = accelLog.getSortedSimilarEntries(turnSnapshot, getLimits(turnSnapshot));
 
         final MovementDecision md;
         if (sortedSimilarEntries.size() == 0) {

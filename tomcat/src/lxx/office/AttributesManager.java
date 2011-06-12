@@ -46,7 +46,6 @@ public class AttributesManager {
     public static final Attribute enemyBearingOffsetOnFirstBullet = new Attribute("Enemy bearing offset on first bullet", -50, 50, new EnemyBearingOffsetOnFirstBullet());
     public static final Attribute enemyBearingOffsetOnSecondBullet = new Attribute("Enemy bearing offset on second bullet", -50, 50, new EnemyBearingOffsetOnSecondBullet());
     public static final Attribute enemyBearingToFirstBullet = new Attribute("Enemy bearing to first bullet", -180, 180, new EnemyBearingToFirstBullet());
-    public static final Attribute enemyMaxDangerBearingOffset = new Attribute("Enemy max danger bearing offset", -180, 180, new EnemyMaxDangerBearingOffsetVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
@@ -87,7 +86,6 @@ public class AttributesManager {
             enemyBearingOffsetOnFirstBullet,
             enemyBearingOffsetOnSecondBullet,
             enemyBearingToFirstBullet,
-            enemyMaxDangerBearingOffset,
 
             myX,
             myY,

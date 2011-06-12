@@ -20,7 +20,7 @@ import static java.lang.StrictMath.*;
 
 public class HitStats implements Debugger, BulletManagerListener {
 
-    public static double[][] hitStats = new double[3][91];
+    private static double[][] hitStats = new double[3][91];
 
     private BulletManager bulletManager;
     private Tomcat robot;
@@ -68,6 +68,11 @@ public class HitStats implements Debugger, BulletManagerListener {
                 g.setColor(new Color(255, 255, 255));
             }
             g.drawLine(pnt1, pnt2);
+
+            if (hitStats[latVelIdx][i] == minHits) {
+                final APoint pnt3 = firstBullet.getFirePosition().project(alpha1 + LXXConstants.RADIANS_0_5, firstBullet.getTravelledDistance() - 5);
+                g.fillCircle(pnt3, 5);
+            }
         }
     }
 
@@ -92,7 +97,7 @@ public class HitStats implements Debugger, BulletManagerListener {
         }
     }
 
-    public static int getLatVelIdx(LXXBullet bullet) {
+    private int getLatVelIdx(LXXBullet bullet) {
         final double lateralVelocity = LXXUtils.lateralVelocity(bullet.getFirePosition(), bullet.getTargetStateAtFireTime());
         final int latVelIdx;
         if (abs(lateralVelocity) < 3) {
