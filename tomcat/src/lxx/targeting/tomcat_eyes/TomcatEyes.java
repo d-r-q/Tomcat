@@ -22,6 +22,7 @@ import lxx.targeting.classification.SegmentationTreeMovementClassifier;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,6 +84,11 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingConfiguration doctorBobTC =
                 new TargetingConfiguration("doctorBob", new AdjustingClassifier(), AdjustingClassifier.getAttributes());
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
+
+        final TargetingConfiguration ocnipTC =
+                new TargetingConfiguration("ocnip", new ComplexMovementClassifier(), ComplexMovementClassifier.getAttributes());
+        targetingConfigurations.put(new double[]{0.241, -0.049, 5.421, 1.130, 86.131, -8.813, 423.946, 77.684, 430.038, 286.050}, ocnipTC);
+        targetingConfigurations.put(new double[]{-0.205, 0.063, 5.552, 1.049, 86.999, -2.427, 431.295, 77.148, 438.764, 250.235}, ocnipTC);
     }
 
     private static final double[] weights = {
@@ -133,6 +139,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         movementMetaProfile.update(target, robot, bulletManager);
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
+        robot.setDebugProperty("emmp", Arrays.toString(movementMetaProfile.toArray()));
 
         final TurnSnapshot turnSnapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
         if (turnSnapshot == null) {
