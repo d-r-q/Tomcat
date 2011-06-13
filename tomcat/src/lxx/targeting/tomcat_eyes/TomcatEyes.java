@@ -18,6 +18,7 @@ import lxx.targeting.bullets.BulletManagerListener;
 import lxx.targeting.bullets.LXXBullet;
 import lxx.targeting.classification.AdjustingClassifier;
 import lxx.targeting.classification.ComplexMovementClassifier;
+import lxx.targeting.classification.ProbCMC;
 import lxx.targeting.classification.SegmentationTreeMovementClassifier;
 import lxx.utils.LXXRobot;
 import lxx.utils.LXXUtils;
@@ -69,6 +70,58 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
             AttributesManager.enemyBearingToForwardWall,
     };
 
+    private static final Attribute[] drussAccelAttrs = new Attribute[]{
+            AttributesManager.enemyVelocity,
+            AttributesManager.enemyAcceleration,
+            AttributesManager.firstBulletFlightTime,
+            AttributesManager.firstBulletBearingOffset,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.enemyBearingOffsetOnSecondBullet,
+            AttributesManager.enemyTravelTime,
+    };
+
+    private static final Map<Attribute, Integer> drussAccelRanges = new HashMap<Attribute, Integer>();
+    static {
+        drussAccelRanges.put(AttributesManager.enemyVelocity, 0);
+        drussAccelRanges.put(AttributesManager.enemyAcceleration, 0);
+        drussAccelRanges.put(AttributesManager.firstBulletFlightTime, 2);
+        drussAccelRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
+        drussAccelRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
+        drussAccelRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
+        drussAccelRanges.put(AttributesManager.enemyTravelTime, 3);
+        drussAccelRanges.put(AttributesManager.firstBulletBearingOffset, 2);
+    }
+
+    private static final Attribute[] drussTurnAttrs = new Attribute[]{
+            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyBearingToFirstBullet,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyTurnRate,
+    };
+
+    private static final Attribute[] ocnirpAccelAttrs = new Attribute[]{
+            AttributesManager.enemyVelocity,
+            AttributesManager.enemyAcceleration,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyTravelTime,
+    };
+
+    private static final Map<Attribute, Integer> ocnirpAccelRanges = new HashMap<Attribute, Integer>();
+    static {
+        ocnirpAccelRanges.put(AttributesManager.enemyVelocity, 0);
+        ocnirpAccelRanges.put(AttributesManager.enemyAcceleration, 0);
+        ocnirpAccelRanges.put(AttributesManager.enemyTravelTime, 1);
+        ocnirpAccelRanges.put(AttributesManager.enemyDistanceToForwardWall, 30);
+    }
+
+    private static final Attribute[] ocnirpTurnAttrs = new Attribute[]{
+            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyTurnRate,
+    };
+
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
@@ -77,18 +130,20 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
         targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
 
+        final ComplexMovementClassifier drussCMC = new ComplexMovementClassifier(drussAccelAttrs, drussTurnAttrs, drussAccelRanges);
         final TargetingConfiguration drussTC =
-                new TargetingConfiguration("druss", new ComplexMovementClassifier(), ComplexMovementClassifier.getAttributes());
+                new TargetingConfiguration("druss", drussCMC, drussCMC.getAttributes());
         targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
 
         final TargetingConfiguration doctorBobTC =
                 new TargetingConfiguration("doctorBob", new AdjustingClassifier(), AdjustingClassifier.getAttributes());
         targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
 
+        /*final ProbCMC ocnirpCMC = new ProbCMC(ocnirpAccelAttrs, ocnirpTurnAttrs, ocnirpAccelRanges);
         final TargetingConfiguration ocnipTC =
-                new TargetingConfiguration("ocnip", new ComplexMovementClassifier(), ComplexMovementClassifier.getAttributes());
+                new TargetingConfiguration("ocnirp", ocnirpCMC, ocnirpCMC.getAttributes());
         targetingConfigurations.put(new double[]{0.241, -0.049, 5.421, 1.130, 86.131, -8.813, 423.946, 77.684, 430.038, 286.050}, ocnipTC);
-        targetingConfigurations.put(new double[]{-0.205, 0.063, 5.552, 1.049, 86.999, -2.427, 431.295, 77.148, 438.764, 250.235}, ocnipTC);
+        targetingConfigurations.put(new double[]{-0.205, 0.063, 5.552, 1.049, 86.999, -2.427, 431.295, 77.148, 438.764, 250.235}, ocnipTC);*/
     }
 
     private static final double[] weights = {

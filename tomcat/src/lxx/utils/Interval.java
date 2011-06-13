@@ -31,6 +31,10 @@ public class Interval {
         return c >= a && c <= b;
     }
 
+    public boolean intersects(Interval another) {
+        return contains(another.a) || contains(another.b) || another.contains(a) || another.contains(b);
+    }
+
     public String toString() {
         return "[" + a + ", " + b + "]";
     }

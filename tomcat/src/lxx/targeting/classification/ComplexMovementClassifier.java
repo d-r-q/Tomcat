@@ -20,41 +20,21 @@ import static java.lang.Math.round;
 
 public class ComplexMovementClassifier implements MovementClassifier, ClassificationIterator {
 
-    private static final Attribute[] accelAttrs = new Attribute[]{
-            AttributesManager.enemyVelocity,
-            AttributesManager.enemyAcceleration,
-            AttributesManager.firstBulletFlightTime,
-            AttributesManager.firstBulletBearingOffset,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingOffsetOnFirstBullet,
-            AttributesManager.enemyBearingOffsetOnSecondBullet,
-            AttributesManager.enemyTravelTime,
-    };
+    private final Attribute[] accelAttrs;
+    private final Attribute[] turnAttrs;
 
-    private static final Map<Attribute, Integer> attrRanges = new HashMap<Attribute, Integer>();
+    protected final SegmentationTree<MovementDecision> accelLog;
+    protected final SegmentationTree<MovementDecision> turnLog;
+    protected final Map<Attribute, Integer> attrRanges;
 
-    static {
-        attrRanges.put(AttributesManager.enemyVelocity, 0);
-        attrRanges.put(AttributesManager.enemyAcceleration, 0);
-        attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
-        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
-        attrRanges.put(AttributesManager.enemyTravelTime, 3);
-        attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);
+    public ComplexMovementClassifier(Attribute[] accelAttrs, Attribute[] turnAttrs, Map<Attribute, Integer> attrRanges) {
+        this.accelAttrs = accelAttrs;
+        this.turnAttrs = turnAttrs;
+        this.attrRanges = attrRanges;
 
+        this.accelLog = new SegmentationTree<MovementDecision>(this.accelAttrs, 2, 0.001);
+        this.turnLog = new SegmentationTree<MovementDecision>(this.turnAttrs, 2, 0.001);
     }
-
-    private final SegmentationTree<MovementDecision> accelLog = new SegmentationTree<MovementDecision>(accelAttrs, 2, 0.01);
-
-    private static final Attribute[] turnAttrs = new Attribute[]{
-            AttributesManager.enemyVelocityModule,
-            AttributesManager.enemyBearingToFirstBullet,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.enemyTurnRate,
-    };
-    private final SegmentationTree<MovementDecision> turnLog = new SegmentationTree<MovementDecision>(turnAttrs, 2, 0.01);
 
     public void learn(TurnSnapshot turnSnapshot, MovementDecision decision) {
         final SegmentationTreeEntry<MovementDecision> entry = new SegmentationTreeEntry<MovementDecision>(turnSnapshot);
@@ -86,8 +66,8 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
         return this;
     }
 
-    public static Attribute[] getAttributes() {
-        Set<Attribute> attrs = new HashSet<Attribute>();
+    public Attribute[] getAttributes() {
+        final Set<Attribute> attrs = new HashSet<Attribute>();
         attrs.addAll(Arrays.asList(accelAttrs));
         attrs.addAll(Arrays.asList(turnAttrs));
 
@@ -98,7 +78,7 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
         return classify(turnSnapshot);
     }
 
-    private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
+    protected Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
         Map<Attribute, Interval> limits = new HashMap<Attribute, Interval>();
 
         for (Attribute a : accelAttrs) {

@@ -24,15 +24,9 @@ public class AdjustingClassifier implements MovementClassifier {
     private static final Attribute[] accelAttrs = new Attribute[]{
             AttributesManager.enemyVelocity,
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyTravelTime,
-            AttributesManager.firstBulletFlightTime,
-            AttributesManager.firstBulletBearingOffset,
-            AttributesManager.enemyBearingToFirstBullet,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
-            AttributesManager.enemyBearingToFirstBullet,
-            AttributesManager.enemyBearingOffsetOnFirstBullet,
-            AttributesManager.enemyBearingOffsetOnSecondBullet,
+            AttributesManager.enemyTravelTime,
+            AttributesManager.enemyBearingToMe,
     };
 
     private static final Map<Attribute, Integer> attrRanges = new HashMap<Attribute, Integer>();
@@ -40,14 +34,9 @@ public class AdjustingClassifier implements MovementClassifier {
     static {
         attrRanges.put(AttributesManager.enemyVelocity, 0);
         attrRanges.put(AttributesManager.enemyAcceleration, 0);
-        attrRanges.put(AttributesManager.firstBulletFlightTime, 2);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnFirstBullet, 10);
-        attrRanges.put(AttributesManager.enemyBearingOffsetOnSecondBullet, 15);
-        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 25);
+        attrRanges.put(AttributesManager.enemyDistanceToForwardWall, 10);
         attrRanges.put(AttributesManager.enemyTravelTime, 3);
-        attrRanges.put(AttributesManager.firstBulletBearingOffset, 2);
-        attrRanges.put(AttributesManager.enemyBearingToForwardWall, 20);
-        attrRanges.put(AttributesManager.enemyBearingToFirstBullet, 20);
+        attrRanges.put(AttributesManager.enemyBearingToMe, 10);
     }
 
     private final SegmentationTree<MovementDecision> log;

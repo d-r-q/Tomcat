@@ -9,12 +9,11 @@ import lxx.model.attributes.Attribute;
 import lxx.utils.Interval;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * User: jdev
@@ -34,6 +33,7 @@ public class SegmentationTreeNode<T extends Serializable> {
 
     private Double mediana = null;
     private boolean isLoaded = false;
+    private final List<SegmentationTreeEntry<T>> emptyList = Collections.unmodifiableList(new ArrayList<SegmentationTreeEntry<T>>());
 
     public SegmentationTreeNode(int loadFactor, Interval interval, int attributeIdx, Attribute[] attributes,
                                 double maxIntervalLength) {
@@ -54,6 +54,15 @@ public class SegmentationTreeNode<T extends Serializable> {
                 children.add(new SegmentationTreeNode<T>(loadFactor, attributes[attributeIdx + 1].getRoundedRange(), attributeIdx + 1, attributes, maxIntervalLength));
             }
             final int attrValue = getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx + 1]);
+            if (attributeIdx > -1) {
+                final int value = getAttrValue(SegmentationTreeEntry.predicate, attributes[attributeIdx]);
+                if (value < range.a) {
+                    range.a = value;
+                }
+                if (value > range.b) {
+                    range.b = value;
+                }
+            }
             for (SegmentationTreeNode<T> n : children) {
                 if (n.interval.contains(attrValue)) {
                     List<SegmentationTreeNode<T>> subRes = n.addEntry(SegmentationTreeEntry);
@@ -229,17 +238,18 @@ public class SegmentationTreeNode<T extends Serializable> {
             return entries;
         }
 
-        int fromIdx = 0;
-        int toIdx = 0;
+        int fromIdx = Integer.MAX_VALUE;
+        int toIdx = Integer.MIN_VALUE;
         Interval limit = limits.get(attributes[attributeIdx + 1]);
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).interval.contains(limit.a)) {
-                fromIdx = i;
+            if (children.get(i).range.intersects(limit)) {
+                fromIdx = min(fromIdx, i);
+                toIdx = max(toIdx, i);
             }
-            if (children.get(i).interval.contains(limit.b)) {
-                toIdx = i;
-                break;
-            }
+        }
+
+        if (fromIdx == Integer.MAX_VALUE) {
+            return emptyList;
         }
 
         List<SegmentationTreeEntry<T>> entries = new ArrayList<SegmentationTreeEntry<T>>();
