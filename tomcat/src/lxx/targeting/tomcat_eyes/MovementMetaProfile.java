@@ -33,6 +33,9 @@ public class MovementMetaProfile {
     private final AvgValue avgFirstBulletAttackAngle = new AvgValue(10000);
     private final AvgValue avgDistanceToFirstBulletPos = new AvgValue(10000);
     private final AvgValue avgDistanceToCenter = new AvgValue(10000);
+    private final AvgValue avgFirstBulletBearing = new AvgValue(10000);
+    private final AvgValue avgVelocityModuleOnFirstBullet = new AvgValue(10000);
+    private final AvgValue avgAccelOnFirstBullet = new AvgValue(10000);
 
     private int enemyPreferredDistance = -1;
     private boolean rammer = false;
@@ -53,6 +56,11 @@ public class MovementMetaProfile {
         if (firstBullet != null) {
             avgFirstBulletAttackAngle.addValue(toDegrees(LXXUtils.getAttackAngle(firstBullet.getFirePosition(), owner, owner.getState().getAbsoluteHeadingRadians())));
             avgDistanceToFirstBulletPos.addValue(firstBullet.getFirePosition().aDistance(owner));
+            avgFirstBulletBearing.addValue(toDegrees(abs(Utils.normalRelativeAngle(owner.angleTo(firstBullet.getFirePosition()) - owner.getState().getAbsoluteHeadingRadians()))));
+            if ((firstBullet.getFirePosition().aDistance(owner) - firstBullet.getTravelledDistance()) / firstBullet.getSpeed() < 2) {
+                avgVelocityModuleOnFirstBullet.addValue(owner.getState().getVelocityModule());
+                avgAccelOnFirstBullet.addValue(owner.getAcceleration());
+            }
         }
 
         avgDistanceToCenter.addValue(owner.getPosition().aDistance(owner.getState().getBattleField().center));
@@ -80,12 +88,14 @@ public class MovementMetaProfile {
     }
 
     public String toShortString() {
-        return String.format("%1.3f, %2.3f, %1.3f, %2.3f, %2.3f, %3.3f, %4.2f, %3.3f, %4.2f, %4.2f",
+        return String.format("%1.3f, %2.3f, %1.3f, %2.3f, %2.3f, %3.3f, %4.2f, %3.3f, %4.2f, %4.2f, %3.2f, %1.1f, %1.1f",
                 avgVelocity.getCurrentValue(), avgTurnRate.getCurrentValue(),
                 avgVelocityModule.getCurrentValue(), avgTurnRateModule.getCurrentValue(),
                 avgAttackAngle.getCurrentValue(), avgBearing.getCurrentValue(),
                 avgDistanceBetween.getCurrentValue(), avgFirstBulletAttackAngle.getCurrentValue(),
-                avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue());
+                avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue(),
+                avgFirstBulletBearing.getCurrentValue(), avgVelocityModuleOnFirstBullet.getCurrentValue(),
+                avgAccelOnFirstBullet.getCurrentValue());
     }
 
     public double[] toArray() {
@@ -94,7 +104,9 @@ public class MovementMetaProfile {
                 avgVelocityModule.getCurrentValue(), avgTurnRateModule.getCurrentValue(),
                 avgAttackAngle.getCurrentValue(), avgBearing.getCurrentValue(),
                 avgDistanceBetween.getCurrentValue(), avgFirstBulletAttackAngle.getCurrentValue(),
-                avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue()};
+                avgDistanceToFirstBulletPos.getCurrentValue(), avgDistanceToCenter.getCurrentValue(),
+                avgFirstBulletBearing.getCurrentValue(), avgVelocityModuleOnFirstBullet.getCurrentValue(),
+                avgAccelOnFirstBullet.getCurrentValue()};
     }
 
     public int getPreferredDistance() {

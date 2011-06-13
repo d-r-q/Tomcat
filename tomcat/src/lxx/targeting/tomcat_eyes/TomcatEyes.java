@@ -125,38 +125,41 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
-        targetingConfigurations.put(new double[]{7.892, 0.073, 7.892, 0.073, 86.284, 88.172, 548.25, 55.816, 558.79, 384.78}, getTargetingConfig("Walls", wallsAttributes, 0.001));
+        targetingConfigurations.put(new double[]{6.131, 1.142, 6.131, 1.244, 53.298, 42.789, 470.58, 56.785, 494.65, 369.88, 91.54, 6.8, 0.1}, getTargetingConfig("Walls", wallsAttributes, 0.001));
 
         final TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
-        targetingConfigurations.put(new double[]{2.392, 0.543, 7.233, 4.382, 43.933, 0.034, 468.59, 42.337, 473.16, 248.61}, crazyTC);
+        targetingConfigurations.put(new double[]{2.824, 0.708, 7.341, 4.409, 46.719, 6.544, 423.87, 44.429, 420.14, 242.20, 78.37, 7.4, 0.0}, crazyTC);
 
         final ComplexMovementClassifier drussCMC = new ComplexMovementClassifier(drussAccelAttrs, drussTurnAttrs, drussAccelRanges);
         final TargetingConfiguration drussTC =
                 new TargetingConfiguration("druss", drussCMC, drussCMC.getAttributes());
-        targetingConfigurations.put(new double[]{-0.339, 0.027, 5.462, 1.478, 78.810, 0.032, 527.38, 75.587, 542.83, 255.65}, drussTC);
+        targetingConfigurations.put(new double[]{-0.103, -0.169, 5.671, 1.573, 75.376, -1.530, 454.68, 76.884, 469.54, 343.33, 94.77, 4.6, -0.1}, drussTC);
 
         final TargetingConfiguration doctorBobTC =
                 new TargetingConfiguration("doctorBob", new AdjustingClassifier(), AdjustingClassifier.getAttributes());
-        targetingConfigurations.put(new double[]{-0.018, -0.057, 6.213, 3.896, 68.950, 0.090, 261.97, 70.343, 254.22, 209.67}, doctorBobTC);
+        targetingConfigurations.put(new double[]{-0.427, 0.019, 6.129, 3.971, 68.660, 2.772, 270.69, 70.686, 257.54, 189.04, 81.38, 6.0, 0.1}, doctorBobTC);
 
-        /*final ProbCMC ocnirpCMC = new ProbCMC(ocnirpAccelAttrs, ocnirpTurnAttrs, ocnirpAccelRanges);
+        final ProbCMC ocnirpCMC = new ProbCMC(ocnirpAccelAttrs, ocnirpTurnAttrs, ocnirpAccelRanges);
         final TargetingConfiguration ocnipTC =
                 new TargetingConfiguration("ocnirp", ocnirpCMC, ocnirpCMC.getAttributes());
-        targetingConfigurations.put(new double[]{0.241, -0.049, 5.421, 1.130, 86.131, -8.813, 423.946, 77.684, 430.038, 286.050}, ocnipTC);
-        targetingConfigurations.put(new double[]{-0.205, 0.063, 5.552, 1.049, 86.999, -2.427, 431.295, 77.148, 438.764, 250.235}, ocnipTC);*/
+        targetingConfigurations.put(new double[]{-0.037, 0.005, 5.327, 1.070, 87.405, -6.097, 415.81, 76.560, 422.03, 241.68, 90.74, 5.2, 0.0}, ocnipTC);
     }
 
     private static final double[] weights = {
-            100D / 17,
-            100D / 21,
-            100D / 9,
-            100D / 11,
-            100D / 91,
-            100D / 180,
-            100D / 850,
-            100D / 91,
-            100D / 1700,
-            100D / 425};
+            100D / 17, // avgVelocity
+            100D / 21, // avgTurnRate
+            100D / 9, // avgVelocityModule
+            100D / 11, // avgTurnRateModule
+            100D / 91, // avgAttackAngle
+            100D / 180, // avgBearing
+            100D / 850, // avgDistanceBetween
+            100D / 91, // avgFirstBulletAttackAngle
+            100D / 1700, // avgDistanceToFirstBulletPos
+            100D / 425, // avgDistanceToCenter
+            100D / 180, // avgFirstBulletBearing
+            100D / 9, // avgVelocityModuleOnFirstBullet
+            100D / 4, // avgAccelOnFirstBullet
+    };
 
     private static final Map<LXXRobot, MovementMetaProfile> movementMetaProfiles = new HashMap<LXXRobot, MovementMetaProfile>();
     private static final Map<LXXRobot, TargetingProfile> targetingProfiles = new HashMap<LXXRobot, TargetingProfile>();
@@ -194,7 +197,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         movementMetaProfile.update(target, robot, bulletManager);
         robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
-        robot.setDebugProperty("emmp", Arrays.toString(movementMetaProfile.toArray()));
+        robot.setDebugProperty("emmp", movementMetaProfile.toShortString());
 
         final TurnSnapshot turnSnapshot = turnSnapshotsLog.getLastSnapshot(target, 1);
         if (turnSnapshot == null) {
