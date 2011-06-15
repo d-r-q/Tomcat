@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 /**
  * User: jdev
  * Date: 01.03.2011
@@ -82,6 +85,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     };
 
     private static final Map<Attribute, Integer> drussAccelRanges = new HashMap<Attribute, Integer>();
+
     static {
         drussAccelRanges.put(AttributesManager.enemyVelocity, 0);
         drussAccelRanges.put(AttributesManager.enemyAcceleration, 0);
@@ -109,6 +113,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     };
 
     private static final Map<Attribute, Integer> ocnirpAccelRanges = new HashMap<Attribute, Integer>();
+
     static {
         ocnirpAccelRanges.put(AttributesManager.enemyVelocity, 0);
         ocnirpAccelRanges.put(AttributesManager.enemyAcceleration, 0);
@@ -125,41 +130,60 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     private static final Map<double[], TargetingConfiguration> targetingConfigurations = new HashMap<double[], TargetingConfiguration>();
 
     static {
-        targetingConfigurations.put(new double[]{6.131, 1.142, 6.131, 1.244, 53.298, 42.789, 470.58, 56.785, 494.65, 369.88, 91.54, 6.8, 0.1}, getTargetingConfig("Walls", wallsAttributes, 0.001));
+        targetingConfigurations.put(new double[]{6.271, 0.989, 1.341, 1.142, 53.924, 90.174, 449.76, 29.939, 465.97, 359.19, 88.09, 6.7, 0.1, 276.46}, getTargetingConfig("Walls", wallsAttributes, 0.001));
 
         final TargetingConfiguration crazyTC = getTargetingConfig("Crazy", crazyAttributes, 0.001);
-        targetingConfigurations.put(new double[]{2.824, 0.708, 7.341, 4.409, 46.719, 6.544, 423.87, 44.429, 420.14, 242.20, 78.37, 7.4, 0.0}, crazyTC);
+        targetingConfigurations.put(new double[]{3.107, 0.657, 0.452, 4.394, 46.750, 82.177, 378.81, 38.499, 376.19, 250.80, 78.71, 7.2, 0.2, 311.06}, crazyTC);
 
         final ComplexMovementClassifier drussCMC = new ComplexMovementClassifier(drussAccelAttrs, drussTurnAttrs, drussAccelRanges);
         final TargetingConfiguration drussTC =
                 new TargetingConfiguration("druss", drussCMC, drussCMC.getAttributes());
-        targetingConfigurations.put(new double[]{-0.103, -0.169, 5.671, 1.573, 75.376, -1.530, 454.68, 76.884, 469.54, 343.33, 94.77, 4.6, -0.1}, drussTC);
+        targetingConfigurations.put(new double[]{-0.120, -0.089, 0.328, 1.369, 78.147, 92.983, 481.46, 14.596, 496.46, 301.84, 95.14, 4.1, 1.0, 253.06}, drussTC);
+        targetingConfigurations.put(new double[]{-0.025, 0.009, 0.806, 2.030, 70.753, 88.742, 406.98, 10.067, 404.23, 175.36, 88.10, 5.3, 0.7, 307.35}, drussTC); // Midboss
+        targetingConfigurations.put(new double[]{-0.114, -0.014, 0.397, 3.033, 68.239, 92.469, 451.41, 14.137, 462.64, 279.18, 92.64, 4.6, 1.0, 258.44}, drussTC); // Seraphim 1
 
         final TargetingConfiguration doctorBobTC =
                 new TargetingConfiguration("doctorBob", new AdjustingClassifier(), AdjustingClassifier.getAttributes());
-        targetingConfigurations.put(new double[]{-0.427, 0.019, 6.129, 3.971, 68.660, 2.772, 270.69, 70.686, 257.54, 189.04, 81.38, 6.0, 0.1}, doctorBobTC);
+        targetingConfigurations.put(new double[]{-0.050, -0.107, 0.190, 3.985, 69.742, 80.683, 254.02, 13.773, 241.82, 188.39, 80.95, 6.2, 0.5, 348.14}, doctorBobTC);
 
         final ProbCMC ocnirpCMC = new ProbCMC(ocnirpAccelAttrs, ocnirpTurnAttrs, ocnirpAccelRanges);
         final TargetingConfiguration ocnipTC =
                 new TargetingConfiguration("ocnirp", ocnirpCMC, ocnirpCMC.getAttributes());
-        targetingConfigurations.put(new double[]{-0.037, 0.005, 5.327, 1.070, 87.405, -6.097, 415.81, 76.560, 422.03, 241.68, 90.74, 5.2, 0.0}, ocnipTC);
+        targetingConfigurations.put(new double[]{-0.191, -0.005, 0.706, 1.049, 87.200, 90.772, 442.35, 10.573, 445.06, 289.73, 90.61, 4.9, 0.8, 246.28}, ocnipTC);
+        targetingConfigurations.put(new double[]{-0.283, 0.016, 0.199, 2.364, 73.233, 94.551, 502.42, 16.876, 512.72, 265.04, 91.16, 6.1, 0.7, 272.35}, ocnipTC); // RaikoMX
     }
 
     private static final double[] weights = {
-            100D / 17, // avgVelocity
-            100D / 21, // avgTurnRate
-            100D / 9, // avgVelocityModule
-            100D / 11, // avgTurnRateModule
-            100D / 91, // avgAttackAngle
-            100D / 180, // avgBearing
-            100D / 850, // avgDistanceBetween
-            100D / 91, // avgFirstBulletAttackAngle
-            100D / 1700, // avgDistanceToFirstBulletPos
-            100D / 425, // avgDistanceToCenter
-            100D / 180, // avgFirstBulletBearing
-            100D / 9, // avgVelocityModuleOnFirstBullet
-            100D / 4, // avgAccelOnFirstBullet
+            1 * 1000, // avgVelocity
+            1 * 1000, // avgTurnRate
+            1 * 1000, // avgStopTime
+            1 * 1000, // avgTurnRateModule
+            1 * 1000, // avgAttackAngle
+            3 * 1000, // avgBearing
+            1 * 1000, // avgDistanceBetween
+            1 * 1000, // avgTravelTime
+            1 * 1000, // avgDistanceToFirstBulletPos
+            1 * 1000, // avgDistanceToCenter
+            3 * 1000, // avgFirstBulletBearing
+            1 * 1000, // avgVelocityModuleOnFirstBullet
+            3 * 1000, // avgAccelOnFirstBullet
+            1 * 1000, // avgDistToForwardWall
     };
+    static {
+        double[][] ranges = new double[2][weights.length];
+        Arrays.fill(ranges[0], Integer.MAX_VALUE);
+        Arrays.fill(ranges[1], Integer.MIN_VALUE);
+        for (double[] pnt : targetingConfigurations.keySet()) {
+            for (int i = 0; i < pnt.length; i++) {
+                ranges[0][i] = min(ranges[0][i], pnt[i]);
+                ranges[1][i] = max(ranges[1][i], pnt[i]);
+            }
+        }
+
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] /= ranges[1][i] - ranges[0][i];
+        }
+    }
 
     private static final Map<LXXRobot, MovementMetaProfile> movementMetaProfiles = new HashMap<LXXRobot, MovementMetaProfile>();
     private static final Map<LXXRobot, TargetingProfile> targetingProfiles = new HashMap<LXXRobot, TargetingProfile>();

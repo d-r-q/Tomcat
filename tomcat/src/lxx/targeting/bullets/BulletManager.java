@@ -131,4 +131,11 @@ public class BulletManager implements RobotListener {
     public List<LXXBullet> getBullets() {
         return bullets;
     }
+
+    public LXXBullet getLastBullet() {
+        if (bullets.size() == 0) {
+            return null;
+        }
+        return bullets.get(bullets.size() - 1);
+    }
 }

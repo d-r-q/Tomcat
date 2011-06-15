@@ -15,7 +15,7 @@ public class TargetingProfile {
     public int positiveNormalBearingOffsetsCount = 0;
     public int negativeNormalBearingOffsetsCount = 0;
     public int hitCount = 0;
-    public Median bearingOffsetsMedian = new Median();
+    public Median bearingOffsetsMedian = new Median(2000);
 
     public void addBearingOffset(double bearingOffsetRadians, boolean isHit) {
         totalNormalBearingOffsets++;

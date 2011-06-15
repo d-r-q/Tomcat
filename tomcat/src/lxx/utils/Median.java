@@ -10,17 +10,36 @@ import java.util.List;
 
 public class Median {
 
-    private List<Integer> values = new ArrayList<Integer>();
+    private final int limit;
+    private final List<Double> values;
 
-    public Median() {
+    public Median(int limit) {
+        this.limit = limit;
+        values = new ArrayList<Double>(limit);
     }
 
-    public void addValue(int value) {
-        values.add(value);
-        Collections.sort(values);
+    public void addValue(double value) {
+        if (values.size() == limit) {
+            double m = getMedian();
+            if (value < m) {
+                values.remove(0);
+            } else {
+                values.remove(values.size() - 1);
+            }
+        }
+
+        int idx = Collections.binarySearch(values, value);
+        if (idx < 0) {
+            idx = -idx - 1;
+        }
+        if (idx < values.size()) {
+            values.add(idx, value);
+        } else {
+            values.add(value);
+        }
     }
 
-    public double getMediana() {
+    public double getMedian() {
         if (values.size() == 0) {
             return 0;
         }
@@ -32,21 +51,11 @@ public class Median {
     }
 
     public String toString() {
-        return String.format("Median = %10.5f", getMediana());
+        return String.format("Median = %f", getMedian());
     }
 
-    public Interval getRange(double width) {
-        if (values.size() == 0) {
-            return new Interval(0, 0);
-        }
-        if (values.size() == 1) {
-            return new Interval(values.get(0), values.get(0));
-        }
-        if (values.size() == 2) {
-            return new Interval(values.get(0), values.get(1));
-        }
-        int margin = (int) (values.size() * (1 - width) / 2);
-        return new Interval(values.get(margin), values.get(values.size() - 1 - margin));
+    public List<Double> getValues() {
+        return values;
     }
 
 }
