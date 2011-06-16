@@ -21,7 +21,7 @@ public class SegmentationTreeMovementClassifier implements MovementClassifier, C
     }
 
     public MovementDecision classify(TurnSnapshot turnSnapshot) {
-        return log.getClosestEntry(turnSnapshot);
+        return log.getClosestEntryResult(turnSnapshot);
     }
 
     public ClassificationIterator classificationIterator() {

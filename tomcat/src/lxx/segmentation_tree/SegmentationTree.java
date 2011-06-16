@@ -52,13 +52,22 @@ public class SegmentationTree<T extends Serializable> {
         return matches;
     }
 
-    public T getClosestEntry(TurnSnapshot turnSnapshot) {
+    public T getClosestEntryResult(TurnSnapshot turnSnapshot) {
         final List<EntryMatch<T>> similarEntries = getSimilarEntries(turnSnapshot, 1);
         if (similarEntries.size() == 0) {
             return null;
         }
 
         return similarEntries.get(0).result;
+    }
+
+    public EntryMatch<T> getClosestEntry(TurnSnapshot turnSnapshot) {
+        final List<EntryMatch<T>> similarEntries = getSimilarEntries(turnSnapshot, 1);
+        if (similarEntries.size() == 0) {
+            return null;
+        }
+
+        return similarEntries.get(0);
     }
 
     public List<SegmentationTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {

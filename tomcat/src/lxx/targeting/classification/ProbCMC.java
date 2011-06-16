@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.targeting.classification;
 
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
-import lxx.segmentation_tree.EntryMatch;
 import lxx.segmentation_tree.SegmentationTreeEntry;
 import lxx.strategies.MovementDecision;
 
@@ -26,7 +29,7 @@ public class ProbCMC extends ComplexMovementClassifier {
 
         final MovementDecision md;
         if (similarEntries.size() == 0) {
-            md = accelLog.getClosestEntry(turnSnapshot);
+            md = accelLog.getClosestEntryResult(turnSnapshot);
         } else {
             md = similarEntries.get(0).result;
         }
@@ -49,7 +52,7 @@ public class ProbCMC extends ComplexMovementClassifier {
             }
         }
         final MovementDecision.MovementDirection dir = md.getMovementDirection();
-        final double turnRate = turnLog.getClosestEntry(turnSnapshot).getTurnRateRadians();
+        final double turnRate = turnLog.getClosestEntryResult(turnSnapshot).getTurnRateRadians();
 
         return new MovementDecision(acceleration, turnRate, dir);
     }

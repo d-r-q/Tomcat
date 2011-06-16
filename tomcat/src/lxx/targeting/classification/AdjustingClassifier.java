@@ -47,7 +47,7 @@ public class AdjustingClassifier implements MovementClassifier {
     }
 
     public MovementDecision classify(TurnSnapshot turnSnapshot) {
-        return log.getClosestEntry(turnSnapshot);
+        return log.getClosestEntryResult(turnSnapshot);
     }
 
     public ClassificationIterator classificationIterator() {

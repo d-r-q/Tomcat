@@ -6,7 +6,6 @@ package lxx.targeting.classification;
 
 import lxx.model.TurnSnapshot;
 import lxx.model.attributes.Attribute;
-import lxx.office.AttributesManager;
 import lxx.segmentation_tree.EntryMatch;
 import lxx.segmentation_tree.SegmentationTree;
 import lxx.segmentation_tree.SegmentationTreeEntry;
@@ -48,7 +47,7 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
 
         final MovementDecision md;
         if (sortedSimilarEntries.size() == 0) {
-            md = accelLog.getClosestEntry(turnSnapshot);
+            md = accelLog.getClosestEntryResult(turnSnapshot);
         } else {
             md = sortedSimilarEntries.get(0).result;
         }
@@ -57,7 +56,7 @@ public class ComplexMovementClassifier implements MovementClassifier, Classifica
         }
         final double acceleration = md.getAcceleration();
         final MovementDecision.MovementDirection dir = md.getMovementDirection();
-        final double turnRate = turnLog.getClosestEntry(turnSnapshot).getTurnRateRadians();
+        final double turnRate = turnLog.getClosestEntryResult(turnSnapshot).getTurnRateRadians();
 
         return new MovementDecision(acceleration, turnRate, dir);
     }

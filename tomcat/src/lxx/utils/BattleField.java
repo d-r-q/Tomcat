@@ -7,6 +7,7 @@ package lxx.utils;
 import robocode.util.Utils;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 /**
  * User: jdev
@@ -35,7 +36,7 @@ public class BattleField {
     public final int availableRightX;
 
     public final Rectangle battleField;
-    public final Rectangle availableBattleFieldRectangle;
+    public final Rectangle2D.Double availableBattleFieldRectangle;
 
     public final APoint center;
 
@@ -77,7 +78,7 @@ public class BattleField {
         right.counterClockwiseWall = top;
 
         battleField = new Rectangle(0, 0, width + x * 2, height + y * 2);
-        availableBattleFieldRectangle = new Rectangle(x, y, width, height);
+        availableBattleFieldRectangle = new Rectangle2D.Double(x - 0.1, y - 0.1, width + 0.2, height + 0.2);
 
         center = new LXXPoint(width / 2, height / 2);
 
@@ -144,30 +145,8 @@ public class BattleField {
         return smoothWall(getWall(pos, heading), pos, heading, isClockwise);
     }
 
-    public double randomSmoothWalls(APoint pos, double heading, boolean isClockwise, double randomWallStickDelta) {
-        return randomSmoothWall(getWall(pos, heading), pos, heading, isClockwise, randomWallStickDelta);
-    }
-
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
         final double hypotenuse = getWallSmoothStickLength(pos, heading);
-        final double adjacentLeg = getDistanceToWall(wall, pos) - 2;
-        if (hypotenuse < adjacentLeg) {
-            return heading;
-        }
-        final double smoothAngle = (QuickMath.acos((adjacentLeg) / (hypotenuse))) *
-                (isClockwise ? 1 : -1);
-        final double baseAngle = wall.wallType.fromCenterAngle;
-        double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
-        if (!contains(pos.project(smoothedAngle, hypotenuse))) {
-            final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
-            return smoothWall(secondWall, pos, smoothedAngle, isClockwise);
-        }
-        return smoothedAngle;
-    }
-
-    private double randomSmoothWall(Wall wall, APoint pos, double heading, boolean isClockwise,
-                                    double randomWallStickDelta) {
-        final double hypotenuse = getWallSmoothStickLength(pos, heading) + randomWallStickDelta;
         final double adjacentLeg = getDistanceToWall(wall, pos) - 2;
         if (hypotenuse < adjacentLeg) {
             return heading;
