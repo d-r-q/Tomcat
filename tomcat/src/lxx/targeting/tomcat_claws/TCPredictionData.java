@@ -6,7 +6,6 @@ package lxx.targeting.tomcat_claws;
 
 import lxx.model.TurnSnapshot;
 import lxx.office.TurnSnapshotsLog;
-import lxx.simulator.RobotProxy;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.bullets.LXXBullet;

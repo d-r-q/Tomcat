@@ -50,10 +50,6 @@ public class StrategySelector {
             }
         }
 
-        for (Strategy s : strategies) {
-            s.match();
-        }
-
         return null;
     }
 

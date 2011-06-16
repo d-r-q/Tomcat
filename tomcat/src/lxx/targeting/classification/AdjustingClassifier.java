@@ -13,6 +13,7 @@ import lxx.segmentation_tree.SegmentationTreeEntry;
 import lxx.strategies.MovementDecision;
 import lxx.utils.Interval;
 import lxx.utils.LXXUtils;
+import robocode.Rules;
 
 import java.util.*;
 
@@ -54,6 +55,9 @@ public class AdjustingClassifier implements MovementClassifier {
     }
 
     public void learn(TurnSnapshot turnSnapshot, MovementDecision decision) {
+        if (decision.getAcceleration() < -Rules.DECELERATION) {
+            return;
+        }
         final SegmentationTreeEntry<MovementDecision> entry = new SegmentationTreeEntry<MovementDecision>(turnSnapshot);
         entry.result = decision;
         log.addEntry(entry);

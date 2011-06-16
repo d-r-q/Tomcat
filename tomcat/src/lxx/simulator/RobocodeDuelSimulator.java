@@ -19,8 +19,7 @@ import robocode.util.Utils;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
@@ -102,7 +101,7 @@ public class RobocodeDuelSimulator {
 
         double newVelocity = maxVelocity * movementDecision.getMovementDirection().sign;
 
-        double distanceToWall = new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians());
+        double distanceToWall = max(new LXXPoint(state).distanceToWall(state.getBattleField(), state.getAbsoluteHeadingRadians()), 0);
         APoint newPosition;
         if (distanceToWall > newVelocity) {
             newPosition = proxy.getState().project(newVelocity >= 0 ? newHeading : Utils.normalAbsoluteAngle(newHeading + LXXConstants.RADIANS_180), abs(newVelocity));
