@@ -11,6 +11,7 @@ import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import static java.lang.Math.*;
@@ -144,7 +145,7 @@ public class LXXUtils {
     }
 
     public static APoint getEnemyPos(TurnSnapshot bs) {
-        return new LXXPoint(bs.getRoundedAttrValue(AttributesManager.enemyX), bs.getRoundedAttrValue(AttributesManager.enemyY));
+        return new LXXPoint(bs.getAttrValue(AttributesManager.enemyX), bs.getAttrValue(AttributesManager.enemyY));
     }
 
     public static double getReturnedEnergy(double bulletPower) {
@@ -204,6 +205,17 @@ public class LXXUtils {
         }
 
         return limit(-Rules.MAX_VELOCITY, acceleration, Rules.ACCELERATION);
+    }
+
+    public static DeltaVector getEnemyDeltaVector(TurnSnapshot ts1, TurnSnapshot ts2) {
+        final double enemyHeading = ts1.getEnemyAbsoluteHeading();
+        final double x1 = ts1.getAttrValue(AttributesManager.enemyX);
+        final double y1 = ts1.getAttrValue(AttributesManager.enemyY);
+        final double x2 = ts2.getAttrValue(AttributesManager.enemyX);
+        final double y2 = ts2.getAttrValue(AttributesManager.enemyY);
+        final double alpha = angle(x1, y1, x2, y2);
+
+        return new DeltaVector(Utils.normalRelativeAngle(alpha - enemyHeading), Point2D.Double.distance(x1, y1, x2, y2));
     }
 
 }

@@ -28,8 +28,8 @@ public class AttributesManager {
     public static final Attribute enemyY = new Attribute("Enemy y", 0, 1200, new EnemyYVE());
     public static final Attribute enemyVelocity = new Attribute("Enemy velocity", -8, 8, new EnemyVelocityVE());
     public static final Attribute enemyVelocityModule = new Attribute("Enemy velocity module", 0, 8, new EnemyVelocityModuleVE());
-    public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAccelerationVE());
     public static final Attribute enemyAbsoluteHeading = new Attribute("Enemy heading", 0, 360, new EnemyHeadingVE());
+    public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAccelerationVE());
     public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10.1, 10.1, new EnemyTurnRateVE());
 
     public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());

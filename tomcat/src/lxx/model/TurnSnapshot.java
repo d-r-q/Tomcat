@@ -6,6 +6,7 @@ package lxx.model;
 
 import lxx.model.attributes.Attribute;
 import lxx.office.AttributesManager;
+import lxx.utils.DeltaVector;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -112,4 +113,7 @@ public class TurnSnapshot implements Serializable {
         return attributeValues[AttributesManager.enemyVelocity.getId()];
     }
 
+    public double getEnemyAbsoluteHeading() {
+        return toRadians(attributeValues[AttributesManager.enemyAbsoluteHeading.getId()]);
+    }
 }
