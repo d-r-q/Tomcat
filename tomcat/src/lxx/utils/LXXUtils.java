@@ -13,6 +13,8 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.lang.Math.*;
 
@@ -216,6 +218,20 @@ public class LXXUtils {
         final double alpha = angle(x1, y1, x2, y2);
 
         return new DeltaVector(Utils.normalRelativeAngle(alpha - enemyHeading), Point2D.Double.distance(x1, y1, x2, y2));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static<K, V> Map<K, V> toMap(Object ... data) {
+        if (data.length % 2 != 0) {
+            throw new IllegalArgumentException("data length: " + data.length);
+        }
+        Map map = new HashMap();
+
+        for (int i = 0; i < data.length; i += 2) {
+            map.put(data[i], data[i + 1]);
+        }
+
+        return map;
     }
 
 }

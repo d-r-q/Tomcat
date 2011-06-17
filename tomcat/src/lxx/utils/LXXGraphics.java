@@ -8,6 +8,7 @@ import robocode.util.Utils;
 
 import java.awt.*;
 
+import static java.lang.Math.ceil;
 import static java.lang.Math.round;
 import static java.lang.Math.toDegrees;
 
@@ -147,5 +148,9 @@ public class LXXGraphics {
 
     public void drawRect(APoint center, double width, double height) {
         drawRect(center.getX() - width / 2, center.getY() - height / 2, width, height);
+    }
+
+    public void drawRect(APoint center, int side) {
+        drawRect(center, side, side);
     }
 }

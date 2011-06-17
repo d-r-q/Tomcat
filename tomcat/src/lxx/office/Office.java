@@ -6,6 +6,7 @@ package lxx.office;
 
 import lxx.Tomcat;
 import lxx.targeting.bullets.BulletManager;
+import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 
 public interface Office {
 
@@ -20,6 +21,8 @@ public interface Office {
     AttributesManager getAttributesManager();
 
     BulletManager getBulletManager();
+
+    DataViewManager getDataViewManager();
 
     long getTime();
 

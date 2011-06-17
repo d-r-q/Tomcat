@@ -14,7 +14,6 @@ import lxx.strategies.duel.DuelStrategy;
 import lxx.strategies.duel.SimpleTargetersMovement;
 import lxx.strategies.find_enemies.FindEnemiesStrategy;
 import lxx.strategies.win.WinStrategy;
-import lxx.targeting.NewGun;
 import lxx.targeting.tomcat_claws.TomcatClaws;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 
@@ -28,7 +27,7 @@ public class StrategySelector {
     public StrategySelector(Tomcat robot, Office office) {
         final TargetManager targetManager = office.getTargetManager();
         final EnemyBulletManager enemyBulletManager = office.getEnemyBulletManager();
-        final TomcatEyes tomcatEyes = new TomcatEyes(robot, office.getBulletManager(), office.getTurnSnapshotsLog());
+        final TomcatEyes tomcatEyes = new TomcatEyes(robot);
         targetManager.addListener(tomcatEyes);
         enemyBulletManager.addListener(tomcatEyes);
 
@@ -37,7 +36,7 @@ public class StrategySelector {
         final DuelStrategy waveSurfingDuelStrategy = new DuelStrategy(robot,
                 new SimpleTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
                 new AdvancedTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
-                new NewGun(robot, office.getTurnSnapshotsLog(), office.getTargetManager()),
+                new TomcatClaws(robot, office.getTurnSnapshotsLog(), office.getDataViewManager().getDuelDataView()),
                 new DuelFirePowerSelector(tomcatEyes), targetManager, enemyBulletManager, tomcatEyes);
         strategies.add(waveSurfingDuelStrategy);
 

@@ -7,10 +7,9 @@ package lxx.office;
 import lxx.Tomcat;
 import lxx.debug.DebugManager;
 import lxx.targeting.bullets.BulletManager;
+import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 
 public class OfficeImpl implements Office {
-
-    private static final StaticDataManager staticDataManager = new StaticDataManager();
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotsLog;
@@ -18,6 +17,7 @@ public class OfficeImpl implements Office {
     private final EnemyBulletManager enemyBulletManager;
     private final AttributesManager attributesManager;
     private final BulletManager bulletManager;
+    private final DataViewManager dataViewManager;
 
     private final Tomcat tomcat;
 
@@ -50,6 +50,9 @@ public class OfficeImpl implements Office {
 
         DebugManager debugManager = new DebugManager(this);
         tomcat.addListener(debugManager);
+
+        dataViewManager = new DataViewManager(targetManager, turnSnapshotsLog);
+        tomcat.addListener(dataViewManager);
     }
 
     public EnemyBulletManager getEnemyBulletManager() {
@@ -74,6 +77,10 @@ public class OfficeImpl implements Office {
 
     public BulletManager getBulletManager() {
         return bulletManager;
+    }
+
+    public DataViewManager getDataViewManager() {
+        return dataViewManager;
     }
 
     public long getTime() {
