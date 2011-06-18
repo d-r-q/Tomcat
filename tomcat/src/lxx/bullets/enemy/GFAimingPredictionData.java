@@ -28,8 +28,8 @@ public class GFAimingPredictionData implements AimingPredictionData {
     private final List<BearingOffsetDanger> dangers = new ArrayList<BearingOffsetDanger>();
     private final double step;
 
-    private double maxDanger;
     private double maxBearingOffset = 0;
+    protected double maxDanger;
 
     public GFAimingPredictionData(Map<Double, Double> matches) {
         for (Double bearingOffset : matches.keySet()) {
@@ -47,7 +47,7 @@ public class GFAimingPredictionData implements AimingPredictionData {
         step = (maxBearingOffset * 2 + LXXConstants.RADIANS_1) / matches.size();
     }
 
-    public double getDanger(double baseBearingOffset, double botWidthRadians) {
+    public double getDangerExt(double baseBearingOffset, double botWidthRadians) {
         final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         double danger = 0;
@@ -58,6 +58,16 @@ public class GFAimingPredictionData implements AimingPredictionData {
         return danger;
     }
 
+    public double getDangerInt(double baseBearingOffset, double botWidthRadians) {
+        final int fromIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
+        final int toIdx = (int) LXXUtils.limit(0, max(floor((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), fromIdx), dangers.size() - 1);
+        double danger = 0;
+        for (int i = fromIdx; i <= toIdx; i++) {
+            danger += dangers.get(i).danger;
+        }
+
+        return danger;
+    }
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
         final APoint firePosition = bullet.getFirePosition();

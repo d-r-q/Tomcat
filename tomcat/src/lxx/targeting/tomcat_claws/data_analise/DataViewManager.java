@@ -32,28 +32,67 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyDistanceToForwardWall, 9,
             AttributesManager.enemyBearingToForwardWall, 11
     );
-    private static final DataView mainDataView = new SingleSourceDataView(mainDVAttrs, mainDVRanges, 35);
+    private static final DataView mainDataView = new SingleSourceDataView(mainDVAttrs, mainDVRanges, 15);
 
-    private static final Attribute[] randomDVAttrs = {
+    private static final Attribute[] asDVAttrs = {
             AttributesManager.enemyAcceleration,
             AttributesManager.enemyVelocityModule,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.enemyBearingOffsetOnSecondBullet,
     };
-
-    private static final Map<Attribute, Integer> randomDVRanges = LXXUtils.toMap(
+    private static final Map<Attribute, Integer> asDVRanges = LXXUtils.toMap(
             AttributesManager.enemyAcceleration, 0,
-            AttributesManager.enemyVelocityModule, 1,
+            AttributesManager.enemyVelocityModule, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
             AttributesManager.enemyBearingToForwardWall, 20,
-            AttributesManager.firstBulletFlightTimeToEnemy, 2
+            AttributesManager.firstBulletFlightTimeToEnemy, 1,
+            AttributesManager.enemyBearingOffsetOnFirstBullet, 10,
+            AttributesManager.enemyBearingOffsetOnSecondBullet, 15
     );
-    private static final DataView randomDataView = new SingleSourceDataView(randomDVAttrs, randomDVRanges, 10);
+    private static final DataView asDataView = new SingleSourceDataView(asDVAttrs, asDVRanges, 4);
 
-    private static final CompositeDataView duelCompositeDataView = new CompositeDataView(randomDataView);
+    private static final Attribute[] distanceDVAttrs = {
+            AttributesManager.enemyAcceleration,
+            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.distBetween,
+    };
+    private static final Map<Attribute, Integer> distanceDVRanges = LXXUtils.toMap(
+            AttributesManager.enemyAcceleration, 0,
+            AttributesManager.enemyVelocityModule, 2,
+            AttributesManager.enemyDistanceToForwardWall, 20,
+            AttributesManager.enemyBearingToForwardWall, 20,
+            AttributesManager.firstBulletFlightTimeToEnemy, 1,
+            AttributesManager.distBetween, 50
+    );
+    private static final DataView distanceDataView = new SingleSourceDataView(distanceDVAttrs, distanceDVRanges, 10);
 
-    private DataView[] views = {mainDataView, randomDataView, duelCompositeDataView};
+    private static final Attribute[] timeSinceDirChangeDVAttrs = {
+            AttributesManager.enemyAcceleration,
+            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.enemyTimeSinceLastDirChange,
+    };
+    private static final Map<Attribute, Integer> timeSinceDirChangeDVRanges = LXXUtils.toMap(
+            AttributesManager.enemyAcceleration, 0,
+            AttributesManager.enemyVelocityModule, 2,
+            AttributesManager.enemyDistanceToForwardWall, 20,
+            AttributesManager.enemyBearingToForwardWall, 20,
+            AttributesManager.firstBulletFlightTimeToEnemy, 1,
+            AttributesManager.enemyTimeSinceLastDirChange, 2
+    );
+    private static final DataView timeSinceDirChangeDataView = new SingleSourceDataView(timeSinceDirChangeDVAttrs, timeSinceDirChangeDVRanges, 5);
+
+    private static final CompositeDataView duelCompositeDataView = new CompositeDataView(mainDataView, asDataView, distanceDataView, timeSinceDirChangeDataView);
+
+    private DataView[] views = {mainDataView, asDataView, distanceDataView, duelCompositeDataView, timeSinceDirChangeDataView};
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotLog;

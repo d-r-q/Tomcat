@@ -10,8 +10,6 @@ import lxx.ts_log.TurnSnapshotsLog;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;
-import lxx.targeting.tomcat_claws.clustering.Cluster2D;
-import lxx.targeting.tomcat_claws.clustering.ClusterBuilder;
 import lxx.targeting.tomcat_claws.data_analise.DataView;
 import lxx.utils.*;
 import robocode.Rules;
@@ -21,21 +19,24 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Math.*;
+
 public class TomcatClaws implements Gun {
 
-    private static final Set<Cluster2D> NO_PREDICTED_POSES = Collections.unmodifiableSet(new HashSet<Cluster2D>());
+    private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
+    private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
     private static final int AIMING_TIME = 2;
-
-    private final ClusterBuilder clusterBuilder = new ClusterBuilder();
+    private static final int NO_BEARING_OFFSET = 0;
 
     private final Tomcat robot;
     private final TurnSnapshotsLog log;
     private final DataView dataView;
 
     private APoint robotPosAtFireTime;
-    private APoint targetingPos;
-    private Set<Cluster2D> clusters;
+    private List<APoint> futurePoses;
+    private Map<Double, Double> bearingOffsetDangers;
+    private double bestBearingOffset;
 
     public TomcatClaws(Tomcat robot, TurnSnapshotsLog log, DataView dataView) {
         this.robot = robot;
@@ -45,26 +46,21 @@ public class TomcatClaws implements Gun {
 
     public GunDecision getGunDecision(Target t, double firePower) {
         final double angleToTarget = robot.angleTo(t);
-        APoint initialPos = t.getPosition();
+        final APoint initialPos = t.getPosition();
+        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
+
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
-            targetingPos = null;
-            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, initialPos));
+            bearingOffsetDangers = new HashMap<Double, Double>();
+            futurePoses = null;
+            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos));
         }
 
-        if (targetingPos == null) {
-
-            final double bulletSpeed = Rules.getBulletSpeed(firePower);
-            robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
-
-            targetingPos = getTargetingPos(t, dataView.getDataSet(log.getLastSnapshot(t)), bulletSpeed);
-            if (targetingPos == null) {
-                return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(NO_PREDICTED_POSES, initialPos));
-            }
+        if (bearingOffsetDangers.size() == 0) {
+            bestBearingOffset = getBearingOffset(t, dataView.getDataSet(log.getLastSnapshot(t)), Rules.getBulletSpeed(firePower));
         }
 
-        final double angleToPredictedPos = Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(targetingPos));
-
-        return new GunDecision(getGunTurnAngle(angleToPredictedPos), new TCPredictionData(clusters, initialPos));
+        return new GunDecision(getGunTurnAngle(Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(t) + bestBearingOffset)),
+                new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos));
     }
 
 
@@ -72,14 +68,45 @@ public class TomcatClaws implements Gun {
         return Utils.normalRelativeAngle(angleToPredictedPos - robot.getGunHeadingRadians());
     }
 
-    private APoint getTargetingPos(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
-        final List<APoint> futurePoses = getFuturePoses(t, starts, bulletSpeed);
-        clusters = clusterBuilder.createCluster(futurePoses);
-        final Cluster2D biggestCluster = getBiggestCluster(clusters);
-        if (biggestCluster == null) {
-            return null;
+    private double getBearingOffset(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
+        futurePoses = getFuturePoses(t, starts, bulletSpeed);
+        final List<IntervalDouble> botIntervals = new ArrayList<IntervalDouble>();
+        for (APoint pnt : futurePoses) {
+            final double bearingOffset = LXXUtils.bearingOffset(robotPosAtFireTime, t, pnt);
+            final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt);
+            final double bo1 = bearingOffset - botWidth / 2;
+            final double bo2 = bearingOffset + botWidth / 2;
+            botIntervals.add(new IntervalDouble(min(bo1, bo2), max(bo1, bo2)));
         }
-        return biggestCluster.getCenterPoint();
+
+        bearingOffsetDangers = new TreeMap<Double, Double>();
+        double maxDanger = 0;
+        for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
+            double bearingOffsetDanger = 0;
+            for (IntervalDouble ival : botIntervals) {
+                if (ival.contains(wavePointBearingOffset)) {
+                    //final double dist = abs(wavePointBearingOffset - ival.center());
+                    bearingOffsetDanger++;
+                }
+            }
+
+            maxDanger = max(maxDanger, bearingOffsetDanger);
+
+            bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
+        }
+
+        if (maxDanger == 0) {
+            return NO_BEARING_OFFSET;
+        }
+
+        final List<Double> candidates = new ArrayList<Double>();
+        for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
+            if (bearingOffsetDangers.get(wavePointBearingOffset) == maxDanger) {
+                candidates.add(wavePointBearingOffset);
+            }
+        }
+
+        return candidates.get((int) (candidates.size() * random()));
     }
 
     private List<APoint> getFuturePoses(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
@@ -121,18 +148,6 @@ public class TomcatClaws implements Gun {
         final LXXPoint bulletPos = (LXXPoint) robotPosAtFireTime.project(angleToPredictedPos, bulletTravelledDistance);
         final Rectangle2D enemyRectAtPredictedPos = LXXUtils.getBoundingRectangleAt(predictedPos);
         return enemyRectAtPredictedPos.contains(bulletPos) || bulletTravelledDistance > robotPosAtFireTime.aDistance(predictedPos) + LXXConstants.ROBOT_SIDE_HALF_SIZE;
-    }
-
-    private static Cluster2D getBiggestCluster(final Set<Cluster2D> clusters) {
-        int biggestClusterSize = Integer.MIN_VALUE;
-        Cluster2D biggestCluster = null;
-        for (Cluster2D c : clusters) {
-            if (c.getEntries().size() > biggestClusterSize) {
-                biggestClusterSize = c.getEntries().size();
-                biggestCluster = c;
-            }
-        }
-        return biggestCluster;
     }
 
 }

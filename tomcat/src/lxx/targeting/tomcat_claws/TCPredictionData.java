@@ -1,39 +1,49 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.bullets.LXXBullet;
-import lxx.targeting.tomcat_claws.clustering.Cluster2D;
-import lxx.utils.APoint;
-import lxx.utils.AimingPredictionData;
-import lxx.utils.LXXConstants;
+import lxx.bullets.enemy.GFAimingPredictionData;
 import lxx.paint.LXXGraphics;
+import lxx.utils.APoint;
+import lxx.utils.LXXConstants;
+import lxx.utils.LXXUtils;
 
 import java.awt.*;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+
+import static java.lang.Math.min;
 
 /**
  * User: jdev
  * Date: 17.06.11
  */
-class TCPredictionData implements AimingPredictionData {
+public class TCPredictionData extends GFAimingPredictionData {
 
-    private final Set<Cluster2D> clusters;
+    private final List<APoint> predictedPoses;
+    private final APoint robotPos;
     private final APoint initialPos;
 
-    public TCPredictionData(Set<Cluster2D> clusters, APoint initialPos) {
-        this.clusters = clusters;
+    public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos) {
+        super(matches);
+        this.predictedPoses = predictedPoses;
+        this.robotPos = robotPos;
         this.initialPos = initialPos;
     }
 
+    @Override
     public void paint(LXXGraphics g, LXXBullet bullet) {
-        for (Cluster2D cluster : clusters) {
-            final Color borderColor = cluster.getColor();
+        super.paint(g, bullet);
+
+        for (APoint predictedPos : predictedPoses) {
+            final double pntDanger = getDangerInt(LXXUtils.bearingOffset(robotPos, initialPos, predictedPos), LXXConstants.RADIANS_0_5);
+            final Color rgb = new Color(Color.HSBtoRGB((float) (0.33F - 0.33F * min(pntDanger / maxDanger, 1F)), 1F, 1F));
+            Color borderColor = new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 155);
+            g.setColor(borderColor);
+            g.drawRect(predictedPos, LXXConstants.ROBOT_SIDE_HALF_SIZE);
+
             final Color fillColor = new Color(borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue(), borderColor.getAlpha() / 10);
-            for (APoint predictedPos : cluster.getEntries()) {
-                g.setColor(fillColor);
-                g.fillSquare(predictedPos, LXXConstants.ROBOT_SIDE_HALF_SIZE);
-                g.setColor(borderColor);
-                g.drawRect(predictedPos, LXXConstants.ROBOT_SIDE_HALF_SIZE);
-            }
+            g.setColor(fillColor);
+            g.fillSquare(predictedPos, LXXConstants.ROBOT_SIDE_HALF_SIZE);
         }
     }
 }

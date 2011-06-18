@@ -126,7 +126,7 @@ public abstract class WaveSurfingMovement implements Movement {
 
             double bulletDanger = 0;
             if (GFAimingPredictionData != null) {
-                bulletDanger = GFAimingPredictionData.getDanger(lxxBullet.getBearingOffsetRadians(pnt),
+                bulletDanger = GFAimingPredictionData.getDangerExt(lxxBullet.getBearingOffsetRadians(pnt),
                         LXXUtils.getRobotWidthInRadians(lxxBullet.getFirePosition(), pnt));
             }
 
