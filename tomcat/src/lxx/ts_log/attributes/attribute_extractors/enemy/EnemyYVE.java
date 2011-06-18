@@ -2,24 +2,20 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.ts_log.attributes.attribute_extractors.target;
+package lxx.ts_log.attributes.attribute_extractors.enemy;
 
+import lxx.LXXRobot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.bullets.LXXBullet;
-import lxx.LXXRobot;
 
 import java.util.List;
 
-import static java.lang.Math.toDegrees;
-
 /**
  * User: jdev
- * Date: 07.03.2010
+ * Date: 28.02.2010
  */
-public class EnemyTurnRateVE implements AttributeValueExtractor {
-
+public class EnemyYVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return toDegrees(enemy.getState().getTurnRateRadians());
+        return enemy.getY();
     }
-
 }

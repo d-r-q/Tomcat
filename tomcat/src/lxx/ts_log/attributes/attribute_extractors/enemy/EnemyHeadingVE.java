@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.ts_log.attributes.attribute_extractors.target;
+package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
@@ -10,12 +10,14 @@ import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
 import java.util.List;
 
+import static java.lang.Math.toDegrees;
+
 /**
  * User: jdev
- * Date: 02.03.2010
+ * Date: 23.02.2010
  */
-public class EnemyVelocityVE implements AttributeValueExtractor {
+public class EnemyHeadingVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return enemy.getState().getVelocity();
+        return toDegrees(enemy.getState().getAbsoluteHeadingRadians());
     }
 }

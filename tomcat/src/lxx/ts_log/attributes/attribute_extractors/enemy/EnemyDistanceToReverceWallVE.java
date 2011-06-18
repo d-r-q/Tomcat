@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.ts_log.attributes.attribute_extractors.target;
+package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;

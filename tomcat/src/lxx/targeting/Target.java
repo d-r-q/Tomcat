@@ -139,6 +139,10 @@ public class Target implements LXXRobot, Serializable {
         newState.headingRadians = e.getHeadingRadians();
         newState.velocity = e.getVelocity();
         newState.energy = e.getEnergy();
+        if (state != null && signum(getAcceleration()) != signum(LXXUtils.calculateAcceleration(state, newState)) &&
+                abs(e.getVelocity()) > 0.1 && abs(e.getVelocity()) < 7.9) {
+            info.lastDirChangeTime = e.getTime() - 1;
+        }
 
         isAlive = true;
     }
@@ -324,6 +328,10 @@ public class Target implements LXXRobot, Serializable {
         return info.lastNotTurnTime;
     }
 
+    public long getLastDirChangeTime() {
+        return info.lastDirChangeTime;
+    }
+
     public LXXRobotState getPrevState() {
         return prevState;
     }
@@ -475,6 +483,7 @@ public class Target implements LXXRobot, Serializable {
         private double myLastDamage;
         private long lastTurnTime;
         private long lastNotTurnTime;
+        public long lastDirChangeTime;
 
         private long enemyLastHitTime;
         private double enemyLastCollectedEnergy;

@@ -22,6 +22,7 @@ public class RobotProxy implements LXXRobot {
     private long lastStopTime = 0;
     private long lastTurnTime = 0;
     private long lastNotTurnTime = 0;
+    private long lastDirChangeTime = 0;
 
     private long time;
 
@@ -35,11 +36,16 @@ public class RobotProxy implements LXXRobot {
         lastStopTime = original.getLastStopTime();
         lastTurnTime = original.getLastTurnTime();
         lastNotTurnTime = original.getLastNotTurnTime();
+        lastDirChangeTime = original.getLastDirChangeTime();
     }
 
     void doTurn(LXXRobotState newState) {
+        final double prevAcceleration = getAcceleration();
         prevState = currentState;
         currentState = newState;
+        if (signum(prevAcceleration) != signum(getAcceleration()) && currentState.getVelocityModule() > 0.1 && currentState.getVelocityModule() < 7.9) {
+            lastDirChangeTime = time;
+        }
 
         time++;
         if (Utils.isNear(newState.getVelocityModule(), 0) || signum(currentState.getVelocity()) != signum(prevState.getVelocity())) {
@@ -121,6 +127,10 @@ public class RobotProxy implements LXXRobot {
 
     public long getLastNotTurnTime() {
         return lastNotTurnTime;
+    }
+
+    public long getLastDirChangeTime() {
+        return lastDirChangeTime;
     }
 
     public LXXRobotState getPrevState() {

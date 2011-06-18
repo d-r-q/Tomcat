@@ -42,4 +42,6 @@ public interface LXXRobot extends APoint {
     long getLastTurnTime();
 
     long getLastNotTurnTime();
+
+    long getLastDirChangeTime();
 }

@@ -8,10 +8,8 @@ import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
-import lxx.ts_log.attributes.attribute_extractors.DistanceBetween_100VE;
-import lxx.ts_log.attributes.attribute_extractors.RoundTimeVE;
 import lxx.ts_log.attributes.attribute_extractors.my.*;
-import lxx.ts_log.attributes.attribute_extractors.target.*;
+import lxx.ts_log.attributes.attribute_extractors.enemy.*;
 import lxx.office.Office;
 import lxx.targeting.Target;
 
@@ -21,8 +19,6 @@ public class AttributesManager {
 
 
     public static final Attribute distBetween = new Attribute("Distance between", 0, 1700, new DistanceBetweenVE());
-    public static final Attribute distBetween_100 = new Attribute("Distance between / 100", 0, 17, new DistanceBetween_100VE());
-    public static final Attribute roundTime = new Attribute("Round time", 0, 5000, new RoundTimeVE());
 
     public static final Attribute enemyX = new Attribute("Enemy x", 0, 1200, new EnemyXVE());
     public static final Attribute enemyY = new Attribute("Enemy y", 0, 1200, new EnemyYVE());
@@ -35,17 +31,11 @@ public class AttributesManager {
     public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());
     public static final Attribute enemyDistanceToReverseWall = new Attribute("Enemy reverse wall distance", 0, 1700, new EnemyDistanceToReverceWallVE());
     public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on wall", -90, 90, new EnemyBearingToHOWallVE());
-    public static final Attribute enemyBearingToMe = new Attribute("Enemy bearing to me", -180, 180, new EnemyBearingToMeVE());
-    public static final Attribute enemyStopTime = new Attribute("Enemy stop time", 0, 2000, new EnemyStopTimeVE());
-    public static final Attribute enemyTravelTime = new Attribute("Enemy travel time", 0, 2000, new EnemyTravelTimeVE());
-    public static final Attribute enemyTurnTime = new Attribute("Enemy turn time", 0, 2000, new EnemyTurnTimeVE());
-    public static final Attribute enemyDistanceToCenter = new Attribute("Enemy distance to center", 0, 850, new EnemyDistanceToCenterVE());
 
-    public static final Attribute firstBulletBearingOffset = new Attribute("First bullet bearing offset", -10, 10, new FirstBulletBearingOffsetVE());
-    public static final Attribute firstBulletFlightTime = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeVE());
-    public static final Attribute enemyBearingOffsetOnFirstBullet = new Attribute("Enemy bearing offset on first bullet", -50, 50, new EnemyBearingOffsetOnFirstBullet());
-    public static final Attribute enemyBearingOffsetOnSecondBullet = new Attribute("Enemy bearing offset on second bullet", -50, 50, new EnemyBearingOffsetOnSecondBullet());
-    public static final Attribute enemyBearingToFirstBullet = new Attribute("Enemy bearing to first bullet", -180, 180, new EnemyBearingToFirstBullet());
+    public static final Attribute firstBulletFlightTimeToEnemy = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeToEnemyVE());
+    public static final Attribute enemyBearingOffsetOnFirstBullet = new Attribute("Enemy bearing offset on first bullet", -50, 50, new EnemyBearingOffsetOnFirstBulletVE());
+    public static final Attribute enemyBearingOffsetOnSecondBullet = new Attribute("Enemy bearing offset on second bullet", -50, 50, new EnemyBearingOffsetOnSecondBulletVE());
+    public static final Attribute enemyTimeSinceLastDirChange = new Attribute("Enemy time since last direction change", 0, 2000, new EnemyTimeSinceDirChangeVE());
 
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
@@ -61,8 +51,6 @@ public class AttributesManager {
 
     public static final Attribute[] attributes = {
             distBetween,
-            distBetween_100,
-            roundTime,
 
             enemyX,
             enemyY,
@@ -75,17 +63,11 @@ public class AttributesManager {
             enemyDistanceToForwardWall,
             enemyDistanceToReverseWall,
             enemyBearingToForwardWall,
-            enemyBearingToMe,
-            enemyStopTime,
-            enemyTravelTime,
-            enemyTurnTime,
-            enemyDistanceToCenter,
 
-            firstBulletBearingOffset,
-            firstBulletFlightTime,
+            firstBulletFlightTimeToEnemy,
             enemyBearingOffsetOnFirstBullet,
             enemyBearingOffsetOnSecondBullet,
-            enemyBearingToFirstBullet,
+            enemyTimeSinceLastDirChange,
 
             myX,
             myY,

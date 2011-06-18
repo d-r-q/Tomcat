@@ -1,8 +1,4 @@
-/*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
- */
-
-package lxx.ts_log.attributes.attribute_extractors.target;
+package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
@@ -12,10 +8,10 @@ import java.util.List;
 
 /**
  * User: jdev
- * Date: 26.02.11
+ * Date: 18.06.11
  */
-public class EnemyStopTimeVE implements AttributeValueExtractor {
+public class EnemyTimeSinceDirChangeVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (enemy.getTime() - enemy.getLastTravelTime());
+        return enemy.getTime() - enemy.getLastDirChangeTime();
     }
 }

@@ -42,6 +42,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private long lastNotTurnTime;
     private double acceleration;
     private int lastDirection = 1;
+    private long lastDirChangeTime;
 
     protected void init() {
         initialOthers = getOthers();
@@ -178,13 +179,18 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         prevState = currentState;
         currentState = new RobotSnapshot(this);
 
+        double prevAcceleration = acceleration;
         acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
+        if (signum(prevAcceleration) != signum(acceleration) && getVelocityModule() > 0.1 && getVelocityModule() < 7.9) {
+            lastDirChangeTime = e.getTime() - 1;
+        }
 
         if (Utils.isNear(getVelocity(), 0)) {
             lastStopTime = e.getTime();
         } else {
             lastTravelTime = e.getTime();
         }
+
         position.x = e.getStatus().getX();
         position.y = e.getStatus().getY();
 
@@ -256,6 +262,10 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public long getLastNotTurnTime() {
         return lastNotTurnTime;
+    }
+
+    public long getLastDirChangeTime() {
+        return lastDirChangeTime;
     }
 
     public LXXRobotState getPrevState() {

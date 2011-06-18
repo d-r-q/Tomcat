@@ -51,15 +51,6 @@ public class PSTree<T extends Serializable> {
         return matches;
     }
 
-    public EntryMatch<T> getClosestEntry(TurnSnapshot turnSnapshot) {
-        final List<EntryMatch<T>> similarEntries = getSimilarEntries(turnSnapshot, 1);
-        if (similarEntries.size() == 0) {
-            return null;
-        }
-
-        return similarEntries.get(0);
-    }
-
     public List<PSTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {
         return root.getEntries(limits);
     }

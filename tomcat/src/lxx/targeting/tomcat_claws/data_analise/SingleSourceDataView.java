@@ -20,18 +20,22 @@ import static java.lang.Math.round;
 public class SingleSourceDataView implements DataView {
 
     private final PSTree<Serializable> dataSource;
+
     private final Map<Attribute,Integer> ranges;
     private final Attribute[] attributes;
+    private final int roundsLimit;
 
-    public SingleSourceDataView(Attribute[] attributes, Map<Attribute, Integer> ranges) {
+    public SingleSourceDataView(Attribute[] attributes, Map<Attribute, Integer> ranges, int roundsLimit) {
         this.ranges = ranges;
         this.attributes = attributes;
+        this.roundsLimit = roundsLimit;
+
         dataSource = new PSTree<Serializable>(attributes, 2, 0.0001);
     }
 
     public Set<TurnSnapshot> getDataSet(TurnSnapshot ts) {
-        final List<EntryMatch> similarEntries = getSimilarSnapshots(ts);
-        filterOutCloseByTime(similarEntries);
+        final List<EntryMatch<Serializable>> similarEntries = dataSource.getSortedSimilarEntries(ts, getLimits(ts));
+        filterOutByTime(similarEntries, ts);
         final Set<TurnSnapshot> dataSet = new HashSet<TurnSnapshot>();
 
         for (EntryMatch e : similarEntries) {
@@ -41,36 +45,18 @@ public class SingleSourceDataView implements DataView {
         return dataSet;
     }
 
-    private List<EntryMatch> getSimilarSnapshots(TurnSnapshot ts) {
-        final List<EntryMatch> similarSnapshots = new ArrayList<EntryMatch>();
-        final List<EntryMatch<Serializable>> similarEntries = dataSource.getSortedSimilarEntries(ts, getLimits(ts));
-        if (similarEntries.size() == 0) {
-            final EntryMatch closestEntry = dataSource.getClosestEntry(ts);
-            if (closestEntry != null) {
-                similarSnapshots.add(closestEntry);
-            }
-        }
-
-        for (EntryMatch e : similarEntries) {
-            similarSnapshots.add(e);
-        }
-
-        return similarSnapshots;
-    }
-
-    private void filterOutCloseByTime(List<EntryMatch> similarSnapshots) {
-        Collections.sort(similarSnapshots, new Comparator<EntryMatch>() {
-            public int compare(EntryMatch o1, EntryMatch o2) {
-                if (o1.predicate.getRound() == o2.predicate.getRound()) {
-                    return (int) (o1.predicate.getTime() - o2.predicate.getTime());
-                }
-                return (o1.predicate.getRound() - o2.predicate.getRound());
-            }
-        });
+    private void filterOutByTime(List<EntryMatch<Serializable>> similarSnapshots, TurnSnapshot ts) {
+        Collections.sort(similarSnapshots, new ByTimeComparator());
 
         for (int i = 0; i < similarSnapshots.size() - 1; i++) {
-            EntryMatch em1 = similarSnapshots.get(i);
-            EntryMatch em2 = similarSnapshots.get(i + 1);
+            final EntryMatch em1 = similarSnapshots.get(i);
+            if (ts.getRound() - em1.predicate.getRound() > roundsLimit) {
+                similarSnapshots.remove(i);
+                i--;
+                continue;
+            }
+
+            final EntryMatch em2 = similarSnapshots.get(i + 1);
             if (em1.predicate.getRound() == em2.predicate.getRound() &&
                     em1.predicate.getTime() + 5 > em2.predicate.getTime()) {
                 if (em1.match < em2.match) {

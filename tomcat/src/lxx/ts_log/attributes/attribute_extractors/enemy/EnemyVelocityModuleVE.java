@@ -2,16 +2,22 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.ts_log.attributes.attribute_extractors.target;
+package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.bullets.LXXBullet;
+import lxx.LXXRobot;
 
 import java.util.List;
 
-public class EnemyTurnTimeVE implements AttributeValueExtractor {
+/**
+ * User: jdev
+ * Date: 28.09.2010
+ */
+public class EnemyVelocityModuleVE implements AttributeValueExtractor {
+
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return (enemy.getTime() - enemy.getLastNotTurnTime());
+        return enemy.getState().getVelocityModule();
     }
+
 }
