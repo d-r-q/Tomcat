@@ -1,14 +1,13 @@
 package lxx.targeting.tomcat_claws;
 
-import lxx.targeting.bullets.LXXBullet;
+import lxx.bullets.LXXBullet;
 import lxx.targeting.tomcat_claws.clustering.Cluster2D;
 import lxx.utils.APoint;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXGraphics;
+import lxx.paint.LXXGraphics;
 
 import java.awt.*;
-import java.util.List;
 import java.util.Set;
 
 /**

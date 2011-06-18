@@ -5,8 +5,8 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
-import lxx.model.TurnSnapshot;
-import lxx.office.TurnSnapshotsLog;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.TurnSnapshotsLog;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;

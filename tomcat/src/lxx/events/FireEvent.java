@@ -4,7 +4,7 @@
 
 package lxx.events;
 
-import lxx.targeting.bullets.LXXBullet;
+import lxx.bullets.LXXBullet;
 import robocode.Event;
 
 /**

@@ -4,10 +4,10 @@
 
 package lxx.strategies;
 
-import lxx.model.TurnSnapshot;
-import lxx.office.AttributesManager;
+import lxx.LXXRobotState;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXRobotState;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
 import robocode.util.Utils;

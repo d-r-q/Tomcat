@@ -5,14 +5,14 @@
 package lxx.strategies.win;
 
 import lxx.Tomcat;
-import lxx.office.EnemyBulletManager;
-import lxx.office.TargetManager;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.paint.LXXGraphics;
+import lxx.targeting.TargetManager;
 import lxx.paint.Painter;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.TurnDecision;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXGraphics;
 import robocode.util.Utils;
 
 import java.awt.*;

@@ -5,6 +5,7 @@
 package lxx;
 
 import lxx.events.LXXKeyEvent;
+import lxx.paint.LXXGraphics;
 import lxx.utils.*;
 import robocode.*;
 import robocode.util.Utils;

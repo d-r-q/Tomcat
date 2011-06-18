@@ -4,13 +4,13 @@
 
 package lxx.targeting.tomcat_eyes;
 
+import lxx.LXXRobot;
 import lxx.Tomcat;
+import lxx.bullets.BulletManagerListener;
+import lxx.bullets.LXXBullet;
 import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
-import lxx.targeting.bullets.BulletManagerListener;
-import lxx.targeting.bullets.LXXBullet;
-import lxx.utils.LXXRobot;
 
 import java.util.HashMap;
 import java.util.Map;

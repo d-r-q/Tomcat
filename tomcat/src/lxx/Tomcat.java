@@ -4,6 +4,7 @@
 
 package lxx;
 
+import lxx.bullets.LXXBullet;
 import lxx.events.FireEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
@@ -14,9 +15,8 @@ import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.StrategySelector;
 import lxx.strategies.TurnDecision;
-import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.LXXUtils;
-import lxx.wave.Wave;
+import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
 import robocode.Rules;

@@ -5,7 +5,7 @@
 package lxx.strategies.find_enemies;
 
 import lxx.Tomcat;
-import lxx.office.TargetManager;
+import lxx.targeting.TargetManager;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.TurnDecision;

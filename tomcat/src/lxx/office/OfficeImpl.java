@@ -5,9 +5,15 @@
 package lxx.office;
 
 import lxx.Tomcat;
-import lxx.debug.DebugManager;
-import lxx.targeting.bullets.BulletManager;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.paint.PaintManager;
+import lxx.targeting.TargetManager;
+import lxx.ts_log.TurnSnapshotsLog;
+import lxx.ts_log.attributes.AttributesManager;
+import lxx.plugins.PluginManager;
+import lxx.bullets.my.BulletManager;
 import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
+import lxx.utils.wave.WaveManager;
 
 public class OfficeImpl implements Office {
 
@@ -48,8 +54,8 @@ public class OfficeImpl implements Office {
         final PaintManager paintManager = new PaintManager();
         tomcat.addListener(paintManager);
 
-        DebugManager debugManager = new DebugManager(this);
-        tomcat.addListener(debugManager);
+        PluginManager pluginManager = new PluginManager(this);
+        tomcat.addListener(pluginManager);
 
         dataViewManager = new DataViewManager(targetManager, turnSnapshotsLog);
         tomcat.addListener(dataViewManager);

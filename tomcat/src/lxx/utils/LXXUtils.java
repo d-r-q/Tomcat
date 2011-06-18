@@ -4,9 +4,10 @@
 
 package lxx.utils;
 
-import lxx.model.TurnSnapshot;
-import lxx.model.attributes.Attribute;
-import lxx.office.AttributesManager;
+import lxx.LXXRobotState;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.attributes.Attribute;
+import lxx.ts_log.attributes.AttributesManager;
 import robocode.Rules;
 import robocode.util.Utils;
 

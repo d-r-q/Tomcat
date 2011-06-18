@@ -6,9 +6,9 @@ package lxx.office;
 
 import lxx.RobotListener;
 import lxx.Tomcat;
+import lxx.bullets.BulletManagerListener;
+import lxx.bullets.LXXBullet;
 import lxx.events.TickEvent;
-import lxx.targeting.bullets.BulletManagerListener;
-import lxx.targeting.bullets.LXXBullet;
 import lxx.utils.HitRate;
 import robocode.DeathEvent;
 import robocode.Event;

@@ -18,11 +18,6 @@ public class Interval {
         this.b = b;
     }
 
-    public Interval(Interval original) {
-        this.a = original.a;
-        this.b = original.b;
-    }
-
     public int getLength() {
         return b - a + 1;
     }
@@ -37,9 +32,5 @@ public class Interval {
 
     public String toString() {
         return "[" + a + ", " + b + "]";
-    }
-
-    public int center() {
-        return (a + b) / 2;
     }
 }

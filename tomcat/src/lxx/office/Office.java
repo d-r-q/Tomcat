@@ -5,8 +5,13 @@
 package lxx.office;
 
 import lxx.Tomcat;
-import lxx.targeting.bullets.BulletManager;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.bullets.my.BulletManager;
+import lxx.targeting.TargetManager;
+import lxx.ts_log.TurnSnapshotsLog;
+import lxx.ts_log.attributes.AttributesManager;
 import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
+import lxx.utils.wave.WaveManager;
 
 public interface Office {
 

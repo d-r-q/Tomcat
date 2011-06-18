@@ -5,6 +5,8 @@
 package lxx.utils;
 
 import lxx.BasicRobot;
+import lxx.LXXRobot;
+import lxx.LXXRobotState;
 
 import static java.lang.Math.abs;
 

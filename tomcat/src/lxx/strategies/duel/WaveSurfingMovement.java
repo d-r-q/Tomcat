@@ -4,14 +4,16 @@
 
 package lxx.strategies.duel;
 
+import lxx.LXXRobotState;
 import lxx.Tomcat;
-import lxx.enemy_bullets.GFAimingPredictionData;
-import lxx.office.EnemyBulletManager;
-import lxx.office.TargetManager;
+import lxx.bullets.LXXBullet;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.bullets.enemy.GFAimingPredictionData;
+import lxx.paint.LXXGraphics;
+import lxx.targeting.TargetManager;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
-import lxx.targeting.bullets.LXXBullet;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
 import robocode.util.Utils;

@@ -4,8 +4,6 @@
 
 package lxx.paint;
 
-import lxx.utils.LXXGraphics;
-
 public interface Painter {
 
     void paint(LXXGraphics g);

@@ -5,6 +5,8 @@
 package lxx.targeting;
 
 import lxx.BasicRobot;
+import lxx.LXXRobot;
+import lxx.LXXRobotState;
 import lxx.utils.*;
 import robocode.*;
 import robocode.util.Utils;

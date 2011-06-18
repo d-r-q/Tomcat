@@ -1,10 +1,10 @@
 package lxx.targeting.tomcat_claws.data_analise;
 
-import lxx.model.TurnSnapshot;
-import lxx.model.attributes.Attribute;
-import lxx.segmentation_tree.EntryMatch;
-import lxx.segmentation_tree.SegmentationTree;
-import lxx.segmentation_tree.SegmentationTreeEntry;
+import lxx.utils.ps_tree.PSTree;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.attributes.Attribute;
+import lxx.utils.ps_tree.EntryMatch;
+import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.Interval;
 import lxx.utils.LXXUtils;
 
@@ -19,14 +19,14 @@ import static java.lang.Math.round;
  */
 public class SingleSourceDataView implements DataView {
 
-    private final SegmentationTree<Serializable> dataSource;
+    private final PSTree<Serializable> dataSource;
     private final Map<Attribute,Integer> ranges;
     private final Attribute[] attributes;
 
     public SingleSourceDataView(Attribute[] attributes, Map<Attribute, Integer> ranges) {
         this.ranges = ranges;
         this.attributes = attributes;
-        dataSource = new SegmentationTree<Serializable>(attributes, 2, 0.0001);
+        dataSource = new PSTree<Serializable>(attributes, 2, 0.0001);
     }
 
     public Set<TurnSnapshot> getDataSet(TurnSnapshot ts) {
@@ -84,7 +84,7 @@ public class SingleSourceDataView implements DataView {
     }
 
     public void addEntry(TurnSnapshot ts) {
-        dataSource.addEntry(new SegmentationTreeEntry<Serializable>(ts));
+        dataSource.addEntry(new PSTreeEntry<Serializable>(ts));
     }
 
     private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {

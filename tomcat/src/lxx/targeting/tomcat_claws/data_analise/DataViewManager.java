@@ -2,10 +2,10 @@ package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.RobotListener;
 import lxx.events.TickEvent;
-import lxx.model.attributes.Attribute;
-import lxx.office.AttributesManager;
-import lxx.office.TargetManager;
-import lxx.office.TurnSnapshotsLog;
+import lxx.targeting.TargetManager;
+import lxx.ts_log.TurnSnapshotsLog;
+import lxx.ts_log.attributes.Attribute;
+import lxx.ts_log.attributes.AttributesManager;
 import lxx.targeting.Target;
 import lxx.utils.LXXUtils;
 import robocode.Event;

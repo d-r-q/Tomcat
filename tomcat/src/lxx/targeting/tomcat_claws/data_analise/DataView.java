@@ -1,6 +1,6 @@
 package lxx.targeting.tomcat_claws.data_analise;
 
-import lxx.model.TurnSnapshot;
+import lxx.ts_log.TurnSnapshot;
 
 import java.util.Set;
 

@@ -5,8 +5,8 @@
 package lxx.strategies.duel;
 
 import lxx.Tomcat;
-import lxx.office.EnemyBulletManager;
-import lxx.office.TargetManager;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.targeting.TargetManager;
 import lxx.targeting.Target;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 

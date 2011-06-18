@@ -4,6 +4,8 @@
 
 package lxx.utils;
 
+import lxx.LXXRobot;
+import lxx.LXXRobotState;
 import lxx.strategies.MovementDecision;
 import robocode.Rules;
 import robocode.util.Utils;

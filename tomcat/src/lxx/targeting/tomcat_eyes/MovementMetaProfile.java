@@ -4,7 +4,7 @@
 
 package lxx.targeting.tomcat_eyes;
 
-import lxx.utils.LXXRobot;
+import lxx.LXXRobot;
 import lxx.utils.LXXUtils;
 import lxx.utils.Median;
 

@@ -5,9 +5,9 @@
 package lxx.strategies;
 
 import lxx.Tomcat;
-import lxx.office.EnemyBulletManager;
+import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.office.Office;
-import lxx.office.TargetManager;
+import lxx.targeting.TargetManager;
 import lxx.strategies.duel.AdvancedTargetersMovement;
 import lxx.strategies.duel.DuelFirePowerSelector;
 import lxx.strategies.duel.DuelStrategy;

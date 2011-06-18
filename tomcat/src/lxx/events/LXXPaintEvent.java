@@ -4,7 +4,7 @@
 
 package lxx.events;
 
-import lxx.utils.LXXGraphics;
+import lxx.paint.LXXGraphics;
 import robocode.Event;
 
 public class LXXPaintEvent extends Event {

@@ -4,7 +4,8 @@
 
 package lxx.utils;
 
-import lxx.targeting.bullets.LXXBullet;
+import lxx.bullets.LXXBullet;
+import lxx.paint.LXXGraphics;
 
 /**
  * User: jdev
