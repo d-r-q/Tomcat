@@ -45,11 +45,11 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void onTick() {
-        tomcat.setDebugProperty(tomcat.getName() + " static hit rate", String.valueOf(myHitRate));
-        tomcat.setDebugProperty(tomcat.getName() + " miss count", String.valueOf(myHitRate.getMissCount()));
+        PropertiesManager.setDebugProperty(tomcat.getName() + " static hit rate", String.valueOf(myHitRate));
+        PropertiesManager.setDebugProperty(tomcat.getName() + " miss count", String.valueOf(myHitRate.getMissCount()));
 
         if (tomcat.isDuel() && office.getTargetManager().hasDuelOpponent()) {
-            tomcat.setDebugProperty(office.getTargetManager().getDuelOpponentName() + " static hit rate", String.valueOf(enemyHitRate));
+            PropertiesManager.setDebugProperty(office.getTargetManager().getDuelOpponentName() + " static hit rate", String.valueOf(enemyHitRate));
         }
     }
 

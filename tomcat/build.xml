@@ -18,7 +18,7 @@
             <src refid="src.files"/>
 
             <classpath>
-                <pathelement location="${robocode.dir}\libs\robocode.jar"/>
+                <pathelement location="${robocode.jar}"/>
             </classpath>
         </javac>
 
@@ -30,12 +30,14 @@
     </target>
 
     <target name="archive" depends="clean, compile">
-        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
 robot.java.source.included=false
 robot.version=${robot.version}
 robot.author.name=Alexey Zhidkov
 robot.classname=lxx.${robot.name}
 robot.name=${robot.name}</echo>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal</echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}.jar" compress="true">
             <fileset dir="${bin.dir}"/>
@@ -45,7 +47,30 @@ robot.name=${robot.name}</echo>
             <fileset file="lxx.${robot.name}_${robot.version}.jar"/>
         </copy>
 
+        <copy todir="${builds.dir}\">
+            <fileset file="lxx.${robot.name}_${robot.version}.jar"/>
+        </copy>
+
         <delete file="lxx.${robot.name}_${robot.version}.jar"/>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
+robot.java.source.included=false
+robot.version=${robot.version}TCc
+robot.author.name=Alexey Zhidkov
+robot.classname=lxx.${robot.name}
+robot.name=${robot.name}</echo>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc</echo>
+
+        <jar destfile="lxx.${robot.name}_${robot.version}TCc.jar" compress="true">
+            <fileset dir="${bin.dir}"/>
+        </jar>
+
+        <copy todir="${builds.dir}\">
+            <fileset file="lxx.${robot.name}_${robot.version}TCc.jar"/>
+        </copy>
+
+        <delete file="lxx.${robot.name}_${robot.version}TCc.jar"/>
     </target>
 
     <target name="init_benchmark" depends="archive">

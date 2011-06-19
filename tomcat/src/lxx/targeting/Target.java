@@ -147,10 +147,6 @@ public class Target implements LXXRobot, Serializable {
         isAlive = true;
     }
 
-    public void endRound() {
-        isAlive = false;
-    }
-
     public long getUpdateTime() {
         ensureValid();
         return state.time;

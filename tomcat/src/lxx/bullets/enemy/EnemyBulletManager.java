@@ -9,6 +9,7 @@ import lxx.LXXRobotState;
 import lxx.RobotListener;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
+import lxx.bullets.BulletStub;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
 import lxx.events.LXXKeyEvent;
@@ -65,7 +66,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
             final double angleToMe = targetPrevState.angleTo(robotPrevState);
 
-            final Bullet fakeBullet = new Bullet(angleToMe, targetPrevState.getX(), targetPrevState.getY(),
+            final Bullet fakeBullet = new BulletStub(angleToMe, targetPrevState.getX(), targetPrevState.getY(),
                     bulletPower, target.getName(), robot.getName(), true, -1);
 
             final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState,
@@ -147,7 +148,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private Bullet getFakeBullet(Wave wave) {
         final double bulletHeading = wave.getSourcePosAtFireTime().angleTo(wave.getTargetPosAtFireTime());
         final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
-        return new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+        return new BulletStub(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
     }
 
@@ -211,7 +212,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public LXXBullet createSafeBullet(Target target) {
         final Wave wave = new Wave(target.getState(), robot.getState(), SAFE_BULLET_SPEED, robot.getTime() + 1);
-        final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+        final Bullet bullet = new BulletStub(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
         final HashMap<Double, Double> matches = new HashMap<Double, Double>();

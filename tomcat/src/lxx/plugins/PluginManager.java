@@ -9,7 +9,6 @@ import lxx.events.TickEvent;
 import lxx.office.Office;
 import robocode.BattleEndedEvent;
 import robocode.Event;
-import robocode.RoundEndedEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +39,6 @@ public class PluginManager implements RobotListener {
         } else if (event instanceof TickEvent) {
             for (Plugin plugin : plugins) {
                 plugin.tick();
-            }
-        } else if (event instanceof RoundEndedEvent) {
-            for (Plugin plugin : plugins) {
-                plugin.roundEnded();
             }
         }
     }

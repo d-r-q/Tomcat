@@ -6,6 +6,7 @@ package lxx.utils.simulator;
 
 import lxx.LXXRobotState;
 import lxx.Tomcat;
+import lxx.bullets.BulletStub;
 import lxx.bullets.LXXBullet;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
@@ -54,7 +55,7 @@ public class RobocodeDuelSimulator {
         for (LXXBullet bullet : myBullets) {
             this.myBullets.add(new LXXBullet(bullet.getBullet(), bullet.getWave(), bullet.getAimPredictionData()));
         }
-        final LXXBullet nextFiredBullet = new LXXBullet(new Bullet(robot.angleTo(enemy), robot.getX(), robot.getY(), robot.firePower(), robot.getName(), enemy.getName(), true, -2),
+        final LXXBullet nextFiredBullet = new LXXBullet(new BulletStub(robot.angleTo(enemy), robot.getX(), robot.getY(), robot.firePower(), robot.getName(), enemy.getName(), true, -2),
                 new Wave(robot.getState(), enemy.getState(), Rules.getBulletSpeed(robot.firePower()), time + 2), null);
         this.myBullets.add(nextFiredBullet);
     }
@@ -84,7 +85,7 @@ public class RobocodeDuelSimulator {
             if (bullet.getFirePosition().aDistance(newBulletPos) > bullet.getFirePosition().aDistance(bullet.getTarget())) {
                 toRemove.add(bullet);
             }
-            final Bullet newBulletState = new Bullet(oldBulletState.getHeadingRadians(), newBulletPos.x, newBulletPos.y, oldBulletState.getPower(),
+            final Bullet newBulletState = new BulletStub(oldBulletState.getHeadingRadians(), newBulletPos.x, newBulletPos.y, oldBulletState.getPower(),
                     oldBulletState.getName(), oldBulletState.getVictim(), true, -2);
             bullet.setBullet(newBulletState);
         }

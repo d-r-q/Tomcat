@@ -101,10 +101,6 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         notifyListeners(event);
     }
 
-    public void onRoundEnded(RoundEndedEvent event) {
-        notifyListeners(event);
-    }
-
     public void onBulletMissed(BulletMissedEvent event) {
         notifyListeners(event);
     }

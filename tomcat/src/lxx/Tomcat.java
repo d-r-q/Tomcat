@@ -10,6 +10,7 @@ import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
 import lxx.office.Office;
 import lxx.office.OfficeImpl;
+import lxx.office.PropertiesManager;
 import lxx.paint.Painter;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
@@ -20,8 +21,13 @@ import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
 import robocode.Rules;
+import robocode.io.RobocodeObjectInputStream;
+import robocode.security.SecureInputStream;
 
 import java.awt.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
@@ -49,14 +55,24 @@ public class Tomcat extends BasicRobot {
             System.out.println("Tomcat isn't support battles with more than 1 opponents");
             return;
         }
+        if (PropertiesManager.getDebugProperty("lxx.Tomcat.mode") == null) {
+            final Properties props = new Properties();
+            try {
+                props.load(new FileInputStream(getDataFile("Tomcat.properties")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            PropertiesManager.setDebugProperty("lxx.Tomcat.mode", props.getProperty("lxx.Tomcat.mode"));
+        }
+
         init();
 
         while (isAlive) {
-
             doTurn();
             execute();
             notifyListeners();
         }
+
     }
 
     private void notifyListeners() {

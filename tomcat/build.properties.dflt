@@ -1,4 +1,5 @@
 bin.dir = bin
+builds.dir = builds
 robocode.dir = D:\\my\\rc
 robocode.jar = ${robocode.dir}\\libs\\robocode.jar
 benchmark.dir = benchmark_results

@@ -53,13 +53,6 @@ public class TargetManager implements RobotListener {
         }
     }
 
-    public void onEndRound() {
-        for (Target t : targets.values()) {
-            t.endRound();
-        }
-        isAliveTargetsDirty = true;
-    }
-
     public void onPaint(LXXGraphics g) {
         for (Target t : getAliveTargets()) {
             g.setColor(Color.WHITE);
@@ -155,8 +148,6 @@ public class TargetManager implements RobotListener {
             onTick();
         } else if (event instanceof LXXPaintEvent) {
             onPaint(((LXXPaintEvent) event).getGraphics());
-        } else if (event instanceof RoundEndedEvent) {
-            onEndRound();
         } else if (event instanceof RobotDeathEvent) {
             onTargetKilled(((RobotDeathEvent) event).getName());
             updateTarget(event, ((RobotDeathEvent) event).getName());

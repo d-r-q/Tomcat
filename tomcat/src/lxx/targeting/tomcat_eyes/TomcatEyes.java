@@ -8,6 +8,7 @@ import lxx.LXXRobot;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
+import lxx.office.PropertiesManager;
 import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
@@ -34,8 +35,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
     public void targetUpdated(Target target) {
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
         movementMetaProfile.update(target, robot);
-        robot.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
-        robot.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
+        PropertiesManager.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
+        PropertiesManager.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {

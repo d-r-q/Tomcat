@@ -14,8 +14,6 @@ public interface Plugin {
 
     void roundStarted(Office office);
 
-    void roundEnded();
-
     void battleEnded();
 
     void tick();
