@@ -4,32 +4,21 @@
 
 package lxx.targeting.tomcat_eyes;
 
-import lxx.utils.LXXConstants;
+import lxx.LXXRobotState;
+import lxx.utils.LXXUtils;
 import lxx.utils.Median;
 
-import static java.lang.Math.toDegrees;
+import static java.lang.Math.abs;
 
 public class TargetingProfile {
 
-    public int totalNormalBearingOffsets = 0;
-    public int positiveNormalBearingOffsetsCount = 0;
-    public int negativeNormalBearingOffsetsCount = 0;
-    public int hitCount = 0;
-    public Median bearingOffsetsMedian = new Median(2000);
+    public Median distWithHoBoMedian = new Median(1000);
+    public Median distWithLinearBOMedian = new Median(1000);
 
-    public void addBearingOffset(double bearingOffsetRadians, boolean isHit) {
-        totalNormalBearingOffsets++;
-        if (bearingOffsetRadians < -LXXConstants.RADIANS_2) {
-            negativeNormalBearingOffsetsCount++;
-        } else {
-            positiveNormalBearingOffsetsCount++;
-        }
-
-        if (isHit) {
-            hitCount++;
-        }
-
-        bearingOffsetsMedian.addValue((int) toDegrees(bearingOffsetRadians));
+    public void addBearingOffset(LXXRobotState enemy, LXXRobotState me, double bearingOffsetRadians, double bulletSpeed) {
+        distWithHoBoMedian.addValue(abs(bearingOffsetRadians));
+        final double linearBo = abs(LXXUtils.lateralVelocity(enemy, me) / bulletSpeed);
+        distWithLinearBOMedian.addValue(abs(bearingOffsetRadians - linearBo));
     }
 
 }

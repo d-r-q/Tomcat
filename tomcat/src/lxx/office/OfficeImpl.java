@@ -59,6 +59,9 @@ public class OfficeImpl implements Office {
 
         dataViewManager = new DataViewManager(targetManager, turnSnapshotsLog);
         tomcat.addListener(dataViewManager);
+
+        final PropertiesManager propertiesManager = new PropertiesManager();
+        tomcat.addListener(propertiesManager);
     }
 
     public EnemyBulletManager getEnemyBulletManager() {

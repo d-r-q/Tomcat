@@ -12,6 +12,7 @@ import lxx.office.PropertiesManager;
 import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
+import lxx.utils.LXXConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +65,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     private void processBullet(LXXBullet bullet) {
         final double bearingOffset = bullet.getRealBearingOffsetRadians();
-        getTargetingProfile(bullet.getOwner()).addBearingOffset(bearingOffset * bullet.getTargetLateralDirection(), false);
+        getTargetingProfile(bullet.getOwner()).addBearingOffset(bullet.getTargetStateAtFireTime(), bullet.getWave().getSourceStateAtFireTime(),
+                bearingOffset * bullet.getTargetLateralDirection(), bullet.getSpeed());
+        PropertiesManager.setDebugProperty("Enemy gun type", getEnemyGunType(bullet.getOwner()).toString());
     }
 
     private TargetingProfile getTargetingProfile(LXXRobot t) {
@@ -79,9 +82,10 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     public GunType getEnemyGunType(LXXRobot enemy) {
         final TargetingProfile tp = getTargetingProfile(enemy);
-        if (tp.positiveNormalBearingOffsetsCount >= tp.totalNormalBearingOffsets * 0.85 ||
-                tp.hitCount <= robot.getRoundNum() + 1) {
-            return GunType.SIMPLE;
+        if (tp.distWithHoBoMedian.getMedian() < LXXConstants.RADIANS_10) {
+            return GunType.HEAD_ON;
+        } else if (tp.distWithLinearBOMedian.getMedian() < LXXConstants.RADIANS_10) {
+            return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;
         }

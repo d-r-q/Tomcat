@@ -6,7 +6,8 @@ package lxx.targeting;
 
 public enum GunType {
 
-    SIMPLE,
+    HEAD_ON,
+    LINEAR,
     ADVANCED,
 
 }
