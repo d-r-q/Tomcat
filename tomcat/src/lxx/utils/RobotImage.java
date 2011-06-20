@@ -34,16 +34,20 @@ public final class RobotImage implements LXXRobotState {
         this.energy = energy;
     }
 
-    // todo(zhidkov): use RobocodeDuelSimulator
     public void apply(MovementDecision movementDecision) {
         heading = Utils.normalAbsoluteAngle(heading + movementDecision.getTurnRateRadians());
-        final double maxVelocity = LXXUtils.limit(0, abs(velocity) + movementDecision.getAcceleration(), Rules.MAX_VELOCITY);
-
-        if (signum(velocity) == signum(movementDecision.getMovementDirection().sign) ||
-                velocity == 0) {
-            velocity = maxVelocity * movementDecision.getMovementDirection().sign;
+        final double acceleration;
+        if (abs(signum(velocity) - signum(movementDecision.getDesiredVelocity())) <= 1) {
+            acceleration = LXXUtils.limit(-Rules.DECELERATION, abs(movementDecision.getDesiredVelocity()) - abs(velocity), Rules.ACCELERATION);
+            velocity = (abs(velocity) + acceleration) * signum(movementDecision.getDesiredVelocity());
         } else {
-            velocity = max(0, velocity - Rules.DECELERATION);
+            // robocode has difficult 2-step rules in this case,
+            // but we will keep it simple
+            if (abs(velocity) > Rules.DECELERATION) {
+                velocity -= Rules.DECELERATION * signum(velocity);
+            } else {
+                velocity = 0;
+            }
         }
 
         position = position.project(velocity >= 0 ? heading : Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_180), abs(velocity));

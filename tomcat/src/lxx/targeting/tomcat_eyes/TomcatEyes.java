@@ -13,6 +13,7 @@ import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.utils.LXXConstants;
+import lxx.utils.LXXUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
         movementMetaProfile.update(target, robot);
         PropertiesManager.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
-        PropertiesManager.setDebugProperty("Enemy rammer", String.valueOf(movementMetaProfile.isRammer()));
+        PropertiesManager.setDebugProperty("Can enemy ram", String.valueOf(movementMetaProfile.canRam()));
+        PropertiesManager.setDebugProperty("Is enemy ramming", String.valueOf(isRammingNow(target)));
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
@@ -50,9 +52,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         return mmp;
     }
 
-    public boolean isRammer(Target target) {
+    public boolean isRammingNow(Target target) {
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        return movementMetaProfile.isRammer();
+        return movementMetaProfile.canRam() && LXXUtils.anglesDiff(target.angleTo(robot), target.getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_45;
     }
 
     public void bulletHit(LXXBullet bullet) {
@@ -84,7 +86,7 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingProfile tp = getTargetingProfile(enemy);
         if (tp.distWithHoBoMedian.getMedian() < LXXConstants.RADIANS_10) {
             return GunType.HEAD_ON;
-        } else if (tp.distWithLinearBOMedian.getMedian() < LXXConstants.RADIANS_10) {
+        } else if (tp.distWithLinearBOMedian.getMedian() < LXXConstants.RADIANS_15) {
             return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;

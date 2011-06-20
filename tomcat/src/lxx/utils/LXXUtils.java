@@ -235,4 +235,23 @@ public class LXXUtils {
         return map;
     }
 
+    public static double getVelocityByTurnRate(double turnRate) {
+        if (turnRate < 0) {
+            throw new IllegalArgumentException("Turn rate muste be >= 0");
+        }
+
+        if (turnRate >= Rules.MAX_TURN_RATE_RADIANS) {
+            return 0;
+        }
+        if (turnRate == 0) {
+            return Rules.MAX_VELOCITY;
+        }
+
+        // turnRate = 10 - 0.75 * velocity
+        // turnRate - 10 = -0.75 * velocity
+        // 10 - turnRate = 0.75 * velocity
+        // velocity = (10 - turnRate) / 0.75
+        return (Rules.MAX_TURN_RATE - toDegrees(turnRate)) / 0.75;
+    }
+
 }

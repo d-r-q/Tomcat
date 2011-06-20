@@ -26,7 +26,7 @@ public class FindEnemiesStrategy implements Strategy {
         this.targetManager = targetManager;
         this.enemiesCount = enemiesCount;
 
-        turnDirection = (int) signum(Utils.normalRelativeAngle(robot.getRadarHeadingRadians() - robot.angleTo(robot.battleField.center)));
+        turnDirection = (int) signum(Utils.normalRelativeAngle(robot.angleTo(robot.battleField.center) - robot.getRadarHeadingRadians()));
     }
 
     public boolean match() {
@@ -35,7 +35,7 @@ public class FindEnemiesStrategy implements Strategy {
 
     public TurnDecision makeDecision() {
         return new TurnDecision(
-                new MovementDecision(0, Rules.MAX_TURN_RATE_RADIANS * turnDirection, MovementDecision.MovementDirection.FORWARD),
+                new MovementDecision(0, Rules.MAX_TURN_RATE_RADIANS * turnDirection),
                 Rules.GUN_TURN_RATE_RADIANS * turnDirection, 0,
                 Rules.RADAR_TURN_RATE_RADIANS * turnDirection,
                 null, null);

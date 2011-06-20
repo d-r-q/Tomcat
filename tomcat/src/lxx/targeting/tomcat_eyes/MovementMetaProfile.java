@@ -20,7 +20,7 @@ public class MovementMetaProfile {
     private final Median[] distancesMedianAngles = new Median[1700 / DISTANCE_SEGMENTS];
 
     private int enemyPreferredDistance = -1;
-    private boolean rammer = false;
+    private boolean canRam = false;
 
     public void update(LXXRobot owner, LXXRobot viewPoint) {
         final double distanceBetween = owner.aDistance(viewPoint);
@@ -39,13 +39,15 @@ public class MovementMetaProfile {
     }
 
     private void checkRammer() {
-        rammer = true;
+        boolean isRamming = true;
         for (Median distancesMedianAngle : distancesMedianAngles) {
             if (distancesMedianAngle == null) {
                 continue;
             }
-            rammer &= distancesMedianAngle.getMedian() > 88;
+            isRamming &= distancesMedianAngle.getMedian() > 88;
         }
+
+        canRam |= isRamming;
     }
 
     public int getPreferredDistance() {
@@ -66,7 +68,7 @@ public class MovementMetaProfile {
         return enemyPreferredDistance;
     }
 
-    public boolean isRammer() {
-        return rammer;
+    public boolean canRam() {
+        return canRam;
     }
 }

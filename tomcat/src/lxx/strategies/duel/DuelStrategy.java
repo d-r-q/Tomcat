@@ -12,6 +12,7 @@ import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.LXXConstants;
+import robocode.Rules;
 import robocode.util.Utils;
 
 import static java.lang.Math.signum;
@@ -31,8 +32,9 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
 
     private GunType enemyGunType;
 
-    public DuelStrategy(Tomcat robot, Movement simpleMovement, Movement advancedMovement, Gun gun, FirePowerSelector firePowerSelector,
-                        TargetManager targetManager, EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
+    public DuelStrategy(Tomcat robot, Movement simpleMovement, Movement advancedMovement,
+                        Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager,
+                        EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
         super(robot);
 
         this.simpleMovement = simpleMovement;

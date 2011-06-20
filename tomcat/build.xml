@@ -30,6 +30,14 @@
     </target>
 
     <target name="archive" depends="clean, compile">
+        <tstamp>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
+        </tstamp>
+
+        <tstamp>
+            <format property="NOW" pattern="HH:mm:ss"/>
+        </tstamp>
+
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
 robot.java.source.included=false
 robot.version=${robot.version}
@@ -37,7 +45,8 @@ robot.author.name=Alexey Zhidkov
 robot.classname=lxx.${robot.name}
 robot.name=${robot.name}</echo>
 
-        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal</echo>
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal
+lxx.Tomcat.build_time=${TODAY} ${NOW}</echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}.jar" compress="true">
             <fileset dir="${bin.dir}"/>
@@ -60,7 +69,8 @@ robot.author.name=Alexey Zhidkov
 robot.classname=lxx.${robot.name}
 robot.name=${robot.name}</echo>
 
-        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc</echo>
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc
+lxx.Tomcat.build_time=${TODAY} ${NOW}</echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}TCc.jar" compress="true">
             <fileset dir="${bin.dir}"/>

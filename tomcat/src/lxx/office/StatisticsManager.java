@@ -10,10 +10,7 @@ import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.events.TickEvent;
 import lxx.utils.HitRate;
-import robocode.DeathEvent;
-import robocode.Event;
-import robocode.RobotDeathEvent;
-import robocode.WinEvent;
+import robocode.*;
 
 /**
  * User: jdev
@@ -27,6 +24,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
 
     private static HitRate myHitRate;
     private static HitRate enemyHitRate;
+
+    private static int wallHits;
+    private static int skippedTurns;
 
     private final Office office;
     private final Tomcat tomcat;
@@ -79,6 +79,12 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
             onRobotDeath();
         } else if (event instanceof TickEvent) {
             onTick();
+        } else if (event instanceof HitWallEvent) {
+            wallHits++;
+            PropertiesManager.setDebugProperty("Wall hits", String.valueOf(wallHits));
+        } else if (event instanceof SkippedTurnEvent) {
+            skippedTurns++;
+            PropertiesManager.setDebugProperty("Skipped turns", String.valueOf(skippedTurns));
         }
     }
 

@@ -340,6 +340,10 @@ public class Target implements LXXRobot, Serializable {
         return info.enemyLastFirePower;
     }
 
+    public double getGunHeat() {
+        return state.gunHeat;
+    }
+
     public class TargetState implements LXXRobotState {
 
         private final Long time;

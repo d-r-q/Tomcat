@@ -57,7 +57,7 @@ public abstract class WaveSurfingMovement implements Movement {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
         selectOrbitDirection(lxxBullets);
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), distanceToTravel, timeToTravel);
+        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), distanceToTravel / timeToTravel);
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -193,13 +193,13 @@ public abstract class WaveSurfingMovement implements Movement {
         final LXXBullet bullet = bullets.get(0);
         int time = 0;
         while (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance() > bullet.getSpeed() * time) {
-            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullets), orbitDirection, robotImg, Integer.MAX_VALUE, 0);
+            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullets), orbitDirection, robotImg, 8);
             robotImg.apply(md);
             points.add(new LXXPoint(robotImg));
             time++;
             g.fillCircle(robotImg, 3);
             if (opponentImg != null) {
-                opponentImg.apply(new MovementDecision(1, 0, enemy.getVelocity() >= 0 ? MovementDecision.MovementDirection.FORWARD : MovementDecision.MovementDirection.BACKWARD));
+                opponentImg.apply(new MovementDecision(8 * signum(enemy.getVelocity()), 0));
             }
         }
 
@@ -210,7 +210,7 @@ public abstract class WaveSurfingMovement implements Movement {
         final double distanceBetween = robot.aDistance(surfPoint);
         if (distanceBetween > DEFAULT_DISTANCE_AGAINST_SIMPLE + 10) {
             return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_95 * orbitDirection.sign);
-        } else if (distanceBetween < FEAR_DISTANCE) {
+        } else if (tomcatEyes.isRammingNow(duelOpponent)) {
             return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_45 * orbitDirection.sign);
         } else if (distanceBetween < DEFAULT_DISTANCE_AGAINST_SIMPLE - 10) {
             return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_75 * orbitDirection.sign);
@@ -220,16 +220,13 @@ public abstract class WaveSurfingMovement implements Movement {
     }
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
-                                                 LXXRobotState robot, double distanceToTravel, long timeToTravel) {
+                                                 LXXRobotState robot, double desiredVelocityModule) {
         final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
-        final double smoothedHeadingCW = robot.getBattleField().smoothWalls(robot, targetHeading, true);
-        final double smoothedHeadingCCW = robot.getBattleField().smoothWalls(robot, targetHeading, false);
-        final double smoothedHeading = LXXUtils.anglesDiff(targetHeading, smoothedHeadingCW) < LXXUtils.anglesDiff(targetHeading, smoothedHeadingCCW) ?
-                smoothedHeadingCW : smoothedHeadingCCW;
-        final MovementDecision.MovementDirection md = LXXUtils.anglesDiff(robot.getHeadingRadians(), smoothedHeading) < LXXConstants.RADIANS_90
-                ? MovementDecision.MovementDirection.FORWARD
-                : MovementDecision.MovementDirection.BACKWARD;
-        return MovementDecision.toMovementDecision(robot, smoothedHeading, md, distanceToTravel, timeToTravel);
+        final double smoothedHeading = robot.getBattleField().smoothWalls(robot, targetHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+
+        return MovementDecision.toMovementDecision(robot,
+                desiredVelocityModule,
+                smoothedHeading);
     }
 
     protected enum OrbitDirection {

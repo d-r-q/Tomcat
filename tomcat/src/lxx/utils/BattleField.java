@@ -37,6 +37,7 @@ public class BattleField {
 
     public final Rectangle battleField;
     public final Rectangle2D.Double availableBattleFieldRectangle;
+    public final Rectangle2D.Double exactAvailableBattleFieldRectangle;
 
     public final APoint center;
 
@@ -79,8 +80,9 @@ public class BattleField {
 
         battleField = new Rectangle(0, 0, width + x * 2, height + y * 2);
         availableBattleFieldRectangle = new Rectangle2D.Double(x - 1, y - 1, width + 2, height + 2);
+        exactAvailableBattleFieldRectangle = new Rectangle2D.Double(x, y, width, height);
 
-        center = new LXXPoint(width / 2, height / 2);
+        center = new LXXPoint(rightX / 2, topY / 2);
 
         this.width = width;
         this.height = height;
@@ -136,9 +138,11 @@ public class BattleField {
     private double getWallSmoothStickLength(APoint pos, double heading) {
         final Wall wall = getWall(pos, heading);
         final double targetAngle = LXXUtils.anglesDiff(heading, wall.wallType.clockwiseAngle) <
-                LXXUtils.anglesDiff(heading, wall.wallType.counterClockwiseAngle) ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
+                LXXUtils.anglesDiff(heading, wall.wallType.counterClockwiseAngle)
+                ? wall.wallType.clockwiseAngle
+                : wall.wallType.counterClockwiseAngle;
 
-        return LXXUtils.getTurnDistance(heading, targetAngle);
+        return LXXUtils.getTurnDistance(heading, targetAngle) + 15;
     }
 
     public double smoothWalls(APoint pos, double heading, boolean isClockwise) {
@@ -151,11 +155,15 @@ public class BattleField {
         if (hypotenuse < adjacentLeg) {
             return heading;
         }
-        final double smoothAngle = (QuickMath.acos((adjacentLeg) / (hypotenuse))) *
-                (isClockwise ? 1 : -1);
+        double smoothAngle = 0;
+        try {
+            smoothAngle = QuickMath.acos(adjacentLeg / hypotenuse) * (isClockwise ? 1 : -1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         final double baseAngle = wall.wallType.fromCenterAngle;
         double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
-        if (!contains(pos.project(smoothedAngle, hypotenuse))) {
+        if (!containsExact(pos.project(smoothedAngle, hypotenuse))) {
             final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
             return smoothWall(secondWall, pos, smoothedAngle, isClockwise);
         }
@@ -164,6 +172,10 @@ public class BattleField {
 
     public boolean contains(APoint point) {
         return availableBattleFieldRectangle.contains(point.getX(), point.getY());
+    }
+
+    public boolean containsExact(APoint point) {
+        return exactAvailableBattleFieldRectangle.contains(point.getX(), point.getY());
     }
 
     public class Wall {

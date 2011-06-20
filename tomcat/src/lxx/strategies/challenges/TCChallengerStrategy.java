@@ -53,7 +53,7 @@ public class TCChallengerStrategy extends AbstractStrategy {
     }
 
     protected MovementDecision getMovementDecision() {
-        return new MovementDecision(0, 0, MovementDecision.MovementDirection.FORWARD);
+        return new MovementDecision(0, 0);
     }
 
     protected GunDecision getGunDecision(Target target, double firePower) {

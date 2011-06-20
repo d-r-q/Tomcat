@@ -27,10 +27,12 @@ import robocode.security.SecureInputStream;
 import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
+import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -62,7 +64,9 @@ public class Tomcat extends BasicRobot {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            PropertiesManager.setDebugProperty("lxx.Tomcat.mode", props.getProperty("lxx.Tomcat.mode"));
+            for (Map.Entry e : props.entrySet()) {
+                PropertiesManager.setDebugProperty(e.getKey().toString(), e.getValue().toString());
+            }
         }
 
         init();
@@ -150,10 +154,9 @@ public class Tomcat extends BasicRobot {
 
     private void move() {
         final MovementDecision movDecision = turnDecision.getMovementDecision();
-        final double nextVelocityModule = LXXUtils.limit(0, getVelocityModule() + movDecision.getAcceleration(), Rules.MAX_VELOCITY);
         setTurnRightRadians(movDecision.getTurnRateRadians());
-        setMaxVelocity(nextVelocityModule);
-        setAhead(100 * movDecision.getMovementDirection().sign);
+        setMaxVelocity(abs(movDecision.getDesiredVelocity()));
+        setAhead(100 * signum(movDecision.getDesiredVelocity()));
     }
 
     public void onDeath(DeathEvent event) {

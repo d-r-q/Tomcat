@@ -22,7 +22,7 @@ public class DuelFirePowerSelector implements FirePowerSelector {
         if (target == null || robot.getEnergy() < 0.2) {
             return 0;
         }
-        if (robot.aDistance(target) < 100 || tomcatEyes.isRammer(target)) {
+        if (robot.aDistance(target) < 100 || tomcatEyes.isRammingNow(target)) {
             return 3;
         }
         double bulletPower = 1.9;

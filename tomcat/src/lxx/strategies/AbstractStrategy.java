@@ -22,7 +22,7 @@ public abstract class AbstractStrategy implements Strategy {
             md = getMovementDecision();
         } catch (Throwable t) {
             t.printStackTrace();
-            md = new MovementDecision(0, 0, MovementDecision.MovementDirection.FORWARD);
+            md = new MovementDecision(0, 0);
         }
         Target target = null;
         try {
