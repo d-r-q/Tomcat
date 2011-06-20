@@ -35,10 +35,9 @@ public class StrategySelector {
         strategies.add(new TCChallengerStrategy(robot, tomcatClaws, targetManager));
 
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
-                new SimpleTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
-                new AdvancedTargetersMovement(robot, targetManager, enemyBulletManager, tomcatEyes),
+                new WaveSurfingMovement(office, tomcatEyes),
                 tomcatClaws,
-                new DuelFirePowerSelector(tomcatEyes), targetManager, enemyBulletManager, tomcatEyes);
+                new DuelFirePowerSelector(tomcatEyes), targetManager, enemyBulletManager);
         strategies.add(duelStrategy);
 
         strategies.add(new WinStrategy(robot, targetManager, enemyBulletManager));

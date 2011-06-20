@@ -9,6 +9,7 @@ import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.enemy.GFAimingPredictionData;
+import lxx.office.Office;
 import lxx.paint.LXXGraphics;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
@@ -16,7 +17,6 @@ import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
-import robocode.util.Utils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -25,29 +25,28 @@ import java.util.List;
 
 import static java.lang.Math.*;
 
-public abstract class WaveSurfingMovement implements Movement {
+public class WaveSurfingMovement implements Movement {
 
     protected static final int DEFAULT_DISTANCE_AGAINST_SIMPLE = 400;
 
-    private static final double FEAR_DISTANCE = 150;
-
     protected final Tomcat robot;
+    protected final TomcatEyes tomcatEyes;
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
-    protected final TomcatEyes tomcatEyes;
+    private final Distancer distancer;
 
     private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
     private double distanceToTravel;
     private long timeToTravel;
-    protected double enemyPreferredDistance;
     private Target duelOpponent;
 
-    public WaveSurfingMovement(Tomcat robot, TargetManager targetManager,
-                               EnemyBulletManager enemyBulletManager, TomcatEyes tomcatEyes) {
-        this.robot = robot;
-        this.targetManager = targetManager;
-        this.enemyBulletManager = enemyBulletManager;
+    public WaveSurfingMovement(Office office, TomcatEyes tomcatEyes) {
+        this.robot = office.getRobot();
+        this.targetManager = office.getTargetManager();
+        this.enemyBulletManager = office.getEnemyBulletManager();
         this.tomcatEyes = tomcatEyes;
+
+        distancer = new NoBulletDistanser(office);
     }
 
     public MovementDecision getMovementDecision() {
@@ -57,11 +56,10 @@ public abstract class WaveSurfingMovement implements Movement {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
         selectOrbitDirection(lxxBullets);
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), timeToTravel > 0 ? distanceToTravel / timeToTravel : 8);
+        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), timeToTravel > 1 ? distanceToTravel / (timeToTravel - 1) : 8);
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
-        setEnemyPreferredDistance();
         final MovementDirectionPrediction clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
         final MovementDirectionPrediction counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
         final LXXBullet bullet = lxxBullets.get(0);
@@ -86,18 +84,6 @@ public abstract class WaveSurfingMovement implements Movement {
         robot.getLXXGraphics().setColor(Color.WHITE);
         robot.getLXXGraphics().drawCircle(movementDirectionPrediction.minDangerPoint, 6);
     }
-
-    private void setEnemyPreferredDistance() {
-        final Target opponent = duelOpponent;
-        if (opponent == null) {
-            return;
-        }
-
-        enemyPreferredDistance = getEnemyPreferredDistance(opponent);
-    }
-
-    protected abstract double getEnemyPreferredDistance(Target opponent);
-
     private MovementDirectionPrediction predictMovementInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.orbitDirection = orbitDirection;
@@ -198,38 +184,22 @@ public abstract class WaveSurfingMovement implements Movement {
             points.add(new LXXPoint(robotImg));
             time++;
             g.fillCircle(robotImg, 3);
-            if (opponentImg != null) {
-                opponentImg.apply(new MovementDecision(8 * signum(enemy.getVelocity()), 0));
-            }
         }
 
         return points;
     }
 
-    protected double getTargetHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
-        final double distanceBetween = robot.aDistance(surfPoint);
-        if (distanceBetween > DEFAULT_DISTANCE_AGAINST_SIMPLE + 10) {
-            return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_95 * orbitDirection.sign);
-        } else if (tomcatEyes.isRammingNow(duelOpponent)) {
-            return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_45 * orbitDirection.sign);
-        } else if (distanceBetween < DEFAULT_DISTANCE_AGAINST_SIMPLE - 10) {
-            return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_75 * orbitDirection.sign);
-        } else {
-            return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign);
-        }
-    }
-
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, double desiredSpeed) {
-        final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
-        final double smoothedHeading = robot.getBattleField().smoothWalls(robot, targetHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        final double desiredHeading = distancer.getDesiredHeading(surfPoint, robot, orbitDirection);
+        final double smoothedHeading = robot.getBattleField().smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
 
         return MovementDecision.toMovementDecision(robot,
                 desiredSpeed,
                 smoothedHeading);
     }
 
-    protected enum OrbitDirection {
+    public enum OrbitDirection {
 
         CLOCKWISE(1),
         COUNTER_CLOCKWISE(-1);

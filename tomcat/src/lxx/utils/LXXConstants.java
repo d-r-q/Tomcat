@@ -42,8 +42,9 @@ public abstract class LXXConstants {
     public static final double RADIANS_72 = toRadians(72);
     public static final double RADIANS_75 = toRadians(75);
     public static final double RADIANS_80 = toRadians(80);
+    public static final double RADIANS_85 = toRadians(85);
     public static final double RADIANS_90 = toRadians(90);
-    public static final double RADIANS_95 = toRadians(90);
+    public static final double RADIANS_95 = toRadians(95);
     public static final double RADIANS_100 = toRadians(100);
     public static final double RADIANS_110 = toRadians(110);
     public static final double RADIANS_135 = toRadians(135);
@@ -65,4 +66,6 @@ public abstract class LXXConstants {
     public static final int ROBOT_SIDE_HALF_SIZE = ROBOT_SIDE_SIZE / 2;
     public static final double MIN_BULLET_SPEED = Rules.getBulletSpeed(Rules.MAX_BULLET_POWER);
 
+    public static final double INITIAL_GUN_HEAT = 3.0;
+    public static final double ROBOT_HIT_DAMAGE = 0.6;
 }

@@ -24,9 +24,6 @@ import static java.lang.Math.*;
 
 public class Target implements LXXRobot, Serializable {
 
-    private static final double INITIAL_GUN_HEAT = 3.0;
-    private static final double ROBOT_HIT_DAMAGE = 0.6;
-
     private final List<Event> eventsList = new ArrayList<Event>(15);
 
     private final String name;
@@ -128,7 +125,7 @@ public class Target implements LXXRobot, Serializable {
 
         newState.position = (LXXPoint) owner.project(absoluteBearing, LXXConstants.ROBOT_SIDE_SIZE);
         newState.energy = e.getEnergy();
-        info.enemyHitRobotEnergyLoss += ROBOT_HIT_DAMAGE;
+        info.enemyHitRobotEnergyLoss += LXXConstants.ROBOT_HIT_DAMAGE;
     }
 
     private void processScannedRobotEvent(TargetState newState, ScannedRobotEvent e) {
@@ -366,7 +363,7 @@ public class Target implements LXXRobot, Serializable {
             turnRateRadians = calculateTurnRate(prevState);
             acceleration = LXXUtils.calculateAcceleration(prevState, this);
             if (prevState == null) {
-                gunHeat = INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
+                gunHeat = LXXConstants.INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
             } else if (isFireLastTick()) {
                 gunHeat = Rules.getGunHeat(getExpectedEnergy() - state.energy);
             } else {
