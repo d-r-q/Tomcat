@@ -8,7 +8,8 @@ import lxx.LXXRobot;
 import lxx.utils.LXXUtils;
 import lxx.utils.Median;
 
-import static java.lang.Math.*;
+import static java.lang.Math.round;
+import static java.lang.Math.toDegrees;
 
 /**
  * User: jdev
@@ -25,7 +26,7 @@ public class MovementMetaProfile {
     public void update(LXXRobot owner, LXXRobot viewPoint) {
         final double distanceBetween = owner.aDistance(viewPoint);
 
-        if (owner.getState().getVelocityModule() > 0) {
+        if (owner.getState().getSpeed() > 0) {
             int idx = (int) round(distanceBetween / DISTANCE_SEGMENTS);
             if (distancesMedianAngles[idx] == null) {
                 distancesMedianAngles[idx] = new Median(2000);

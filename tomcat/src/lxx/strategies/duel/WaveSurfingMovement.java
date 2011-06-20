@@ -10,10 +10,10 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.enemy.GFAimingPredictionData;
 import lxx.paint.LXXGraphics;
-import lxx.targeting.TargetManager;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
+import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
 import robocode.util.Utils;
@@ -57,7 +57,7 @@ public abstract class WaveSurfingMovement implements Movement {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
         selectOrbitDirection(lxxBullets);
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), distanceToTravel / timeToTravel);
+        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), timeToTravel > 0 ? distanceToTravel / timeToTravel : 8);
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -174,7 +174,7 @@ public abstract class WaveSurfingMovement implements Movement {
             return bullets.get(0).getFirePosition();
         }
 
-        return duelOpponent.project(duelOpponent.getAbsoluteHeadingRadians(), duelOpponent.getVelocityModule());
+        return duelOpponent.project(duelOpponent.getAbsoluteHeadingRadians(), duelOpponent.getSpeed());
     }
 
     private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, List<LXXBullet> bullets, Target enemy) {
@@ -220,12 +220,12 @@ public abstract class WaveSurfingMovement implements Movement {
     }
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
-                                                 LXXRobotState robot, double desiredVelocityModule) {
+                                                 LXXRobotState robot, double desiredSpeed) {
         final double targetHeading = getTargetHeading(surfPoint, robot, orbitDirection);
         final double smoothedHeading = robot.getBattleField().smoothWalls(robot, targetHeading, orbitDirection == OrbitDirection.CLOCKWISE);
 
         return MovementDecision.toMovementDecision(robot,
-                desiredVelocityModule,
+                desiredSpeed,
                 smoothedHeading);
     }
 

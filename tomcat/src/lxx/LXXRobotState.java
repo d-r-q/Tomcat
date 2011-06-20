@@ -17,7 +17,7 @@ public interface LXXRobotState extends APoint {
 
     double getVelocity();
 
-    double getVelocityModule();
+    double getSpeed();
 
     LXXRobot getRobot();
 

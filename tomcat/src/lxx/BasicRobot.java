@@ -147,7 +147,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         }
     }
 
-    public double getVelocityModule() {
+    public double getSpeed() {
         return abs(getVelocity());
     }
 
@@ -177,7 +177,7 @@ public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
         double prevAcceleration = acceleration;
         acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
-        if (signum(prevAcceleration) != signum(acceleration) && getVelocityModule() > 0.1 && getVelocityModule() < 7.9) {
+        if (signum(prevAcceleration) != signum(acceleration) && getSpeed() > 0.1 && getSpeed() < 7.9) {
             lastDirChangeTime = e.getTime() - 1;
         }
 

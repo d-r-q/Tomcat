@@ -5,19 +5,18 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
-import lxx.ts_log.TurnSnapshot;
-import lxx.ts_log.TurnSnapshotsLog;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;
 import lxx.targeting.tomcat_claws.data_analise.DataView;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.util.*;
-import java.util.List;
 
 import static java.lang.Math.*;
 
@@ -47,7 +46,7 @@ public class TomcatClaws implements Gun {
     public GunDecision getGunDecision(Target t, double firePower) {
         final double angleToTarget = robot.angleTo(t);
         final APoint initialPos = t.getPosition();
-        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getVelocityModule() * AIMING_TIME);
+        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
 
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
             bearingOffsetDangers = new HashMap<Double, Double>();

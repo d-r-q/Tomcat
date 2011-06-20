@@ -155,11 +155,11 @@ public class LXXUtils {
         return 3 * bulletPower;
     }
 
-    public static double getTurnDistance(double initialAngle, double targetAngle) {
+    public static double getTurnDistance(double initialAngle, double targetAngle, double speed) {
         final double anglesDiff = anglesDiff(initialAngle, targetAngle);
-        final double turnTime = anglesDiff / Rules.getTurnRateRadians(Rules.MAX_VELOCITY);
+        final double turnTime = anglesDiff / Rules.getTurnRateRadians(speed);
 
-        return Rules.MAX_VELOCITY * turnTime;
+        return speed * turnTime;
     }
 
     public static Rectangle2D getBoundingRectangleAt(APoint point) {
@@ -192,7 +192,7 @@ public class LXXUtils {
     }
 
     public static double lateralVelocity(APoint center, LXXRobotState robotState) {
-        return lateralVelocity(center, robotState, robotState.getVelocityModule(), robotState.getAbsoluteHeadingRadians());
+        return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
     public static double calculateAcceleration(LXXRobotState prevState, LXXRobotState curState) {
@@ -222,7 +222,7 @@ public class LXXUtils {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static<K, V> Map<K, V> toMap(Object ... data) {
+    public static <K, V> Map<K, V> toMap(Object... data) {
         if (data.length % 2 != 0) {
             throw new IllegalArgumentException("data length: " + data.length);
         }
@@ -252,6 +252,21 @@ public class LXXUtils {
         // 10 - turnRate = 0.75 * velocity
         // velocity = (10 - turnRate) / 0.75
         return (Rules.MAX_TURN_RATE - toDegrees(turnRate)) / 0.75;
+    }
+
+    public static double getTurnRadius(double speed) {
+        final double turnRate = Rules.getTurnRate(speed);
+        final double turnTime = LXXConstants.RADIANS_360 / turnRate;
+        final double circuit = speed * turnTime;
+        // d l= 2 * pi * r
+        // r = l / (2 * pi)
+
+        return circuit / (2 * Math.PI);
+    }
+
+    public static LXXCircle getCircle(APoint pnt, double heading, double radius, boolean isClockwise) {
+        final double radiusHeading = Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_90 * (isClockwise ? 1 : -1));
+        return new LXXCircle(pnt.project(radiusHeading, radius), radius);
     }
 
 }

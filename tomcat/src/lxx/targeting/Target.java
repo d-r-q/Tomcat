@@ -309,7 +309,7 @@ public class Target implements LXXRobot, Serializable {
                 prevState.position.aDistance(prevState.position.project(getAbsoluteHeadingRadians(), abs(state.velocity))) < -1.1;
     }
 
-    public double getVelocityModule() {
+    public double getSpeed() {
         ensureValid();
         return abs(state.velocity);
     }
@@ -442,7 +442,7 @@ public class Target implements LXXRobot, Serializable {
             return velocity;
         }
 
-        public double getVelocityModule() {
+        public double getSpeed() {
             return abs(velocity);
         }
 

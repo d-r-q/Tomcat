@@ -1,13 +1,17 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.RobotListener;
 import lxx.events.TickEvent;
+import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.targeting.Target;
 import lxx.utils.LXXUtils;
 import robocode.Event;
 
@@ -21,14 +25,14 @@ public class DataViewManager implements RobotListener {
 
     private static final Attribute[] mainDVAttrs = {
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
     };
 
     private static final Map<Attribute, Integer> mainDVRanges = LXXUtils.toMap(
             AttributesManager.enemyAcceleration, 0,
-            AttributesManager.enemyVelocityModule, 0,
+            AttributesManager.enemySpeed, 0,
             AttributesManager.enemyDistanceToForwardWall, 9,
             AttributesManager.enemyBearingToForwardWall, 11
     );
@@ -36,7 +40,7 @@ public class DataViewManager implements RobotListener {
 
     private static final Attribute[] asDVAttrs = {
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.firstBulletFlightTimeToEnemy,
@@ -45,7 +49,7 @@ public class DataViewManager implements RobotListener {
     };
     private static final Map<Attribute, Integer> asDVRanges = LXXUtils.toMap(
             AttributesManager.enemyAcceleration, 0,
-            AttributesManager.enemyVelocityModule, 2,
+            AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
             AttributesManager.enemyBearingToForwardWall, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,
@@ -56,7 +60,7 @@ public class DataViewManager implements RobotListener {
 
     private static final Attribute[] distanceDVAttrs = {
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.firstBulletFlightTimeToEnemy,
@@ -64,7 +68,7 @@ public class DataViewManager implements RobotListener {
     };
     private static final Map<Attribute, Integer> distanceDVRanges = LXXUtils.toMap(
             AttributesManager.enemyAcceleration, 0,
-            AttributesManager.enemyVelocityModule, 2,
+            AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
             AttributesManager.enemyBearingToForwardWall, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,
@@ -74,7 +78,7 @@ public class DataViewManager implements RobotListener {
 
     private static final Attribute[] timeSinceDirChangeDVAttrs = {
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemyVelocityModule,
+            AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
             AttributesManager.firstBulletFlightTimeToEnemy,
@@ -82,7 +86,7 @@ public class DataViewManager implements RobotListener {
     };
     private static final Map<Attribute, Integer> timeSinceDirChangeDVRanges = LXXUtils.toMap(
             AttributesManager.enemyAcceleration, 0,
-            AttributesManager.enemyVelocityModule, 2,
+            AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
             AttributesManager.enemyBearingToForwardWall, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,

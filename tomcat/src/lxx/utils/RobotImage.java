@@ -10,7 +10,8 @@ import lxx.strategies.MovementDecision;
 import robocode.Rules;
 import robocode.util.Utils;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -89,7 +90,7 @@ public final class RobotImage implements LXXRobotState {
         return turnRateRadians;
     }
 
-    public double getVelocityModule() {
+    public double getSpeed() {
         return abs(velocity);
     }
 

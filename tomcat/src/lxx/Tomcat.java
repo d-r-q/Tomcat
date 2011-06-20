@@ -16,13 +16,10 @@ import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.StrategySelector;
 import lxx.strategies.TurnDecision;
-import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
 import robocode.Rules;
-import robocode.io.RobocodeObjectInputStream;
-import robocode.security.SecureInputStream;
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -30,9 +27,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.round;
-import static java.lang.Math.signum;
+import static java.lang.Math.*;
 
 /**
  * User: jdev

@@ -5,9 +5,9 @@
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
+import lxx.LXXRobotState;
 import lxx.bullets.LXXBullet;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-import lxx.LXXRobotState;
 import lxx.utils.LXXUtils;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public class EnemyBearingOffsetOnFirstBulletVE implements AttributeValueExtracto
         } while (bulletFlightTime < 1);
 
         final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
-        double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), targetState, targetState.getVelocityModule(), targetState.getAbsoluteHeadingRadians()));
+        double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), targetState, targetState.getSpeed(), targetState.getAbsoluteHeadingRadians()));
         return toDegrees(LXXUtils.bearingOffset(firstBullet.getFirePosition(), targetState, enemy)) * lateralDirection;
     }
 }

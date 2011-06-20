@@ -100,8 +100,8 @@ public class TurnSnapshot implements Serializable {
         return result;
     }
 
-    public double getMyVelocityModule() {
-        return attributeValues[AttributesManager.myVelocityModule.getId()];
+    public double getMySpeed() {
+        return attributeValues[AttributesManager.mySpeed.getId()];
     }
 
     public double getMyAbsoluteHeadingRadians() {

@@ -21,7 +21,7 @@ public class RobotSnapshot implements LXXRobotState {
     private final double absoluteHeadingRadians;
     private final double turnRateRadians;
     private final double velocity;
-    private final double velocityModule;
+    private final double speed;
     private final long time;
     private final LXXRobot robot;
     private final BattleField battleField;
@@ -33,7 +33,7 @@ public class RobotSnapshot implements LXXRobotState {
         headingRadians = source.getHeadingRadians();
         absoluteHeadingRadians = source.getAbsoluteHeadingRadians();
         turnRateRadians = source.getTurnRateRadians();
-        velocityModule = abs(source.getVelocity());
+        speed = abs(source.getVelocity());
         velocity = source.getVelocity();
         position = new LXXPoint(source);
         battleField = source.battleField;
@@ -52,8 +52,8 @@ public class RobotSnapshot implements LXXRobotState {
         return velocity;
     }
 
-    public double getVelocityModule() {
-        return velocityModule;
+    public double getSpeed() {
+        return speed;
     }
 
     public LXXRobot getRobot() {

@@ -59,8 +59,8 @@ public class LXXPoint extends Point2D.Double implements APoint, Serializable {
         return project(result.getAlphaRadians(), result.getLength());
     }
 
-    public double distanceToWall(BattleField battleField, double heading) {
-        final BattleField.Wall w = battleField.getWall(this, heading);
-        return battleField.getDistanceToWall(w, this) / abs(QuickMath.cos(heading - w.wallType.fromCenterAngle));
+    public double distanceToWall(BattleField battleField, double direction) {
+        final BattleField.Wall w = battleField.getWall(this, direction);
+        return battleField.getDistanceToWall(w, this) / abs(QuickMath.cos(direction - w.wallType.fromCenterAngle));
     }
 }

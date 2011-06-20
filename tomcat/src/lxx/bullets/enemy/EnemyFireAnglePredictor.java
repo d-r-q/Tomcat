@@ -6,17 +6,17 @@ package lxx.bullets.enemy;
 
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
-import lxx.utils.ps_tree.PSTree;
-import lxx.utils.ps_tree.PSTreeEntry;
+import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.utils.ps_tree.EntryMatch;
-import lxx.targeting.Target;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
+import lxx.utils.ps_tree.EntryMatch;
+import lxx.utils.ps_tree.PSTree;
+import lxx.utils.ps_tree.PSTreeEntry;
 import robocode.Rules;
 
 import java.util.*;
@@ -72,7 +72,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     private List<Double> getBearingOffsets(PSTree<Double> log, TurnSnapshot predicate, double firePower) {
         final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
-                predicate.getMyVelocityModule(), predicate.getMyAbsoluteHeadingRadians());
+                predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
         final List<Double> bearingOffsets = new LinkedList<Double>();
         if (matches.size() > 0) {

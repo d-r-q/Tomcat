@@ -4,6 +4,7 @@
 
 package lxx.utils;
 
+import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
@@ -116,6 +117,29 @@ public class BattleField {
         }
     }
 
+    public Wall getClosestWall(APoint pnt) {
+        double minDist = Integer.MAX_VALUE;
+        Wall closestWall = null;
+
+        if (pnt.getX() - availableLeftX < minDist) {
+            minDist = pnt.getX() - availableLeftX;
+            closestWall = left;
+        }
+        if (availableTopY - pnt.getY() < minDist) {
+            minDist = availableTopY - pnt.getY();
+            closestWall = top;
+        }
+        if (availableRightX - pnt.getX() < minDist) {
+            minDist = availableRightX - pnt.getX();
+            closestWall = right;
+        }
+        if (pnt.getY() - availableBottomY < minDist) {
+            closestWall = bottom;
+        }
+
+        return closestWall;
+    }
+
     public double getBearingOffsetToWall(APoint pnt, double heading) {
         return Utils.normalRelativeAngle(getWall(pnt, heading).wallType.fromCenterAngle - heading);
     }
@@ -142,7 +166,7 @@ public class BattleField {
                 ? wall.wallType.clockwiseAngle
                 : wall.wallType.counterClockwiseAngle;
 
-        return LXXUtils.getTurnDistance(heading, targetAngle) + 15;
+        return LXXUtils.getTurnDistance(heading, targetAngle, Rules.MAX_VELOCITY) + 15;
     }
 
     public double smoothWalls(APoint pos, double heading, boolean isClockwise) {
@@ -151,7 +175,7 @@ public class BattleField {
 
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
         final double hypotenuse = getWallSmoothStickLength(pos, heading);
-        final double adjacentLeg = getDistanceToWall(wall, pos) - 2;
+        final double adjacentLeg = getDistanceToWall(wall, pos) - 4;
         if (hypotenuse < adjacentLeg) {
             return heading;
         }
@@ -176,6 +200,10 @@ public class BattleField {
 
     public boolean containsExact(APoint point) {
         return exactAvailableBattleFieldRectangle.contains(point.getX(), point.getY());
+    }
+
+    public boolean contains(LXXCircle circle, double fromAngle, double toAngle) {
+        return ((LXXPoint) circle.center).distanceToWall(this, Utils.normalAbsoluteAngle(fromAngle + toAngle) / 2) > 1;
     }
 
     public class Wall {

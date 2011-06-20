@@ -6,12 +6,12 @@ package lxx.ts_log.attributes;
 
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
-import lxx.ts_log.TurnSnapshot;
-import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
-import lxx.ts_log.attributes.attribute_extractors.my.*;
-import lxx.ts_log.attributes.attribute_extractors.enemy.*;
 import lxx.office.Office;
 import lxx.targeting.Target;
+import lxx.ts_log.TurnSnapshot;
+import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
+import lxx.ts_log.attributes.attribute_extractors.enemy.*;
+import lxx.ts_log.attributes.attribute_extractors.my.*;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class AttributesManager {
     public static final Attribute enemyX = new Attribute("Enemy x", 0, 1200, new EnemyXVE());
     public static final Attribute enemyY = new Attribute("Enemy y", 0, 1200, new EnemyYVE());
     public static final Attribute enemyVelocity = new Attribute("Enemy velocity", -8, 8, new EnemyVelocityVE());
-    public static final Attribute enemyVelocityModule = new Attribute("Enemy velocity module", 0, 8, new EnemyVelocityModuleVE());
+    public static final Attribute enemySpeed = new Attribute("Enemy speed", 0, 8, new EnemySpeedVE());
     public static final Attribute enemyAbsoluteHeading = new Attribute("Enemy heading", 0, 360, new EnemyHeadingVE());
     public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAccelerationVE());
     public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10.2, 10.2, new EnemyTurnRateVE());
@@ -40,8 +40,8 @@ public class AttributesManager {
     public static final Attribute myX = new Attribute("My x", 0, 1200, new MyXVE());
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
     public static final Attribute myVelocity = new Attribute("My velocity", -8, 8, new MyVelocityVE());
-    public static final Attribute myVelocityModule = new Attribute("My velocity module", 0, 8, new MyVelocityModuleVE());
-    public static final Attribute myLateralVelocity_2 = new Attribute("My lateral velocity module / 2", 0, 4, new MyLateralVelocityModule_2VE());
+    public static final Attribute mySpeed = new Attribute("My speed", 0, 8, new MySpeedVE());
+    public static final Attribute myLateralVelocity_2 = new Attribute("My lateral velocity speed / 2", 0, 4, new MyLateralSpeed_2VE());
     public static final Attribute myAbsoluteHeadingDegrees = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
     public static final Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
@@ -55,7 +55,7 @@ public class AttributesManager {
             enemyX,
             enemyY,
             enemyVelocity,
-            enemyVelocityModule,
+            enemySpeed,
             enemyAbsoluteHeading,
             enemyAcceleration,
             enemyTurnRate,
@@ -72,7 +72,7 @@ public class AttributesManager {
             myX,
             myY,
             myVelocity,
-            myVelocityModule,
+            mySpeed,
             myLateralVelocity_2,
             myAbsoluteHeadingDegrees,
             myRelativeHeading,
