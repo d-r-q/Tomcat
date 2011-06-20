@@ -255,10 +255,10 @@ public class LXXUtils {
     }
 
     public static double getTurnRadius(double speed) {
-        final double turnRate = Rules.getTurnRate(speed);
+        final double turnRate = Rules.getTurnRateRadians(speed);
         final double turnTime = LXXConstants.RADIANS_360 / turnRate;
         final double circuit = speed * turnTime;
-        // d l= 2 * pi * r
+        // l = 2 * pi * r
         // r = l / (2 * pi)
 
         return circuit / (2 * Math.PI);

@@ -4,7 +4,6 @@
 
 package lxx.utils;
 
-import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
@@ -16,6 +15,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class BattleField {
 
+    private static final int WALL_STICK = 160;
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;
@@ -117,29 +117,6 @@ public class BattleField {
         }
     }
 
-    public Wall getClosestWall(APoint pnt) {
-        double minDist = Integer.MAX_VALUE;
-        Wall closestWall = null;
-
-        if (pnt.getX() - availableLeftX < minDist) {
-            minDist = pnt.getX() - availableLeftX;
-            closestWall = left;
-        }
-        if (availableTopY - pnt.getY() < minDist) {
-            minDist = availableTopY - pnt.getY();
-            closestWall = top;
-        }
-        if (availableRightX - pnt.getX() < minDist) {
-            minDist = availableRightX - pnt.getX();
-            closestWall = right;
-        }
-        if (pnt.getY() - availableBottomY < minDist) {
-            closestWall = bottom;
-        }
-
-        return closestWall;
-    }
-
     public double getBearingOffsetToWall(APoint pnt, double heading) {
         return Utils.normalRelativeAngle(getWall(pnt, heading).wallType.fromCenterAngle - heading);
     }
@@ -159,23 +136,13 @@ public class BattleField {
         }
     }
 
-    private double getWallSmoothStickLength(APoint pos, double heading) {
-        final Wall wall = getWall(pos, heading);
-        final double targetAngle = LXXUtils.anglesDiff(heading, wall.wallType.clockwiseAngle) <
-                LXXUtils.anglesDiff(heading, wall.wallType.counterClockwiseAngle)
-                ? wall.wallType.clockwiseAngle
-                : wall.wallType.counterClockwiseAngle;
-
-        return LXXUtils.getTurnDistance(heading, targetAngle, Rules.MAX_VELOCITY) + 15;
-    }
-
     public double smoothWalls(APoint pos, double heading, boolean isClockwise) {
         return smoothWall(getWall(pos, heading), pos, heading, isClockwise);
     }
 
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
-        final double hypotenuse = getWallSmoothStickLength(pos, heading);
-        final double adjacentLeg = getDistanceToWall(wall, pos) - 4;
+        final double hypotenuse = WALL_STICK;
+        final double adjacentLeg = getDistanceToWall(wall, pos);
         if (hypotenuse < adjacentLeg) {
             return heading;
         }
