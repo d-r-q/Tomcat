@@ -6,13 +6,13 @@ package lxx.office;
 
 import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.bullets.my.BulletManager;
 import lxx.paint.PaintManager;
+import lxx.plugins.PluginManager;
 import lxx.targeting.TargetManager;
+import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.plugins.PluginManager;
-import lxx.bullets.my.BulletManager;
-import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.utils.wave.WaveManager;
 
 public class OfficeImpl implements Office {
@@ -26,6 +26,7 @@ public class OfficeImpl implements Office {
     private final DataViewManager dataViewManager;
 
     private final Tomcat tomcat;
+    private StatisticsManager statisticsManager;
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
@@ -48,7 +49,7 @@ public class OfficeImpl implements Office {
         bulletManager = new BulletManager();
         tomcat.addListener(bulletManager);
 
-        final StatisticsManager statisticsManager = new StatisticsManager(this, tomcat);
+        statisticsManager = new StatisticsManager(this, tomcat);
         tomcat.addListener(statisticsManager);
 
         final PaintManager paintManager = new PaintManager();
@@ -90,6 +91,10 @@ public class OfficeImpl implements Office {
 
     public DataViewManager getDataViewManager() {
         return dataViewManager;
+    }
+
+    public StatisticsManager getStatisticsManager() {
+        return statisticsManager;
     }
 
     public long getTime() {

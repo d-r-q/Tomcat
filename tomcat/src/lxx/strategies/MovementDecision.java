@@ -5,7 +5,6 @@
 package lxx.strategies;
 
 import lxx.LXXRobotState;
-import lxx.utils.LXXCircle;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
@@ -13,7 +12,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 
-import static java.lang.Math.*;
+import static java.lang.Math.toDegrees;
 
 public class MovementDecision implements Serializable {
 
@@ -34,6 +33,9 @@ public class MovementDecision implements Serializable {
     }
 
     public static MovementDecision toMovementDecision(LXXRobotState robot, double desiredSpeed, double desiredHeading) {
+        if (desiredSpeed > Rules.MAX_VELOCITY) {
+            desiredSpeed = Rules.MAX_VELOCITY;
+        }
         final boolean wantToGoFront = LXXUtils.anglesDiff(robot.getHeadingRadians(), desiredHeading) < LXXConstants.RADIANS_90;
         final double normalizedDesiredHeading = wantToGoFront ? desiredHeading : Utils.normalAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
 

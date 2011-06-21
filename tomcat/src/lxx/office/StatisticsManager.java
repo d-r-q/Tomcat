@@ -25,6 +25,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     private static HitRate myHitRate;
     private static HitRate enemyHitRate;
 
+    private static HitRate myRawHitRate;
+    private static HitRate enemyRawHitRate;
+
     private static int wallHits;
     private static int skippedTurns;
 
@@ -37,6 +40,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         if (myHitRate == null) {
             myHitRate = new HitRate();
             enemyHitRate = new HitRate();
+
+            myRawHitRate = new HitRate();
+            enemyRawHitRate = new HitRate();
         }
 
         office.getBulletManager().addListener(this);
@@ -94,23 +100,36 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     public void bulletHit(LXXBullet bullet) {
         if (bullet.getOwner().getName().equals(tomcat.getName())) {
             myHitRate.hit();
+            myRawHitRate.hit();
         } else {
             enemyHitRate.hit();
+            enemyRawHitRate.hit();
         }
     }
 
     public void bulletMiss(LXXBullet bullet) {
         if (bullet.getOwner().getName().equals(tomcat.getName())) {
             myHitRate.miss();
+            myRawHitRate.miss();
         } else {
             enemyHitRate.miss();
+            enemyRawHitRate.miss();
         }
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
+        if (bullet.getOwner().getName().equals(tomcat.getName())) {
+            myRawHitRate.miss();
+        } else {
+            enemyRawHitRate.miss();
+        }
     }
 
     public void bulletPassing(LXXBullet bullet) {
+    }
+
+    public double getMyRawHitRate() {
+        return myRawHitRate.getHitRate();
     }
 
 }

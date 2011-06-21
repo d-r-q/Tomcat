@@ -42,20 +42,6 @@ public class LXXUtils {
         return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
-    public static double weightedManhattanDistance(double[] a, double[] b, double[] weights) {
-        double res = 0;
-
-        for (int i = 0; i < a.length; i++) {
-            res += ((b[i] > a[i])
-                    ? b[i] - a[i]
-                    : a[i] - b[i])
-                    * weights[i];
-        }
-
-        return res;
-    }
-
-
     public static double factoredManhettanDistance(int[] indexes, double[] a, double[] b, double[] factors) {
         double res = 0;
 
@@ -78,30 +64,8 @@ public class LXXUtils {
         return (20 - bulletSpeed) / 3;
     }
 
-    public static double getStopDistance(double speed) {
-        double res = 0;
-
-        while (true) {
-            speed -= Rules.DECELERATION;
-            if (speed < 0) {
-                break;
-            }
-            res += speed;
-        }
-
-        return res;
-    }
-
     public static double anglesDiff(double alpha1, double alpha2) {
         return abs(Utils.normalRelativeAngle(alpha1 - alpha2));
-    }
-
-    public static double getAttackAngle(APoint attackerPos, APoint victimPos, double victimHeading) {
-        double attackAngle = anglesDiff(attackerPos.angleTo(victimPos), victimHeading);
-        if (attackAngle > Math.PI / 2) {
-            attackAngle = Math.PI - attackAngle;
-        }
-        return attackAngle;
     }
 
     public static int limit(int minValue, int value, int maxValue) {
@@ -153,13 +117,6 @@ public class LXXUtils {
 
     public static double getReturnedEnergy(double bulletPower) {
         return 3 * bulletPower;
-    }
-
-    public static double getTurnDistance(double initialAngle, double targetAngle, double speed) {
-        final double anglesDiff = anglesDiff(initialAngle, targetAngle);
-        final double turnTime = anglesDiff / Rules.getTurnRateRadians(speed);
-
-        return speed * turnTime;
     }
 
     public static Rectangle2D getBoundingRectangleAt(APoint point) {
@@ -234,39 +191,4 @@ public class LXXUtils {
 
         return map;
     }
-
-    public static double getVelocityByTurnRate(double turnRate) {
-        if (turnRate < 0) {
-            throw new IllegalArgumentException("Turn rate muste be >= 0");
-        }
-
-        if (turnRate >= Rules.MAX_TURN_RATE_RADIANS) {
-            return 0;
-        }
-        if (turnRate == 0) {
-            return Rules.MAX_VELOCITY;
-        }
-
-        // turnRate = 10 - 0.75 * velocity
-        // turnRate - 10 = -0.75 * velocity
-        // 10 - turnRate = 0.75 * velocity
-        // velocity = (10 - turnRate) / 0.75
-        return (Rules.MAX_TURN_RATE - toDegrees(turnRate)) / 0.75;
-    }
-
-    public static double getTurnRadius(double speed) {
-        final double turnRate = Rules.getTurnRateRadians(speed);
-        final double turnTime = LXXConstants.RADIANS_360 / turnRate;
-        final double circuit = speed * turnTime;
-        // l = 2 * pi * r
-        // r = l / (2 * pi)
-
-        return circuit / (2 * Math.PI);
-    }
-
-    public static LXXCircle getCircle(APoint pnt, double heading, double radius, boolean isClockwise) {
-        final double radiusHeading = Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_90 * (isClockwise ? 1 : -1));
-        return new LXXCircle(pnt.project(radiusHeading, radius), radius);
-    }
-
 }

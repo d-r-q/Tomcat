@@ -37,7 +37,13 @@ public class HitRate {
     }
 
     public String toString() {
-        return "(" + hitCount + "/" + (hitCount + missCount) + ") = " + format.format((double) hitCount / (double) (hitCount + missCount) * 100) + "%";
+        return "(" + hitCount + "/" + (hitCount + missCount) + ") = " + format.format(getHitRate() * 100) + "%";
     }
 
+    public double getHitRate() {
+        if (hitCount == 0 && missCount == 0) {
+            return 0;
+        }
+        return (double) hitCount / (double) (hitCount + missCount);
+    }
 }

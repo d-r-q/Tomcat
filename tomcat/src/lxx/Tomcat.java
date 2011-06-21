@@ -122,6 +122,8 @@ public class Tomcat extends BasicRobot {
                 System.out.printf("[WARN] gun turn remaining is %3.2f when gun is cool\n", getGunTurnRemaining());
             } else if (turnDecision.getFirePower() > 0) {
                 fire();
+            } else {
+                aimGun();
             }
         } else {
             aimGun();

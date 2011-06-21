@@ -8,9 +8,9 @@ import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.my.BulletManager;
 import lxx.targeting.TargetManager;
+import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.utils.wave.WaveManager;
 
 public interface Office {
@@ -28,6 +28,8 @@ public interface Office {
     BulletManager getBulletManager();
 
     DataViewManager getDataViewManager();
+
+    StatisticsManager getStatisticsManager();
 
     long getTime();
 

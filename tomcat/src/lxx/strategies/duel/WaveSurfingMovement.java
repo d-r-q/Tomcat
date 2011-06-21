@@ -33,7 +33,7 @@ public class WaveSurfingMovement implements Movement {
     protected final TomcatEyes tomcatEyes;
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
-    private final Distancer distancer;
+    private final DistanceController distanceController;
 
     private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
     private double distanceToTravel;
@@ -46,7 +46,7 @@ public class WaveSurfingMovement implements Movement {
         this.enemyBulletManager = office.getEnemyBulletManager();
         this.tomcatEyes = tomcatEyes;
 
-        distancer = new NoBulletDistanser(office);
+        distanceController = new DistanceController(office);
     }
 
     public MovementDecision getMovementDecision() {
@@ -84,6 +84,7 @@ public class WaveSurfingMovement implements Movement {
         robot.getLXXGraphics().setColor(Color.WHITE);
         robot.getLXXGraphics().drawCircle(movementDirectionPrediction.minDangerPoint, 6);
     }
+
     private MovementDirectionPrediction predictMovementInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.orbitDirection = orbitDirection;
@@ -191,12 +192,10 @@ public class WaveSurfingMovement implements Movement {
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, double desiredSpeed) {
-        final double desiredHeading = distancer.getDesiredHeading(surfPoint, robot, orbitDirection);
+        final double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection);
         final double smoothedHeading = robot.getBattleField().smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
 
-        return MovementDecision.toMovementDecision(robot,
-                desiredSpeed,
-                smoothedHeading);
+        return MovementDecision.toMovementDecision(robot, desiredSpeed, smoothedHeading);
     }
 
     public enum OrbitDirection {
@@ -205,7 +204,6 @@ public class WaveSurfingMovement implements Movement {
         COUNTER_CLOCKWISE(-1);
 
         public final int sign;
-
 
         OrbitDirection(int sign) {
             this.sign = sign;

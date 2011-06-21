@@ -6,7 +6,10 @@ package lxx.bullets;
 
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
-import lxx.utils.*;
+import lxx.utils.APoint;
+import lxx.utils.AimingPredictionData;
+import lxx.utils.LXXPoint;
+import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
@@ -127,5 +130,9 @@ public class LXXBullet {
 
     public LXXPoint getCurrentPosition() {
         return new LXXPoint(bullet.getX(), bullet.getY());
+    }
+
+    public double getFlightTime(APoint robot) {
+        return (getFirePosition().aDistance(robot) - getTravelledDistance()) / getSpeed();
     }
 }
