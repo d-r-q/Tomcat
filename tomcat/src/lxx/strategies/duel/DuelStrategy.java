@@ -6,9 +6,9 @@ package lxx.strategies.duel;
 
 import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
-import lxx.targeting.TargetManager;
 import lxx.strategies.*;
 import lxx.targeting.Target;
+import lxx.targeting.TargetManager;
 import lxx.utils.LXXConstants;
 import robocode.util.Utils;
 
@@ -20,17 +20,20 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     private final EnemyBulletManager enemyBulletManager;
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
+    private final Movement withBulletsMovement;
+    private final Movement noBulletsMovement;
 
-    protected Target target;
+    private Target target;
 
-    private Movement movement;
-
-    public DuelStrategy(Tomcat robot, Movement movement,
+    public DuelStrategy(Tomcat robot,
+                        Movement withBulletsMovement,
+                        Movement noBulletsMovement,
                         Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager,
                         EnemyBulletManager enemyBulletManager) {
         super(robot);
 
-        this.movement = movement;
+        this.withBulletsMovement = withBulletsMovement;
+        this.noBulletsMovement = noBulletsMovement;
         this.gun = gun;
         this.firePowerSelector = firePowerSelector;
 
@@ -63,7 +66,11 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
-        return movement.getMovementDecision();
+        if (enemyBulletManager.getBulletsOnAirCount() > 0) {
+            return withBulletsMovement.getMovementDecision();
+        } else {
+            return noBulletsMovement.getMovementDecision();
+        }
     }
 
     protected GunDecision getGunDecision(Target target, double firePower) {

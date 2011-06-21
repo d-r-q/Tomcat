@@ -10,6 +10,7 @@ import lxx.office.Office;
 import lxx.strategies.challenges.TCChallengerStrategy;
 import lxx.strategies.duel.DuelFirePowerSelector;
 import lxx.strategies.duel.DuelStrategy;
+import lxx.strategies.duel.TakePositionMovement;
 import lxx.strategies.duel.WaveSurfingMovement;
 import lxx.strategies.find_enemies.FindEnemiesStrategy;
 import lxx.strategies.win.WinStrategy;
@@ -38,6 +39,7 @@ public class StrategySelector {
 
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
                 new WaveSurfingMovement(office, tomcatEyes),
+                new TakePositionMovement(office),
                 tomcatClaws,
                 new DuelFirePowerSelector(tomcatEyes, office.getStatisticsManager()), targetManager, enemyBulletManager);
         strategies.add(duelStrategy);

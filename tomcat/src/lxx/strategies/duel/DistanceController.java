@@ -7,7 +7,8 @@ package lxx.strategies.duel;
 import lxx.LXXRobotState;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.targeting.TargetManager;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
@@ -28,18 +29,21 @@ public class DistanceController {
 
     private static final double DISTANCE = 450;
 
-    private final Office office;
     private final Tomcat robot;
     private final double gunCoolingRate;
+    private final EnemyBulletManager enemyBulletManager;
+    private final TargetManager targetManager;
 
-    public DistanceController(Office office) {
-        this.office = office;
-        this.robot = office.getRobot();
-        this.gunCoolingRate = office.getRobot().getGunCoolingRate();
+    public DistanceController(Tomcat robot, EnemyBulletManager enemyBulletManager, TargetManager targetManager) {
+        this.robot = robot;
+        this.enemyBulletManager = enemyBulletManager;
+        this.targetManager = targetManager;
+
+        this.gunCoolingRate = this.robot.getGunCoolingRate();
     }
 
     public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection) {
-        final List<LXXBullet> bulletsOnAir = office.getEnemyBulletManager().getBulletsOnAir(0);
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
 
         final LXXBullet firstBullet = bulletsOnAir.size() > 0 ? bulletsOnAir.get(0) : null;
         if (firstBullet == null) {
@@ -62,7 +66,7 @@ public class DistanceController {
 
     private double getDesiredHeadingNoBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection) {
         final double maxCoolingTime = LXXConstants.INITIAL_GUN_HEAT / this.robot.getGunCoolingRate();
-        final double currentCoolingTime = office.getTargetManager().getDuelOpponent().getGunHeat() / gunCoolingRate;
+        final double currentCoolingTime = targetManager.getDuelOpponent().getGunHeat() / gunCoolingRate;
         final double distanceBetween = robot.aDistance(surfPoint);
 
         final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_NO_BULLETS * (currentCoolingTime / maxCoolingTime);

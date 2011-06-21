@@ -46,7 +46,7 @@ public class WaveSurfingMovement implements Movement {
         this.enemyBulletManager = office.getEnemyBulletManager();
         this.tomcatEyes = tomcatEyes;
 
-        distanceController = new DistanceController(office);
+        distanceController = new DistanceController(office.getRobot(), office.getEnemyBulletManager(), office.getTargetManager());
     }
 
     public MovementDecision getMovementDecision() {
@@ -161,7 +161,7 @@ public class WaveSurfingMovement implements Movement {
             return bullets.get(0).getFirePosition();
         }
 
-        return duelOpponent.project(duelOpponent.getAbsoluteHeadingRadians(), duelOpponent.getSpeed());
+        return duelOpponent;
     }
 
     private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, List<LXXBullet> bullets, Target enemy) {
@@ -210,7 +210,7 @@ public class WaveSurfingMovement implements Movement {
         }
     }
 
-    private class MovementDirectionPrediction {
+    public class MovementDirectionPrediction {
 
         private double minDanger = Integer.MAX_VALUE;
         private LXXPoint minDangerPoint;
