@@ -6,7 +6,10 @@ package lxx.bullets.enemy;
 
 import lxx.bullets.LXXBullet;
 import lxx.paint.LXXGraphics;
-import lxx.utils.*;
+import lxx.utils.APoint;
+import lxx.utils.AimingPredictionData;
+import lxx.utils.LXXConstants;
+import lxx.utils.LXXUtils;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -52,7 +55,7 @@ public class GFAimingPredictionData implements AimingPredictionData {
         final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         double danger = 0;
         for (int i = fromIdx; i <= toIdx; i++) {
-            danger += dangers.get(i).danger;
+            danger = max(danger, dangers.get(i).danger);
         }
 
         return danger;

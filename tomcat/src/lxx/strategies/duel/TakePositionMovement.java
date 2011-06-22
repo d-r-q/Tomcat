@@ -8,8 +8,9 @@ import lxx.Tomcat;
 import lxx.office.Office;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
+import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.utils.LXXConstants;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 
 public class TakePositionMovement implements Movement {
 
@@ -17,16 +18,18 @@ public class TakePositionMovement implements Movement {
     private final Tomcat robot;
     private final TargetManager targetManager;
 
-    public TakePositionMovement(Office office) {
+    public TakePositionMovement(Office office, TomcatEyes tomcatEyes) {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
 
-        this.distanceController = new DistanceController(robot, office.getEnemyBulletManager(), targetManager);
+        this.distanceController = new DistanceController(robot, office.getEnemyBulletManager(), targetManager, tomcatEyes);
     }
 
     public MovementDecision getMovementDecision() {
+        final WaveSurfingMovement.OrbitDirection orbitDirection = selectOrbitDirection();
+        final double desiredHeading = distanceController.getDesiredHeading(targetManager.getDuelOpponent(), robot.getState(), orbitDirection);
         return MovementDecision.toMovementDecision(robot.getState(), 8,
-                distanceController.getDesiredHeading(targetManager.getDuelOpponent(), robot.getState(), selectOrbitDirection()));
+                robot.getState().getBattleField().smoothWalls(robot.getPosition(), desiredHeading, orbitDirection == WaveSurfingMovement.OrbitDirection.CLOCKWISE));
     }
 
     private WaveSurfingMovement.OrbitDirection selectOrbitDirection() {
@@ -37,9 +40,11 @@ public class TakePositionMovement implements Movement {
     }
 
     private double getDanger(WaveSurfingMovement.OrbitDirection orbitDirection) {
-        final double alpha = targetManager.getDuelOpponent().angleTo(robot) + LXXConstants.RADIANS_90 * orbitDirection.sign;
+        final Target duelOpponent = targetManager.getDuelOpponent();
+        final double desiredHeading = distanceController.getDesiredHeading(targetManager.getDuelOpponent(), robot.getState(), orbitDirection);
+        final double alpha = robot.getState().getBattleField().smoothWalls(robot, desiredHeading, orbitDirection == WaveSurfingMovement.OrbitDirection.CLOCKWISE);
 
-        return robot.project(alpha, 16).aDistance(robot.getState().getBattleField().center);
+        return 100D / robot.project(alpha, 28).aDistance(duelOpponent);
     }
 
 }

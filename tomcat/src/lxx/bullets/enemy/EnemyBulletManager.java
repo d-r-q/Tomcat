@@ -17,12 +17,12 @@ import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
 import lxx.office.Office;
 import lxx.paint.LXXGraphics;
-import lxx.utils.wave.WaveManager;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import lxx.utils.wave.WaveCallback;
+import lxx.utils.wave.WaveManager;
 import robocode.*;
 
 import java.util.*;
@@ -50,7 +50,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private int bulletsOnAir;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog());
+        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot);
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;

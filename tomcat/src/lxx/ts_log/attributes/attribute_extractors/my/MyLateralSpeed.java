@@ -13,10 +13,10 @@ import java.util.List;
 
 import static java.lang.Math.abs;
 
-public class MyLateralSpeed_2VE implements AttributeValueExtractor {
+public class MyLateralSpeed implements AttributeValueExtractor {
 
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
-        return abs(LXXUtils.lateralVelocity(enemy, me.getState()) / 2);
+        return abs(LXXUtils.lateralVelocity(enemy, me.getState()));
     }
 
 }

@@ -148,6 +148,48 @@ public class LXXUtils {
         return QuickMath.asin(Rules.MAX_VELOCITY / bulletSpeed);
     }
 
+    // from robowiki
+    public static double getMaxEscapeAngle(APoint center, LXXRobotState state, double bulletSpeed) {
+        final double FIREPOWER = 2;
+        final double ROBOT_WIDTH = 16, ROBOT_HEIGHT = 16;
+        // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
+        final double eAbsBearing = center.angleTo(state);
+        final double rX = center.getX();
+        final double rY = center.getY();
+        final double eX = state.getX();
+        final double eY = state.getY();
+        final double eV = state.getVelocity();
+        final double eHd = state.getHeadingRadians();
+        // These constants make calculating the quadratic coefficients below easier
+        final double A = (eX - rX) / bulletSpeed;
+        final double B = eV / bulletSpeed * Math.sin(eHd);
+        final double C = (eY - rY) / bulletSpeed;
+        final double D = eV / bulletSpeed * Math.cos(eHd);
+        // Quadratic coefficients: a*(1/t)^2 + b*(1/t) + c = 0
+        final double a = A * A + C * C;
+        final double b = 2 * (A * B + C * D);
+        final double c = (B * B + D * D - 1);
+        final double discrim = b * b - 4 * a * c;
+        if (discrim >= 0) {
+            // Reciprocal of quadratic formula
+            final double t1 = 2 * a / (-b - Math.sqrt(discrim));
+            final double t2 = 2 * a / (-b + Math.sqrt(discrim));
+            final double t = Math.min(t1, t2) >= 0 ? Math.min(t1, t2) : Math.max(t1, t2);
+            // Assume enemy stops at walls
+            final BattleField battleField = state.getBattleField();
+            final double endX = limit(
+                    eX + eV * t * Math.sin(eHd),
+                    battleField.availableLeftX, battleField.availableRightX);
+            final double endY = limit(
+                    eY + eV * t * Math.cos(eHd),
+                    battleField.availableBottomY, battleField.availableTopY);
+
+            return abs(Utils.normalRelativeAngle(center.angleTo(new LXXPoint(endX, endY)) - eAbsBearing));
+        }
+
+        return 0;
+    }
+
     public static double lateralVelocity(APoint center, LXXRobotState robotState) {
         return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }

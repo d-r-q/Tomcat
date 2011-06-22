@@ -39,7 +39,7 @@ public class StrategySelector {
 
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
                 new WaveSurfingMovement(office, tomcatEyes),
-                new TakePositionMovement(office),
+                new TakePositionMovement(office, tomcatEyes),
                 tomcatClaws,
                 new DuelFirePowerSelector(tomcatEyes, office.getStatisticsManager()), targetManager, enemyBulletManager);
         strategies.add(duelStrategy);

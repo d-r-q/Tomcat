@@ -19,7 +19,6 @@ import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class WaveSurfingMovement implements Movement {
         this.enemyBulletManager = office.getEnemyBulletManager();
         this.tomcatEyes = tomcatEyes;
 
-        distanceController = new DistanceController(office.getRobot(), office.getEnemyBulletManager(), office.getTargetManager());
+        distanceController = new DistanceController(office.getRobot(), office.getEnemyBulletManager(), office.getTargetManager(), tomcatEyes);
     }
 
     public MovementDecision getMovementDecision() {
@@ -120,40 +119,12 @@ public class WaveSurfingMovement implements Movement {
             totalDanger += round(bulletDanger) * 100 * weight;
             weight /= 20;
         }
-        final Target opponent = duelOpponent;
-        if (opponent != null) {
-            totalDanger += getPointDanger(pnt, opponent);
-        }
         return totalDanger;
     }
 
-    protected double getPointDanger(APoint pnt, Target opponent) {
-        double danger = 0;
-
-        final double distanceToCenterDanger = round(pnt.aDistance(robot.battleField.center) / 10);
-        danger += distanceToCenterDanger;
-        final double distanceEnemyDanger = round(DEFAULT_DISTANCE_AGAINST_SIMPLE / pnt.aDistance(opponent) * 10);
-        danger += distanceEnemyDanger;
-
-        return danger;
-    }
-
     private List<LXXBullet> getBullets() {
-        final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(2);
-        for (int i = 0; i < 2; i++) {
-            if (bulletsOnAir.size() == i) {
-                break;
-            }
-            bullets.add(bulletsOnAir.get(i));
-        }
-
-        final Target duelOpponent = this.duelOpponent;
-        if (bullets.size() < 2 && duelOpponent != null) {
-            bullets.add(enemyBulletManager.createSafeBullet(duelOpponent));
-        }
-
-        return bullets;
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
+        return bulletsOnAir.subList(0, 1);
     }
 
     private APoint getSurfPoint(LXXRobotState duelOpponent, List<LXXBullet> bullets) {

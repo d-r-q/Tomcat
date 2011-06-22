@@ -15,7 +15,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class BattleField {
 
-    private static final int WALL_STICK = 185;
+    private static final int WALL_STICK = 190;
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;
@@ -142,7 +142,7 @@ public class BattleField {
 
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
         final double hypotenuse = WALL_STICK;
-        final double adjacentLeg = getDistanceToWall(wall, pos);
+        final double adjacentLeg = getDistanceToWall(wall, pos) + 2;
         if (hypotenuse < adjacentLeg) {
             return heading;
         }
@@ -167,10 +167,6 @@ public class BattleField {
 
     public boolean containsExact(APoint point) {
         return exactAvailableBattleFieldRectangle.contains(point.getX(), point.getY());
-    }
-
-    public boolean contains(LXXCircle circle, double fromAngle, double toAngle) {
-        return ((LXXPoint) circle.center).distanceToWall(this, Utils.normalAbsoluteAngle(fromAngle + toAngle) / 2) > 1;
     }
 
     public class Wall {

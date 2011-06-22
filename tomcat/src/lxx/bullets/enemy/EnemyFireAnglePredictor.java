@@ -4,6 +4,7 @@
 
 package lxx.bullets.enemy;
 
+import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.targeting.Target;
@@ -12,9 +13,9 @@ import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.AimingPredictionData;
+import lxx.utils.Interval;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
-import lxx.utils.ps_tree.EntryMatch;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import robocode.Rules;
@@ -37,16 +38,18 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     private final Map<LXXBullet, PSTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<Double>>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
+    private final Tomcat robot;
 
-    public EnemyFireAnglePredictor(TurnSnapshotsLog turnSnapshotsLog) {
+    public EnemyFireAnglePredictor(TurnSnapshotsLog turnSnapshotsLog, Tomcat robot) {
         this.turnSnapshotsLog = turnSnapshotsLog;
+        this.robot = robot;
     }
 
     public AimingPredictionData getPredictionData(Target t) {
         final PSTree<Double> log = getLog(t.getName());
 
         final TurnSnapshot predicate = turnSnapshotsLog.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
-        final List<Double> bearingOffsets = getBearingOffsets(log, predicate, t.getFirePower());
+        final List<Double> bearingOffsets = getBearingOffsets(log, predicate, t.getFirePower(), t);
 
         final int bearingOffsetsCount = bearingOffsets.size();
         final Map<Double, Double> bearingOffsetDangers = new TreeMap<Double, Double>();
@@ -69,23 +72,29 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     }
 
-    private List<Double> getBearingOffsets(PSTree<Double> log, TurnSnapshot predicate, double firePower) {
-        final List<EntryMatch<Double>> matches = log.getSimilarEntries(predicate, 1);
+    private List<Double> getBearingOffsets(PSTree<Double> log, TurnSnapshot predicate, double firePower, Target t) {
+        final List<PSTreeEntry<Double>> entries = log.getSimilarEntries(getLimits(predicate));
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
         final List<Double> bearingOffsets = new LinkedList<Double>();
-        if (matches.size() > 0) {
-            for (EntryMatch<Double> match : matches) {
-                bearingOffsets.add(match.result * lateralDirection);
+        if (entries.size() > 0) {
+            for (PSTreeEntry<Double> entry : entries) {
+                bearingOffsets.add(entry.result * lateralDirection);
             }
         } else {
-            final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(Rules.getBulletSpeed(firePower));
+            final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(t, robot.getState(), Rules.getBulletSpeed(firePower));
             bearingOffsets.add(maxEscapeAngle * lateralDirection);
             bearingOffsets.add(0D);
         }
 
         return bearingOffsets;
+    }
+
+    private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
+        return LXXUtils.toMap(AttributesManager.myLateralSpeed,
+                new Interval((int) LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) - 2),
+                        (int) LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + 2)));
     }
 
     private static PSTree<Double> getLog(String enemyName) {
@@ -99,32 +108,32 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     private static PSTree<Double> createLog() {
         final Attribute[] splitAttributes = {
-                AttributesManager.myLateralVelocity_2,
+                AttributesManager.myLateralSpeed,
         };
-        return new PSTree<Double>(splitAttributes, 2, 0.02);
+        return new PSTree<Double>(splitAttributes, 2, 0.001);
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<Double> entry = new PSTreeEntry<Double>(turnSnapshotsLog.getLastSnapshots((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY).get(0));
+        final PSTreeEntry<Double> entry = new PSTreeEntry<Double>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
         entriesByBullets.put(bullet, entry);
     }
 
     public void bulletHit(LXXBullet bullet) {
-        setBulletBearingOffset(bullet);
+        setBulletGF(bullet);
         entriesByBullets.remove(bullet);
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
-        setBulletBearingOffset(bullet);
+        setBulletGF(bullet);
         entriesByBullets.remove(bullet);
     }
 
-    public void setBulletBearingOffset(LXXBullet bullet) {
-        final double bearingOffset = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
+    public void setBulletGF(LXXBullet bullet) {
+        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
         final PSTree<Double> log = getLog(bullet.getOwner().getName());
 
         final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);
-        entry.result = bearingOffset;
+        entry.result = guessFactor;
         log.addEntry(entry);
     }
 
