@@ -4,14 +4,15 @@
 
 package lxx.bullets.enemy;
 
-import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.RobotListener;
 import lxx.Tomcat;
-import lxx.bullets.*;
+import lxx.bullets.BulletManagerListener;
+import lxx.bullets.BulletStub;
+import lxx.bullets.LXXBullet;
+import lxx.bullets.LXXBulletState;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
-import lxx.events.TickEvent;
 import lxx.office.Office;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.Target;
@@ -24,8 +25,7 @@ import robocode.*;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.signum;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
@@ -35,16 +35,12 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private static boolean paintEnabled = false;
 
-    private static final int SAFE_BULLET_SPEED = 10;
-
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
     private final EnemyFireAnglePredictor enemyFireAnglePredictor;
 
     private final WaveManager waveManager;
-    private final LXXRobot robot;
-
-    private int bulletsOnAir;
+    private final Tomcat robot;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot, office.getTomcatEyes());
@@ -186,8 +182,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             onBulletHitBullet((BulletHitBulletEvent) event);
         } else if (event instanceof LXXPaintEvent && paintEnabled) {
             paint(((LXXPaintEvent) event).getGraphics());
-        } else if (event instanceof TickEvent) {
-            bulletsOnAir = getBulletsOnAir(0).size();
         } else if (event instanceof LXXKeyEvent) {
             if (Character.toUpperCase(((LXXKeyEvent) event).getKeyChar()) == 'M') {
                 paintEnabled = !paintEnabled;
@@ -195,20 +189,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
     }
 
-    public int getBulletsOnAirCount() {
-        return bulletsOnAir;
-    }
-
-    public boolean isNoBulletsInAir() {
-        return getBulletsOnAirCount() == 0;
-    }
-
-    public boolean hasBulletsOnAir() {
-        return getBulletsOnAirCount() > 0;
-    }
-
     public LXXBullet createSafeBullet(Target target) {
-        final Wave wave = new Wave(target.getState(), robot.getState(), SAFE_BULLET_SPEED, robot.getTime() + 1);
+        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate())));
         final Bullet bullet = new BulletStub(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
@@ -217,7 +199,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             matches.put(bearingOffset, 0.01D);
         }
 
-        return new LXXBullet(bullet, wave, new AbstractGFAimingPredictionData(matches));
+        return new LXXBullet(bullet, wave, new EnemyBulletsPredictionData(matches, new ArrayList<Double>()));
     }
 
     public void paint(LXXGraphics g) {

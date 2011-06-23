@@ -15,9 +15,13 @@ import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
+import robocode.Rules;
 import robocode.util.Utils;
 
 import java.util.List;
+
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
 
 /**
  * User: jdev
@@ -25,16 +29,16 @@ import java.util.List;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_NO_BULLETS = LXXConstants.RADIANS_75;
-    private static final double MIN_ATTACK_DELTA_NO_BULLETS = LXXConstants.RADIANS_20;
-    private static final double MAX_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_135;
-    private static final double MIN_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_10;
+    private static final double MAX_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_60;
+    private static final double MIN_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_35;
 
-    private static final double SIMPLE_NOT_AGRESSIVE_DISTANCE = 450;
-    private static final double SIMPLE_AGRESSIVE_DISTANCE = 1000;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_40;
+    private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_50;
+
+    private static final double SIMPLE_NOT_AGGRESSIVE_DISTANCE = 450;
+    private static final double SIMPLE_AGGRESSIVE_DISTANCE = 1000;
 
     private final Tomcat robot;
-    private final double gunCoolingRate;
     private final EnemyBulletManager enemyBulletManager;
     private final TargetManager targetManager;
     private final TomcatEyes tomcatEyes;
@@ -44,61 +48,42 @@ public class DistanceController {
         this.enemyBulletManager = enemyBulletManager;
         this.targetManager = targetManager;
         this.tomcatEyes = tomcatEyes;
-
-        this.gunCoolingRate = this.robot.getGunCoolingRate();
     }
 
     public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection) {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
-
-        final LXXBullet firstBullet = bulletsOnAir.size() > 0 ? bulletsOnAir.get(0) : null;
-        if (firstBullet == null) {
-            final Target t = targetManager.getDuelOpponent();
-            if (t != null && tomcatEyes.getEnemyGunType(t) != GunType.ADVANCED) {
-                if (tomcatEyes.getEnemyPreferredDistance(t) > 350) {
-                    return getDesiredHeadingNoBullets(surfPoint, robot, orbitDirection, SIMPLE_NOT_AGRESSIVE_DISTANCE);
-                } else {
-                    return getDesiredHeadingNoBullets(surfPoint, robot, orbitDirection, SIMPLE_AGRESSIVE_DISTANCE);
-                }
+        final double timeToTravel = getFirstBulletFlightTime(robot);
+        Target t = targetManager.getDuelOpponent();
+        if (tomcatEyes.getEnemyGunType(t) != GunType.ADVANCED) {
+            if (tomcatEyes.getEnemyPreferredDistance(t) > 350) {
+                return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, SIMPLE_NOT_AGGRESSIVE_DISTANCE, timeToTravel);
             } else {
-                return getDesiredHeadingNoBullets(surfPoint, robot, orbitDirection, SIMPLE_NOT_AGRESSIVE_DISTANCE);
+                return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, SIMPLE_AGGRESSIVE_DISTANCE, timeToTravel);
             }
         } else {
-            Target t = targetManager.getDuelOpponent();
-            if (tomcatEyes.getEnemyGunType(t) != GunType.ADVANCED) {
-                if (tomcatEyes.getEnemyPreferredDistance(t) > 350) {
-                    return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, firstBullet, SIMPLE_NOT_AGRESSIVE_DISTANCE);
-                } else {
-                    return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, firstBullet, SIMPLE_AGRESSIVE_DISTANCE);
-                }
-            } else {
-                return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, firstBullet, SIMPLE_NOT_AGRESSIVE_DISTANCE);
-            }
+            return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, SIMPLE_NOT_AGGRESSIVE_DISTANCE, timeToTravel);
         }
     }
 
-    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection, LXXBullet firstBullet, double desiredDistance) {
+    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection,
+                                                double desiredDistance, double timeToTravel) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
-        final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_WITH_BULLETS * (firstBullet.getFlightTime(robot) / 15);
-        final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_WITH_BULLETS * (firstBullet.getFlightTime(robot) / 15);
+        final double maxAttackAngle = LXXConstants.RADIANS_100 + (timeToTravel > 20 ? MAX_ATTACK_DELTA_WITHOUT_BULLETS : MAX_ATTACK_DELTA_WITH_BULLETS) * (sqrt(timeToTravel) / 6);
+        final double minAttackAngle = LXXConstants.RADIANS_80 - (timeToTravel > 20 ? MIN_ATTACK_DELTA_WITHOUT_BULLETS : MIN_ATTACK_DELTA_WITH_BULLETS) * (sqrt(timeToTravel) / 6);
         final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * (distanceBetween - desiredDistance) / desiredDistance);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
     }
 
-    private double getDesiredHeadingNoBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection, double desiredDistance) {
-        final double maxCoolingTime = LXXConstants.INITIAL_GUN_HEAT / this.robot.getGunCoolingRate();
-        final double currentCoolingTime = targetManager.getDuelOpponent().getGunHeat() / gunCoolingRate;
-        final double distanceBetween = robot.aDistance(surfPoint);
-
-        final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_NO_BULLETS * (currentCoolingTime / maxCoolingTime);
-        final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_NO_BULLETS * (currentCoolingTime / maxCoolingTime);
-        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * (distanceBetween - desiredDistance) / desiredDistance);
-
-        return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
-                LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
+    private double getFirstBulletFlightTime(APoint pos) {
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
+        final Target duelOpponent = targetManager.getDuelOpponent();
+        if (bulletsOnAir.size() > 0) {
+            return bulletsOnAir.get(0).getFlightTime(pos);
+        } else {
+            return duelOpponent.getGunHeat() / robot.getGunCoolingRate() + duelOpponent.aDistance(pos) / Rules.getBulletSpeed(max(0.1, duelOpponent.getFirePower()));
+        }
     }
 
 }

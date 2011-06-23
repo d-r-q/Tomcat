@@ -32,7 +32,7 @@ public class DuelFirePowerSelector implements FirePowerSelector {
         }
         final double firesPerHits = (statisticsManager.getMyRawHitRate() > 0
                 ? ceil(1 / statisticsManager.getMyRawHitRate()) + 1
-                : 20) * max(1, target.getEnergy() / robot.getEnergy()) * 2;
+                : 20) * max(1, target.getEnergy() / robot.getEnergy()) * 3;
         double bulletPower = LXXUtils.limit(0.1, robot.getEnergy() / firesPerHits, 3);
 
         if (robot.aDistance(target) < 150 || tomcatEyes.isRammingNow(target)) {

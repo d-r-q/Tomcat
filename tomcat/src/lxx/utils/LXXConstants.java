@@ -32,6 +32,7 @@ public abstract class LXXConstants {
     public static final double RADIANS_20 = toRadians(20);
     public static final double RADIANS_25 = toRadians(25);
     public static final double RADIANS_30 = toRadians(30);
+    public static final double RADIANS_35 = toRadians(35);
     public static final double RADIANS_36 = toRadians(36);
     public static final double RADIANS_40 = toRadians(40);
     public static final double RADIANS_42 = toRadians(42);

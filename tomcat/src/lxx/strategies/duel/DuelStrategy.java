@@ -66,11 +66,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
-        if (enemyBulletManager.getBulletsOnAir(1).size() > 0) {
-            return withBulletsMovement.getMovementDecision();
-        } else {
-            return noBulletsMovement.getMovementDecision();
-        }
+        return withBulletsMovement.getMovementDecision();
     }
 
     protected GunDecision getGunDecision(Target target, double firePower) {

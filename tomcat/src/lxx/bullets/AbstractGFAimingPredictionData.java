@@ -24,7 +24,7 @@ import static java.lang.Math.*;
  * User: jdev
  * Date: 07.09.2010
  */
-public class AbstractGFAimingPredictionData implements AimingPredictionData {
+public abstract class AbstractGFAimingPredictionData implements AimingPredictionData {
 
     private static final NumberFormat format = new DecimalFormat("###.###");
 
