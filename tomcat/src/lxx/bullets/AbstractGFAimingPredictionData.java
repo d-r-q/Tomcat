@@ -2,9 +2,9 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.bullets.enemy;
+package lxx.bullets;
 
-import lxx.bullets.LXXBullet;
+import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.paint.LXXGraphics;
 import lxx.utils.APoint;
 import lxx.utils.AimingPredictionData;
@@ -24,7 +24,7 @@ import static java.lang.Math.*;
  * User: jdev
  * Date: 07.09.2010
  */
-public class GFAimingPredictionData implements AimingPredictionData {
+public class AbstractGFAimingPredictionData implements AimingPredictionData {
 
     private static final NumberFormat format = new DecimalFormat("###.###");
 
@@ -34,7 +34,7 @@ public class GFAimingPredictionData implements AimingPredictionData {
     private double maxBearingOffset = 0;
     protected double maxDanger;
 
-    public GFAimingPredictionData(Map<Double, Double> matches) {
+    public AbstractGFAimingPredictionData(Map<Double, Double> matches) {
         for (Double bearingOffset : matches.keySet()) {
             double danger = matches.get(bearingOffset);
             if (danger == -1) {
@@ -82,6 +82,7 @@ public class GFAimingPredictionData implements AimingPredictionData {
 
         final double currentAngle = firePosition.angleTo(bullet.getTarget());
         float currentBearingOffsetDanger = 0;
+        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getWave().getTargetStateAtLaunchTime().getRobot());
         for (BearingOffsetDanger danger : dangers) {
             double alpha = baseAlpha + (danger.bearingOffset);
 
@@ -92,14 +93,17 @@ public class GFAimingPredictionData implements AimingPredictionData {
             int length = (int) (8 * match / maxDanger);
             g.drawLine(firePosition, alpha, baseDistance, length);
 
-            if (LXXUtils.anglesDiff(currentAngle, alpha) < LXXConstants.RADIANS_1) {
-                currentBearingOffsetDanger = match;
+            if (LXXUtils.anglesDiff(currentAngle, alpha) < robotWidthInRadians / 2 + LXXConstants.RADIANS_1) {
+                currentBearingOffsetDanger = max(currentBearingOffsetDanger, match);
             }
         }
 
         final Color rgb = new Color(Color.HSBtoRGB((float) (0.33F - 0.33F * currentBearingOffsetDanger / maxDanger), 1F, 1F));
         g.setColor(new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 240));
-        g.drawLine(firePosition, currentAngle, baseDistance, 6);
+        g.drawLine(firePosition, currentAngle, baseDistance, 10);
+
+        g.drawLine(firePosition, currentAngle - robotWidthInRadians / 2, baseDistance, 10);
+        g.drawLine(firePosition, currentAngle + robotWidthInRadians / 2, baseDistance, 10);
 
         final Font oldFont = g.getFont();
         g.setFont(new Font("Arial", Font.PLAIN, 10));

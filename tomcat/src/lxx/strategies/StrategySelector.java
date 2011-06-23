@@ -28,7 +28,7 @@ public class StrategySelector {
     public StrategySelector(Tomcat robot, Office office) {
         final TargetManager targetManager = office.getTargetManager();
         final EnemyBulletManager enemyBulletManager = office.getEnemyBulletManager();
-        final TomcatEyes tomcatEyes = new TomcatEyes(robot);
+        final TomcatEyes tomcatEyes = office.getTomcatEyes();
         targetManager.addListener(tomcatEyes);
         enemyBulletManager.addListener(tomcatEyes);
 

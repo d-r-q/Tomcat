@@ -8,10 +8,7 @@ import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.RobotListener;
 import lxx.Tomcat;
-import lxx.bullets.BulletManagerListener;
-import lxx.bullets.BulletStub;
-import lxx.bullets.LXXBullet;
-import lxx.bullets.LXXBulletState;
+import lxx.bullets.*;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
@@ -50,7 +47,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private int bulletsOnAir;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot);
+        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot, office.getTomcatEyes());
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
@@ -190,7 +187,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         } else if (event instanceof LXXPaintEvent && paintEnabled) {
             paint(((LXXPaintEvent) event).getGraphics());
         } else if (event instanceof TickEvent) {
-            bulletsOnAir = getBulletsOnAir(2).size();
+            bulletsOnAir = getBulletsOnAir(0).size();
         } else if (event instanceof LXXKeyEvent) {
             if (Character.toUpperCase(((LXXKeyEvent) event).getKeyChar()) == 'M') {
                 paintEnabled = !paintEnabled;
@@ -220,12 +217,12 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             matches.put(bearingOffset, 0.01D);
         }
 
-        return new LXXBullet(bullet, wave, new GFAimingPredictionData(matches));
+        return new LXXBullet(bullet, wave, new AbstractGFAimingPredictionData(matches));
     }
 
     public void paint(LXXGraphics g) {
         if (paintEnabled) {
-            for (LXXBullet bullet : getBulletsOnAir(2)) {
+            for (LXXBullet bullet : getBulletsOnAir(0)) {
                 final AimingPredictionData aimPredictionData = bullet.getAimPredictionData();
                 if (aimPredictionData != null) {
                     aimPredictionData.paint(g, bullet);

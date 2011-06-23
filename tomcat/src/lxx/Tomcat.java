@@ -152,7 +152,13 @@ public class Tomcat extends BasicRobot {
     private void move() {
         final MovementDecision movDecision = turnDecision.getMovementDecision();
         setTurnRightRadians(movDecision.getTurnRateRadians());
-        setMaxVelocity(abs(movDecision.getDesiredVelocity()));
+        // workaround for robocode 1.6.1.4 bug
+        if (signum(getVelocity()) != signum(movDecision.getDesiredVelocity()) &&
+                (abs(getVelocity()) > 0)) {
+            setMaxVelocity(0);
+        } else {
+            setMaxVelocity(abs(movDecision.getDesiredVelocity()));
+        }
         setAhead(100 * signum(movDecision.getDesiredVelocity()));
     }
 

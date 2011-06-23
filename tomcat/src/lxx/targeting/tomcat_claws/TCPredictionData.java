@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.targeting.tomcat_claws;
 
+import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
-import lxx.bullets.enemy.GFAimingPredictionData;
 import lxx.paint.LXXGraphics;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
@@ -17,7 +21,7 @@ import static java.lang.Math.min;
  * User: jdev
  * Date: 17.06.11
  */
-public class TCPredictionData extends GFAimingPredictionData {
+public class TCPredictionData extends AbstractGFAimingPredictionData {
 
     private final List<APoint> predictedPoses;
     private final APoint robotPos;

@@ -6,6 +6,7 @@ package lxx.strategies;
 
 import lxx.LXXRobotState;
 import lxx.utils.LXXConstants;
+import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -36,6 +37,7 @@ public class MovementDecision implements Serializable {
         if (desiredSpeed > Rules.MAX_VELOCITY) {
             desiredSpeed = Rules.MAX_VELOCITY;
         }
+
         final boolean wantToGoFront = LXXUtils.anglesDiff(robot.getHeadingRadians(), desiredHeading) < LXXConstants.RADIANS_90;
         final double normalizedDesiredHeading = wantToGoFront ? desiredHeading : Utils.normalAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
 
@@ -43,6 +45,16 @@ public class MovementDecision implements Serializable {
                 LXXUtils.limit(-Rules.getTurnRateRadians(robot.getSpeed()),
                         Utils.normalRelativeAngle(normalizedDesiredHeading - robot.getHeadingRadians()),
                         Rules.getTurnRateRadians(robot.getSpeed()));
+
+        double futureHeading = robot.getHeadingRadians() + turnRateRadians;
+        if (robot.getVelocity() < 0) {
+            futureHeading = Utils.normalAbsoluteAngle(futureHeading + LXXConstants.RADIANS_180);
+        }
+        final LXXPoint robotPos = new LXXPoint(robot);
+        if (robotPos.distanceToWall(robot.getBattleField(), futureHeading) / Rules.MAX_VELOCITY <
+                LXXUtils.anglesDiff(robot.getHeadingRadians(), normalizedDesiredHeading) / Rules.getTurnRate(Rules.MAX_VELOCITY)) {
+            desiredSpeed = 0;
+        }
 
         return new MovementDecision(desiredSpeed * (wantToGoFront ? 1 : -1), turnRateRadians);
     }

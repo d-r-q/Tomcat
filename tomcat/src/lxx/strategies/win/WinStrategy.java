@@ -7,11 +7,11 @@ package lxx.strategies.win;
 import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.paint.LXXGraphics;
-import lxx.targeting.TargetManager;
 import lxx.paint.Painter;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.TurnDecision;
+import lxx.targeting.TargetManager;
 import lxx.utils.LXXConstants;
 import robocode.util.Utils;
 
@@ -36,7 +36,7 @@ public class WinStrategy implements Strategy, Painter {
     }
 
     public boolean match() {
-        boolean match = robot.getTime() > 10 && enemyBulletManager.isNoBulletsInAir() &&
+        boolean match = robot.getTime() > 10 && enemyBulletManager.getBulletsOnAir(1).size() == 0 &&
                 targetManager.isNoAliveEnemies();
 
         if (match && winTime == null) {

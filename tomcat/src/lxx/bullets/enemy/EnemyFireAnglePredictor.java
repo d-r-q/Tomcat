@@ -7,7 +7,9 @@ package lxx.bullets.enemy;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
+import lxx.targeting.GunType;
 import lxx.targeting.Target;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
@@ -22,6 +24,7 @@ import robocode.Rules;
 
 import java.util.*;
 
+import static java.lang.Math.round;
 import static java.lang.Math.signum;
 
 public class EnemyFireAnglePredictor implements BulletManagerListener {
@@ -39,10 +42,12 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     private final TurnSnapshotsLog turnSnapshotsLog;
     private final Tomcat robot;
+    private final TomcatEyes tomcatEyes;
 
-    public EnemyFireAnglePredictor(TurnSnapshotsLog turnSnapshotsLog, Tomcat robot) {
+    public EnemyFireAnglePredictor(TurnSnapshotsLog turnSnapshotsLog, Tomcat robot, TomcatEyes tomcatEyes) {
         this.turnSnapshotsLog = turnSnapshotsLog;
         this.robot = robot;
+        this.tomcatEyes = tomcatEyes;
     }
 
     public AimingPredictionData getPredictionData(Target t) {
@@ -68,7 +73,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
         }
 
-        return new GFAimingPredictionData(bearingOffsetDangers);
+        return new EnemyBulletsPredictionData(bearingOffsetDangers, bearingOffsets);
 
     }
 
@@ -83,9 +88,14 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
                 bearingOffsets.add(entry.result * lateralDirection);
             }
         } else {
-            final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(t, robot.getState(), Rules.getBulletSpeed(firePower));
-            bearingOffsets.add(maxEscapeAngle * lateralDirection);
-            bearingOffsets.add(0D);
+            final GunType enemyGunType = tomcatEyes.getEnemyGunType(t);
+            if (enemyGunType != GunType.HEAD_ON) {
+                final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(t, robot.getState(), Rules.getBulletSpeed(firePower));
+                bearingOffsets.add(maxEscapeAngle * lateralDirection);
+            }
+            if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
+                bearingOffsets.add(0D);
+            }
         }
 
         return bearingOffsets;
@@ -93,8 +103,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
         return LXXUtils.toMap(AttributesManager.myLateralSpeed,
-                new Interval((int) LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) - 2),
-                        (int) LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + 2)));
+                new Interval((int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) - 1)),
+                        (int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + 1))));
     }
 
     private static PSTree<Double> getLog(String enemyName) {

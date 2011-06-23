@@ -42,7 +42,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     public boolean match() {
-        final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.hasBulletsOnAir();
+        final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.getBulletsOnAir(1).size() > 0;
         if (match) {
             target = targetManager.getDuelOpponent();
         }
@@ -66,7 +66,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
-        if (enemyBulletManager.getBulletsOnAirCount() > 0) {
+        if (enemyBulletManager.getBulletsOnAir(1).size() > 0) {
             return withBulletsMovement.getMovementDecision();
         } else {
             return noBulletsMovement.getMovementDecision();

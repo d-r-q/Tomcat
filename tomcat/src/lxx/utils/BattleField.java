@@ -15,7 +15,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class BattleField {
 
-    private static final int WALL_STICK = 190;
+    public static final int WALL_STICK = 135;
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;
@@ -142,7 +142,7 @@ public class BattleField {
 
     private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
         final double hypotenuse = WALL_STICK;
-        final double adjacentLeg = getDistanceToWall(wall, pos) + 2;
+        final double adjacentLeg = getDistanceToWall(wall, pos);
         if (hypotenuse < adjacentLeg) {
             return heading;
         }

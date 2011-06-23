@@ -8,7 +8,7 @@ import lxx.LXXRobotState;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
-import lxx.bullets.enemy.GFAimingPredictionData;
+import lxx.bullets.enemy.EnemyBulletsPredictionData;
 import lxx.office.Office;
 import lxx.paint.LXXGraphics;
 import lxx.strategies.Movement;
@@ -25,8 +25,6 @@ import java.util.List;
 import static java.lang.Math.*;
 
 public class WaveSurfingMovement implements Movement {
-
-    protected static final int DEFAULT_DISTANCE_AGAINST_SIMPLE = 400;
 
     protected final Tomcat robot;
     protected final TomcatEyes tomcatEyes;
@@ -52,23 +50,19 @@ public class WaveSurfingMovement implements Movement {
         duelOpponent = targetManager.getDuelOpponent();
         final List<LXXBullet> lxxBullets = getBullets();
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
-        final APoint surfPoint = getSurfPoint(opponent, lxxBullets);
+        final APoint surfPoint = getSurfPoint(opponent, lxxBullets.get(0));
         selectOrbitDirection(lxxBullets);
+        final double desiredSpeed = timeToTravel > 0 ? distanceToTravel / timeToTravel : 8;
+        final MovementDecision movementDecision = getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), desiredSpeed);
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), timeToTravel > 1 ? distanceToTravel / (timeToTravel - 1) : 8);
+        return movementDecision;
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
         final MovementDirectionPrediction clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
         final MovementDirectionPrediction counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
         final LXXBullet bullet = lxxBullets.get(0);
-        if (abs(clockwisePrediction.minDanger - counterClockwisePrediction.minDanger) < min(clockwisePrediction.minDanger, counterClockwisePrediction.minDanger) * 0.02) {
-            if (minDangerOrbitDirection == OrbitDirection.CLOCKWISE) {
-                setMovementParameters(clockwisePrediction, bullet);
-            } else {
-                setMovementParameters(counterClockwisePrediction, bullet);
-            }
-        } else if (clockwisePrediction.minDanger < counterClockwisePrediction.minDanger) {
+        if (clockwisePrediction.minDanger.compareTo(counterClockwisePrediction.minDanger) < 0) {
             setMovementParameters(clockwisePrediction, bullet);
         } else {
             setMovementParameters(counterClockwisePrediction, bullet);
@@ -89,11 +83,11 @@ public class WaveSurfingMovement implements Movement {
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         LXXPoint prevPoint = robot.getPosition();
-        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets, duelOpponent)) {
+        for (LXXPoint pnt : generatePoints(orbitDirection, lxxBullets.get(0), duelOpponent)) {
             distance += prevPoint.aDistance(pnt);
-            double danger = getPointDanger(lxxBullets, pnt);
+            final PointDanger danger = getPointDanger(lxxBullets, pnt);
 
-            if (danger <= prediction.minDanger) {
+            if (danger.compareTo(prediction.minDanger) < 0) {
                 prediction.minDanger = danger;
                 prediction.distToMinDangerPoint = distance;
                 prediction.minDangerPoint = pnt;
@@ -104,38 +98,44 @@ public class WaveSurfingMovement implements Movement {
         return prediction;
     }
 
-    private double getPointDanger(List<LXXBullet> lxxBullets, LXXPoint pnt) {
-        double totalDanger = 0;
-        double weight = 1D;
-        for (LXXBullet lxxBullet : lxxBullets) {
-            final GFAimingPredictionData GFAimingPredictionData = lxxBullet != null ? (GFAimingPredictionData) lxxBullet.getAimPredictionData() : null;
+    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, LXXPoint pnt) {
+        final PointDangerOnWave firstWaveDng = getWaveDanger(pnt, lxxBullets.get(0));
+        final PointDangerOnWave secondWaveDng = lxxBullets.size() == 1 ? null : getWaveDanger(pnt, lxxBullets.get(1));
+        final double distToEnemy = duelOpponent != null ? pnt.aDistance(duelOpponent) : 0;
+        return new PointDanger(firstWaveDng, secondWaveDng, distToEnemy);
+    }
 
-            double bulletDanger = 0;
-            if (GFAimingPredictionData != null) {
-                bulletDanger = GFAimingPredictionData.getDangerExt(lxxBullet.getBearingOffsetRadians(pnt),
-                        LXXUtils.getRobotWidthInRadians(lxxBullet.getFirePosition(), pnt));
+    private PointDangerOnWave getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
+        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), pnt);
+        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
+
+        double minDist = Integer.MAX_VALUE;
+        int bulletsCount = 0;
+        for (Double bo : ((EnemyBulletsPredictionData) bullet.getAimPredictionData()).getPredictedBearingOffsets()) {
+            final double dist = abs(bearingOffset - bo);
+            if (dist < robotWidthInRadians / 2 + LXXConstants.RADIANS_1) {
+                minDist = 0;
+                bulletsCount++;
             }
-
-            totalDanger += round(bulletDanger) * 100 * weight;
-            weight /= 20;
+            minDist = min(minDist, dist);
         }
-        return totalDanger;
+
+        return new PointDangerOnWave(minDist, LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsCount);
     }
 
     private List<LXXBullet> getBullets() {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
-        return bulletsOnAir.subList(0, 1);
+        return enemyBulletManager.getBulletsOnAir(1);
     }
 
-    private APoint getSurfPoint(LXXRobotState duelOpponent, List<LXXBullet> bullets) {
+    private APoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
         if (duelOpponent == null) {
-            return bullets.get(0).getFirePosition();
+            return bullet.getFirePosition();
         }
 
         return duelOpponent;
     }
 
-    private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, List<LXXBullet> bullets, Target enemy) {
+    private List<LXXPoint> generatePoints(OrbitDirection orbitDirection, LXXBullet bullet, Target enemy) {
         final List<LXXPoint> points = new LinkedList<LXXPoint>();
 
         final LXXGraphics g = robot.getLXXGraphics();
@@ -148,10 +148,9 @@ public class WaveSurfingMovement implements Movement {
         final RobotImage robotImg = new RobotImage(robot.getPosition(), robot.getVelocity(), robot.getHeadingRadians(), robot.battleField, 0, robot.getEnergy());
         final RobotImage opponentImg = enemy == null ? null : new RobotImage(enemy.getPosition(), enemy.getVelocity(), enemy.getState().getHeadingRadians(), robot.battleField, 0,
                 enemy.getEnergy());
-        final LXXBullet bullet = bullets.get(0);
         int time = 0;
-        while (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance() > bullet.getSpeed() * time) {
-            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullets), orbitDirection, robotImg, 8);
+        while (bullet.getFirePosition().aDistance(robotImg) - bullet.getTravelledDistance() - bullet.getSpeed() > bullet.getSpeed() * time) {
+            final MovementDecision md = getMovementDecision(getSurfPoint(opponentImg, bullet), orbitDirection, robotImg, 8);
             robotImg.apply(md);
             points.add(new LXXPoint(robotImg));
             time++;
@@ -181,12 +180,75 @@ public class WaveSurfingMovement implements Movement {
         }
     }
 
-    public class MovementDirectionPrediction {
+    public static class MovementDirectionPrediction {
 
-        private double minDanger = Integer.MAX_VALUE;
+        private static PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100), new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100), 0);
+
+        private PointDanger minDanger = MAX_POINT_DANGER;
         private LXXPoint minDangerPoint;
         private double distToMinDangerPoint;
         private OrbitDirection orbitDirection;
+
+    }
+
+    private static class PointDanger implements Comparable<PointDanger> {
+
+        public final PointDangerOnWave dangerOnFirstWave;
+        public final PointDangerOnWave dangerOnSecondWave;
+        public final double distToEnemy;
+
+        private PointDanger(PointDangerOnWave dangerOnFirstWave, PointDangerOnWave dangerOnSecondWave, double distToEnemy) {
+            this.dangerOnFirstWave = dangerOnFirstWave;
+            this.dangerOnSecondWave = dangerOnSecondWave;
+            this.distToEnemy = distToEnemy;
+        }
+
+        public int compareTo(PointDanger o) {
+            int res = dangerOnFirstWave.compareTo(o.dangerOnFirstWave);
+            if (res == 0 && dangerOnSecondWave != null) {
+                res = dangerOnSecondWave.compareTo(dangerOnFirstWave);
+            }
+
+            if (res == 0) {
+                res = (int) round(o.distToEnemy - distToEnemy);
+            }
+
+            return res;
+        }
+
+    }
+
+    private static class PointDangerOnWave implements Comparable<PointDangerOnWave> {
+
+        public final double minDistToBulletRadians;
+        public final double robotWidthInRadians;
+        public final int bulletsCount;
+
+        public PointDangerOnWave(double minDistToBulletRadians, double robotWidthInRadians, int bulletsCount) {
+            this.minDistToBulletRadians = minDistToBulletRadians;
+            this.robotWidthInRadians = robotWidthInRadians;
+            this.bulletsCount = bulletsCount;
+        }
+
+        public int compareTo(PointDangerOnWave o) {
+            if (!hasCloseBullets() && !o.hasCloseBullets()) {
+                return 0;
+            } else if (hasCloseBullets() && !o.hasCloseBullets()) {
+                return 1;
+            } else if (!hasCloseBullets() && o.hasCloseBullets()) {
+                return -1;
+            } else {
+                if (bulletsCount != o.bulletsCount) {
+                    return (int) signum(bulletsCount - o.bulletsCount);
+                } else {
+                    return (int) signum(o.minDistToBulletRadians - minDistToBulletRadians);
+                }
+            }
+        }
+
+        private boolean hasCloseBullets() {
+            return minDistToBulletRadians < robotWidthInRadians * 2.5;
+        }
 
     }
 

@@ -11,6 +11,7 @@ import lxx.paint.PaintManager;
 import lxx.plugins.PluginManager;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
+import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.wave.WaveManager;
@@ -27,9 +28,11 @@ public class OfficeImpl implements Office {
 
     private final Tomcat tomcat;
     private StatisticsManager statisticsManager;
+    private TomcatEyes tomcatEyes;
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
+        this.tomcatEyes = new TomcatEyes(tomcat);
 
         attributesManager = new AttributesManager(this, tomcat);
 
@@ -107,5 +110,9 @@ public class OfficeImpl implements Office {
 
     public boolean isDebugMode() {
         return true;
+    }
+
+    public TomcatEyes getTomcatEyes() {
+        return tomcatEyes;
     }
 }

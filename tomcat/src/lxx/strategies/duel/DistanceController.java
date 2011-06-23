@@ -82,7 +82,7 @@ public class DistanceController {
 
         final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_WITH_BULLETS * (firstBullet.getFlightTime(robot) / 15);
         final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_WITH_BULLETS * (firstBullet.getFlightTime(robot) / 15);
-        final double attackAngle = LXXConstants.RADIANS_90 + (MAX_ATTACK_DELTA_WITH_BULLETS * (distanceBetween - desiredDistance) / desiredDistance);
+        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * (distanceBetween - desiredDistance) / desiredDistance);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
@@ -95,7 +95,7 @@ public class DistanceController {
 
         final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_NO_BULLETS * (currentCoolingTime / maxCoolingTime);
         final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_NO_BULLETS * (currentCoolingTime / maxCoolingTime);
-        final double attackAngle = LXXConstants.RADIANS_90 + (MAX_ATTACK_DELTA_NO_BULLETS * (distanceBetween - desiredDistance) / desiredDistance);
+        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * (distanceBetween - desiredDistance) / desiredDistance);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);

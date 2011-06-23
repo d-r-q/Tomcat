@@ -14,8 +14,10 @@ public class TargetingProfile {
 
     public Median distWithHoBoMedian = new Median(1000);
     public Median distWithLinearBOMedian = new Median(1000);
+    public int bearingOffsets = 0;
 
     public void addBearingOffset(LXXRobotState enemy, LXXRobotState me, double bearingOffsetRadians, double bulletSpeed) {
+        bearingOffsets++;
         distWithHoBoMedian.addValue(abs(bearingOffsetRadians));
         final double linearBo = abs(LXXUtils.lateralVelocity(enemy, me) / bulletSpeed);
         distWithLinearBOMedian.addValue(abs(bearingOffsetRadians - linearBo));
