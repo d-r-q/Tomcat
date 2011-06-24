@@ -134,9 +134,13 @@ public class LXXUtils {
     }
 
     public static double getRobotWidthInRadians(APoint center, APoint robotPos) {
+        return getWidthInRadians(center, toPoints(getBoundingRectangleAt(robotPos)));
+    }
+
+    public static double getWidthInRadians(APoint center, APoint... points) {
         double minAngle = Integer.MAX_VALUE;
         double maxAngle = Integer.MIN_VALUE;
-        for (APoint pnt : toPoints(getBoundingRectangleAt(robotPos))) {
+        for (APoint pnt : points) {
             double angle = center.angleTo(pnt);
             minAngle = min(minAngle, angle);
             maxAngle = max(maxAngle, angle);
@@ -233,4 +237,5 @@ public class LXXUtils {
 
         return map;
     }
+
 }

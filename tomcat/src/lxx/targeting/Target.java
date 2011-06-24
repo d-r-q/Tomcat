@@ -71,20 +71,27 @@ public class Target implements LXXRobot, Serializable {
 
         for (Event event : eventsList) {
             if (event instanceof ScannedRobotEvent) {
-                ScannedRobotEvent e = (ScannedRobotEvent) event;
+                final ScannedRobotEvent e = (ScannedRobotEvent) event;
                 processScannedRobotEvent(newState, e);
             } else if (event instanceof HitRobotEvent) {
-                HitRobotEvent e = (HitRobotEvent) event;
+                final HitRobotEvent e = (HitRobotEvent) event;
                 processHitRobotEvent(newState, e);
             } else if (event instanceof BulletHitEvent) {
-                BulletHitEvent e = (BulletHitEvent) event;
+                final BulletHitEvent e = (BulletHitEvent) event;
                 processBulletHitEvent(newState, e);
             } else if (event instanceof HitByBulletEvent) {
-                HitByBulletEvent e = (HitByBulletEvent) event;
+                final HitByBulletEvent e = (HitByBulletEvent) event;
                 processHitByBulletEvent(newState, e);
+            } else if (event instanceof RobotDeathEvent) {
+                final RobotDeathEvent e = (RobotDeathEvent) event;
+                processRobotDeathEvent(newState, e);
             }
         }
         return newState;
+    }
+
+    private void processRobotDeathEvent(TargetState newState, RobotDeathEvent e) {
+        newState.energy = 0;
     }
 
     private TargetState createState() {

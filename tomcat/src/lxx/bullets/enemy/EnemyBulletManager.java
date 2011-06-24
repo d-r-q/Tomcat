@@ -125,7 +125,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private Wave getWave(Bullet b) {
         for (Wave w : predictedBullets.keySet()) {
-            if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.0001 &&
+            if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.1 &&
                     abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() + 1) {
                 return w;
             }

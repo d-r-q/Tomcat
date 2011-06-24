@@ -67,9 +67,7 @@ public class TargetManager implements RobotListener {
     public void onTick() {
         for (Target updatedTarget : updatedTargets) {
             updatedTarget.update();
-            if (updatedTarget.isAlive()) {
-                notifyListeners(updatedTarget);
-            }
+            notifyListeners(updatedTarget);
         }
         updatedTargets.clear();
     }

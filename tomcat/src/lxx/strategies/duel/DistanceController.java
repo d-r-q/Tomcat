@@ -21,7 +21,6 @@ import robocode.util.Utils;
 import java.util.List;
 
 import static java.lang.Math.max;
-import static java.lang.Math.sqrt;
 
 /**
  * User: jdev
@@ -29,11 +28,8 @@ import static java.lang.Math.sqrt;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_60;
-    private static final double MIN_ATTACK_DELTA_WITH_BULLETS = LXXConstants.RADIANS_35;
-
-    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_40;
-    private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_50;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
+    private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_NOT_AGGRESSIVE_DISTANCE = 450;
     private static final double SIMPLE_AGGRESSIVE_DISTANCE = 1000;
@@ -68,8 +64,8 @@ public class DistanceController {
                                                 double desiredDistance, double timeToTravel) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
-        final double maxAttackAngle = LXXConstants.RADIANS_100 + (timeToTravel > 20 ? MAX_ATTACK_DELTA_WITHOUT_BULLETS : MAX_ATTACK_DELTA_WITH_BULLETS) * (sqrt(timeToTravel) / 6);
-        final double minAttackAngle = LXXConstants.RADIANS_80 - (timeToTravel > 20 ? MIN_ATTACK_DELTA_WITHOUT_BULLETS : MIN_ATTACK_DELTA_WITH_BULLETS) * (sqrt(timeToTravel) / 6);
+        final double maxAttackAngle = LXXConstants.RADIANS_110 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * (timeToTravel / 30));
+        final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * (timeToTravel / 30));
         final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * (distanceBetween - desiredDistance) / desiredDistance);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
