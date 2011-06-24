@@ -15,7 +15,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class BattleField {
 
-    public static final int WALL_STICK = 165;
+    public static final int WALL_STICK = 175;
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;

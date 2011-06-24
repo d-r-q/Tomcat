@@ -82,15 +82,16 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
+        final double bulletSpeed = Rules.getBulletSpeed(firePower);
+        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(bulletSpeed);
         final List<Double> bearingOffsets = new LinkedList<Double>();
         if (entries.size() > 0) {
             for (PSTreeEntry<Double> entry : entries) {
-                bearingOffsets.add(entry.result * lateralDirection);
+                bearingOffsets.add(entry.result * lateralDirection * maxEscapeAngle);
             }
         } else {
             final GunType enemyGunType = tomcatEyes.getEnemyGunType(t);
             if (enemyGunType != GunType.HEAD_ON) {
-                final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(t, robot.getState(), Rules.getBulletSpeed(firePower));
                 bearingOffsets.add(maxEscapeAngle * lateralDirection);
             }
             if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
@@ -139,7 +140,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public void setBulletGF(LXXBullet bullet) {
-        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
+        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         final PSTree<Double> log = getLog(bullet.getOwner().getName());
 
         final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);

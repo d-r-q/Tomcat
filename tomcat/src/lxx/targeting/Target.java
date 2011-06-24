@@ -117,7 +117,6 @@ public class Target implements LXXRobot, Serializable {
         newState.energy = prevState.energy + LXXUtils.getReturnedEnergy(bulletPower);
         info.enemyLastHitTime = e.getTime();
         info.enemyLastCollectedEnergy = LXXUtils.getReturnedEnergy(bulletPower);
-        info.enemyLastFirePower = bulletPower;
     }
 
     private void processBulletHitEvent(TargetState newState, BulletHitEvent e) {
@@ -372,7 +371,9 @@ public class Target implements LXXRobot, Serializable {
             if (prevState == null) {
                 gunHeat = LXXConstants.INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
             } else if (isFireLastTick()) {
-                gunHeat = Rules.getGunHeat(getExpectedEnergy() - state.energy);
+                final double firePower = getExpectedEnergy() - state.energy;
+                gunHeat = Rules.getGunHeat(firePower);
+                info.enemyLastFirePower = firePower;
             } else {
                 gunHeat = prevState.gunHeat;
             }
