@@ -4,10 +4,14 @@
 
 package lxx.utils;
 
+import lxx.LXXRobotState;
+import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+
+import static java.lang.Math.min;
 
 /**
  * User: jdev
@@ -15,7 +19,6 @@ import java.awt.geom.Rectangle2D;
  */
 public class BattleField {
 
-    public static final int WALL_STICK = 175;
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;
@@ -136,15 +139,15 @@ public class BattleField {
         }
     }
 
-    public double smoothWalls(APoint pos, double heading, boolean isClockwise) {
-        return smoothWall(getWall(pos, heading), pos, heading, isClockwise);
+    public double smoothWalls(LXXRobotState robot, double desiredHeading, boolean isClockwise) {
+        return smoothWall(getWall(robot, desiredHeading), robot, desiredHeading, isClockwise);
     }
 
-    private double smoothWall(Wall wall, APoint pos, double heading, boolean isClockwise) {
-        final double hypotenuse = WALL_STICK;
-        final double adjacentLeg = getDistanceToWall(wall, pos);
+    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading,  boolean isClockwise) {
+        final double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
+        final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
         if (hypotenuse < adjacentLeg) {
-            return heading;
+            return desiredHeading;
         }
         double smoothAngle = 0;
         try {
@@ -154,11 +157,18 @@ public class BattleField {
         }
         final double baseAngle = wall.wallType.fromCenterAngle;
         double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
-        if (!containsExact(pos.project(smoothedAngle, hypotenuse))) {
+        if (!containsExact(robot.project(smoothedAngle, hypotenuse))) {
             final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
-            return smoothWall(secondWall, pos, smoothedAngle, isClockwise);
+            return smoothWall(secondWall, robot, smoothedAngle, isClockwise);
         }
         return smoothedAngle;
+    }
+
+    private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
+        final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
+        final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + 1);
+        final double turnTime = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians()) / Rules.getTurnRateRadians(acceleratedSpeed);
+        return acceleratedSpeed * (turnTime + 3);
     }
 
     public boolean contains(APoint point) {

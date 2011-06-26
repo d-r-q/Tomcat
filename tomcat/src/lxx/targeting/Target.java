@@ -271,7 +271,7 @@ public class Target implements LXXRobot, Serializable {
             return false;
         }
         double energyDiff = getExpectedEnergy() - state.energy;
-        return energyDiff > 0.09 && energyDiff < 3.1;
+        return energyDiff > 0 && energyDiff < 3.1;
     }
 
     public double getExpectedEnergy() {

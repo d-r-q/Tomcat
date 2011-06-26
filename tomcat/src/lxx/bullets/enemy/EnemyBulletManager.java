@@ -33,7 +33,15 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
+    private static final HashMap<Double, Double> SAFE_BULLET_MATCHES = new HashMap<Double, Double>();
+    static {
+        for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
+            SAFE_BULLET_MATCHES.put(bearingOffset, 0.01D);
+        }
+    }
+
     private static boolean paintEnabled = false;
+    private static final EnemyBulletsPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletsPredictionData(SAFE_BULLET_MATCHES, new ArrayList<Double>());
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -50,8 +58,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public void targetUpdated(Target target) {
-        if (target.isFireLastTick()) {
-            final double bulletPower = target.getExpectedEnergy() - target.getEnergy();
+        if (target.isFireLastTick() || (!target.isAlive() && target.getGunHeat() == 0)) {
+            final double bulletPower = max(0.1, max(0, target.getExpectedEnergy()) - target.getEnergy());
             final double bulletSpeed = Rules.getBulletSpeed(bulletPower);
 
             final LXXRobotState targetPrevState = target.getPrevState();
@@ -189,17 +197,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
     }
 
-    public LXXBullet createSafeBullet(Target target) {
-        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate())));
+    public LXXBullet createFutureBullet(Target target) {
+        double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
+        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new BulletStub(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
-        final HashMap<Double, Double> matches = new HashMap<Double, Double>();
-        for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
-            matches.put(bearingOffset, 0.01D);
-        }
-
-        return new LXXBullet(bullet, wave, new EnemyBulletsPredictionData(matches, new ArrayList<Double>()));
+        return new LXXBullet(bullet, wave, timeToFire < 2 ? enemyFireAnglePredictor.getPredictionData(target) : EMPTY_PREDICTION_DATA);
     }
 
     public void paint(LXXGraphics g) {

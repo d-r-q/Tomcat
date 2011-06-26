@@ -21,19 +21,16 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
     private final Movement withBulletsMovement;
-    private final Movement noBulletsMovement;
 
     private Target target;
 
     public DuelStrategy(Tomcat robot,
                         Movement withBulletsMovement,
-                        Movement noBulletsMovement,
                         Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager,
                         EnemyBulletManager enemyBulletManager) {
         super(robot);
 
         this.withBulletsMovement = withBulletsMovement;
-        this.noBulletsMovement = noBulletsMovement;
         this.gun = gun;
         this.firePowerSelector = firePowerSelector;
 

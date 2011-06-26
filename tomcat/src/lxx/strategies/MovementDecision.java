@@ -13,7 +13,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 
-import static java.lang.Math.toDegrees;
+import static java.lang.Math.*;
 
 public class MovementDecision implements Serializable {
 
@@ -41,9 +41,10 @@ public class MovementDecision implements Serializable {
         final boolean wantToGoFront = LXXUtils.anglesDiff(robot.getHeadingRadians(), desiredHeading) < LXXConstants.RADIANS_90;
         final double normalizedDesiredHeading = wantToGoFront ? desiredHeading : Utils.normalAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
 
-        final double turnRateRadians =
+        final double turnRemaining = Utils.normalRelativeAngle(normalizedDesiredHeading - robot.getHeadingRadians());
+        double turnRateRadians =
                 LXXUtils.limit(-Rules.getTurnRateRadians(robot.getSpeed()),
-                        Utils.normalRelativeAngle(normalizedDesiredHeading - robot.getHeadingRadians()),
+                        turnRemaining,
                         Rules.getTurnRateRadians(robot.getSpeed()));
 
         double futureHeading = robot.getHeadingRadians() + turnRateRadians;
@@ -51,9 +52,21 @@ public class MovementDecision implements Serializable {
             futureHeading = Utils.normalAbsoluteAngle(futureHeading + LXXConstants.RADIANS_180);
         }
         final LXXPoint robotPos = new LXXPoint(robot);
-        if (robotPos.distanceToWall(robot.getBattleField(), futureHeading) / Rules.MAX_VELOCITY <
-                LXXUtils.anglesDiff(robot.getHeadingRadians(), normalizedDesiredHeading) / Rules.getTurnRate(Rules.MAX_VELOCITY)) {
+        final double acceleratedSpeed = min(robot.getSpeed() + 1, Rules.MAX_VELOCITY);
+        final double deceleratedSpeed1 = max(robot.getSpeed() - 1, 0);
+        final double deceleratedSpeed2 = max(robot.getSpeed() - 2, 0);
+        if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / deceleratedSpeed2 <
+                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
             desiredSpeed = 0;
+        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / deceleratedSpeed1 <
+                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+            desiredSpeed = min(deceleratedSpeed2, desiredSpeed);
+        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / robot.getSpeed() <
+                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+            desiredSpeed = min(deceleratedSpeed1, desiredSpeed);
+        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / acceleratedSpeed <
+                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+            desiredSpeed = min(robot.getSpeed(), desiredSpeed);
         }
 
         return new MovementDecision(desiredSpeed * (wantToGoFront ? 1 : -1), turnRateRadians);
