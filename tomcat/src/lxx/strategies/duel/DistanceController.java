@@ -28,7 +28,7 @@ import static java.lang.Math.*;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_60;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_40;
     private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_DISTANCE = 450;

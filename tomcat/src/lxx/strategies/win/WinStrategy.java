@@ -25,7 +25,7 @@ public class WinStrategy implements Strategy, Painter {
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
 
-    private Long winTime;
+    private Long winTime = -1L;
     private static final double PARADE_HEADING = LXXConstants.RADIANS_90;
 
     public WinStrategy(Tomcat robot, TargetManager targetManager,
@@ -63,6 +63,9 @@ public class WinStrategy implements Strategy, Painter {
     }
 
     public void paint(LXXGraphics lxxGraphics) {
+        if (winTime == -1L) {
+            return;
+        }
         final int flagLength = 46;
         final int flagHeight = (int) min((robot.getTime() - winTime) * 3, 24);
         final int lineLength = flagHeight / 3;

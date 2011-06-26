@@ -29,6 +29,7 @@ public class OfficeImpl implements Office {
     private final Tomcat tomcat;
     private StatisticsManager statisticsManager;
     private TomcatEyes tomcatEyes;
+    private PaintManager paintManager;
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
@@ -55,7 +56,7 @@ public class OfficeImpl implements Office {
         statisticsManager = new StatisticsManager(this, tomcat);
         tomcat.addListener(statisticsManager);
 
-        final PaintManager paintManager = new PaintManager();
+        paintManager = new PaintManager();
         tomcat.addListener(paintManager);
 
         PluginManager pluginManager = new PluginManager(this);
@@ -98,6 +99,10 @@ public class OfficeImpl implements Office {
 
     public StatisticsManager getStatisticsManager() {
         return statisticsManager;
+    }
+
+    public PaintManager getPaintManager() {
+        return paintManager;
     }
 
     public long getTime() {

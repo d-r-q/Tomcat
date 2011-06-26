@@ -36,13 +36,17 @@ public class StrategySelector {
         strategies.add(new FindEnemiesStrategy(robot, targetManager, robot.getInitialOthers()));
         strategies.add(new TCChallengerStrategy(robot, tomcatClaws, targetManager));
 
+        final WaveSurfingMovement wsm = new WaveSurfingMovement(office, tomcatEyes);
+        office.getPaintManager().addPainter(wsm);
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
-                new WaveSurfingMovement(office, tomcatEyes),
+                wsm,
                 tomcatClaws,
                 new DuelFirePowerSelector(tomcatEyes, office.getStatisticsManager()), targetManager, enemyBulletManager);
         strategies.add(duelStrategy);
 
-        strategies.add(new WinStrategy(robot, targetManager, enemyBulletManager));
+        final WinStrategy winStrategy = new WinStrategy(robot, targetManager, enemyBulletManager);
+        office.getPaintManager().addPainter(winStrategy);
+        strategies.add(winStrategy);
     }
 
     public Strategy selectStrategy() {

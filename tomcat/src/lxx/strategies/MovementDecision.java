@@ -55,16 +55,17 @@ public class MovementDecision implements Serializable {
         final double acceleratedSpeed = min(robot.getSpeed() + 1, Rules.MAX_VELOCITY);
         final double deceleratedSpeed1 = max(robot.getSpeed() - 1, 0);
         final double deceleratedSpeed2 = max(robot.getSpeed() - 2, 0);
-        if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / deceleratedSpeed2 <
-                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+        final double distanceToWall = robotPos.distanceToWall(robot.getBattleField(), futureHeading);
+        if (distanceToWall / deceleratedSpeed2 <
+                abs(turnRemaining) / Rules.getTurnRateRadians(deceleratedSpeed2) + 1) {
             desiredSpeed = 0;
-        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / deceleratedSpeed1 <
-                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+        } else if (distanceToWall / deceleratedSpeed1 <
+                abs(turnRemaining) / Rules.getTurnRateRadians(deceleratedSpeed1) + 1) {
             desiredSpeed = min(deceleratedSpeed2, desiredSpeed);
-        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / robot.getSpeed() <
-                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
+        } else if (distanceToWall / robot.getSpeed() <
+                abs(turnRemaining) / Rules.getTurnRateRadians(robot.getSpeed()) + 1) {
             desiredSpeed = min(deceleratedSpeed1, desiredSpeed);
-        } else if ((robotPos.distanceToWall(robot.getBattleField(), futureHeading)) / acceleratedSpeed <
+        } else if (distanceToWall / acceleratedSpeed <
                 abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
             desiredSpeed = min(robot.getSpeed(), desiredSpeed);
         }

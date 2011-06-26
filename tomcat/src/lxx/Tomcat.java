@@ -86,12 +86,7 @@ public class Tomcat extends BasicRobot {
     private void doTurn() {
         try {
             Strategy currentStrategy = strategySelector.selectStrategy();
-            if (currentStrategy instanceof Painter) {
-                ((Painter) currentStrategy).paint(getLXXGraphics());
-            }
-
             turnDecision = currentStrategy.makeDecision();
-
             handleGun();
             move();
             turnRadar();

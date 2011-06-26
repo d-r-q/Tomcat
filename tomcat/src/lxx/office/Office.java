@@ -7,6 +7,7 @@ package lxx.office;
 import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.my.BulletManager;
+import lxx.paint.PaintManager;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
@@ -31,6 +32,8 @@ public interface Office {
     DataViewManager getDataViewManager();
 
     StatisticsManager getStatisticsManager();
+
+    PaintManager getPaintManager();
 
     long getTime();
 
