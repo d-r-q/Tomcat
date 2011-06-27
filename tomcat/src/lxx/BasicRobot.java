@@ -21,7 +21,7 @@ import static java.lang.Math.signum;
  * User: jdev
  * Date: 24.10.2009
  */
-public class BasicRobot extends TeamRobot implements APoint, LXXRobot {
+public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     static {
         QuickMath.init();

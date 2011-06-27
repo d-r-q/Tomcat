@@ -4,14 +4,8 @@
 
 package lxx.strategies.duel;
 
-import lxx.LXXRobotState;
-import lxx.Tomcat;
+import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
-import lxx.bullets.enemy.EnemyBulletManager;
-import lxx.targeting.GunType;
-import lxx.targeting.Target;
-import lxx.targeting.TargetManager;
-import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
@@ -33,32 +27,30 @@ public class DistanceController {
 
     private static final double SIMPLE_DISTANCE = 450;
 
-    private final Tomcat robot;
-    private final EnemyBulletManager enemyBulletManager;
-    private final TargetManager targetManager;
-    private final TomcatEyes tomcatEyes;
+    private final double gunCoolingRate;
 
-    public DistanceController(Tomcat robot, EnemyBulletManager enemyBulletManager, TargetManager targetManager, TomcatEyes tomcatEyes) {
-        this.robot = robot;
-        this.enemyBulletManager = enemyBulletManager;
-        this.targetManager = targetManager;
-        this.tomcatEyes = tomcatEyes;
+    public DistanceController(double gunCoolingRate) {
+        this.gunCoolingRate = gunCoolingRate;
     }
 
-    public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection) {
-        final double timeToTravel = getFirstBulletFlightTime(robot);
-        return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, getPreferredDistance(), timeToTravel);
+    public double getDesiredHeading(APoint surfPoint, LXXRobot me, LXXRobot enemy,
+                                    WaveSurfingMovement.OrbitDirection orbitDirection, List<LXXBullet> bulletsOnAir) {
+        final double timeToTravel = getFirstBulletFlightTime(me, enemy, bulletsOnAir);
+        return getDesiredHeadingWithBullets(surfPoint, me, enemy, orbitDirection, bulletsOnAir,
+                getPreferredDistance(), timeToTravel);
     }
 
     public double getPreferredDistance() {
         return SIMPLE_DISTANCE;
     }
 
-    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection,
+    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobot me, LXXRobot enemy,
+                                                WaveSurfingMovement.OrbitDirection orbitDirection,
+                                                List<LXXBullet> bulletsOnAir,
                                                 double desiredDistance, double timeToTravel) {
-        final double distanceBetween = robot.aDistance(surfPoint);
+        final double distanceBetween = me.aDistance(surfPoint);
 
-        final double k = min(1, timeToTravel / (distanceBetween / getBulletSpped()));
+        final double k = min(1, timeToTravel / (distanceBetween / getBulletSpeed(bulletsOnAir, enemy)));
         final double maxAttackAngle = LXXConstants.RADIANS_110 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double distanceDiff = distanceBetween - desiredDistance;
@@ -67,23 +59,19 @@ public class DistanceController {
                 : distanceDiff / desiredDistance;
         final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * attackAngleKoeff);
 
-        return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
+        return Utils.normalAbsoluteAngle(surfPoint.angleTo(me) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
     }
 
-    private double getFirstBulletFlightTime(APoint pos) {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
-        final Target duelOpponent = targetManager.getDuelOpponent();
+    private double getFirstBulletFlightTime(APoint pos, LXXRobot enemy, List<LXXBullet> bulletsOnAir) {
         if (bulletsOnAir.size() > 0) {
             return bulletsOnAir.get(0).getFlightTime(pos);
         } else {
-            return duelOpponent.getGunHeat() / robot.getGunCoolingRate() + duelOpponent.aDistance(pos) / Rules.getBulletSpeed(max(0.1, duelOpponent.getFirePower()));
+            return enemy.getGunHeat() / gunCoolingRate + enemy.aDistance(pos) / Rules.getBulletSpeed(max(0.1, enemy.getFirePower()));
         }
     }
 
-    private double getBulletSpped() {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
-        final Target duelOpponent = targetManager.getDuelOpponent();
+    private double getBulletSpeed(List<LXXBullet> bulletsOnAir, LXXRobot duelOpponent) {
         if (bulletsOnAir.size() > 0) {
             return bulletsOnAir.get(0).getSpeed();
         } else {

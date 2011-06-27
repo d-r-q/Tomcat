@@ -44,4 +44,8 @@ public interface LXXRobot extends APoint {
     long getLastNotTurnTime();
 
     long getLastDirChangeTime();
+
+    double getGunHeat();
+
+    double getFirePower();
 }

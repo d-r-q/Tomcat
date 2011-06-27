@@ -11,8 +11,6 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-import static java.lang.Math.min;
-
 /**
  * User: jdev
  * Date: 17.02.2011
@@ -143,7 +141,7 @@ public class BattleField {
         return smoothWall(getWall(robot, desiredHeading), robot, desiredHeading, isClockwise);
     }
 
-    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading,  boolean isClockwise) {
+    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
         final double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
         final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
         if (hypotenuse < adjacentLeg) {
@@ -166,9 +164,10 @@ public class BattleField {
 
     private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
         final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
-        final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + 1);
+        final double acceleratedSpeed = Rules.MAX_VELOCITY;
         final double turnTime = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians()) / Rules.getTurnRateRadians(acceleratedSpeed);
-        return acceleratedSpeed * (turnTime + 3);
+
+        return acceleratedSpeed * turnTime;
     }
 
     public boolean contains(APoint point) {

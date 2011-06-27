@@ -11,7 +11,6 @@ import lxx.events.TickEvent;
 import lxx.office.Office;
 import lxx.office.OfficeImpl;
 import lxx.office.PropertiesManager;
-import lxx.paint.Painter;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.StrategySelector;
@@ -166,7 +165,7 @@ public class Tomcat extends BasicRobot {
         isPaintEnabled = true;
     }
 
-    public double firePower() {
+    public double getFirePower() {
         return turnDecision.getFirePower();
     }
 }
