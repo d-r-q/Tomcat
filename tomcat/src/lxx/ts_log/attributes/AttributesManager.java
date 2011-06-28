@@ -28,9 +28,9 @@ public class AttributesManager {
     public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAccelerationVE());
     public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10.2, 10.2, new EnemyTurnRateVE());
 
-    public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWallVE());
-    public static final Attribute enemyDistanceToReverseWall = new Attribute("Enemy reverse wall distance", 0, 1700, new EnemyDistanceToReverceWallVE());
-    public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on wall", -90, 90, new EnemyBearingToHOWallVE());
+    public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward WaveSurfingMovement distance", 0, 1700, new EnemyDistanceToForwardWallVE());
+    public static final Attribute enemyDistanceToReverseWall = new Attribute("Enemy reverse WaveSurfingMovement distance", 0, 1700, new EnemyDistanceToReverceWallVE());
+    public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on WaveSurfingMovement", -90, 90, new EnemyBearingToHOWallVE());
 
     public static final Attribute firstBulletFlightTimeToEnemy = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeToEnemyVE());
     public static final Attribute enemyBearingOffsetOnFirstBullet = new Attribute("Enemy bearing offset on first bullet", -50, 50, new EnemyBearingOffsetOnFirstBulletVE());
@@ -45,8 +45,8 @@ public class AttributesManager {
     public static final Attribute myAbsoluteHeadingDegrees = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
     public static final Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
-    public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
-    public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse wall", 0, 1700, new MyDistanceToReverseWallVE());
+    public static final Attribute myDistToForwardWall = new Attribute("My distance to forward WaveSurfingMovement", 0, 1700, new MyDistanceToForwardWallVE());
+    public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse WaveSurfingMovement", 0, 1700, new MyDistanceToReverseWallVE());
     public static final Attribute myTravelTime = new Attribute("My travel time", 0, 255, new MyTravelTimeVE());
 
     public static final Attribute[] attributes = {

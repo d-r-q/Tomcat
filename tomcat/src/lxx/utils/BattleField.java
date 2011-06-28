@@ -5,7 +5,6 @@
 package lxx.utils;
 
 import lxx.LXXRobotState;
-import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
@@ -142,7 +141,7 @@ public class BattleField {
     }
 
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        final double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
+        final double hypotenuse = calculateHypotenuse(robot, isClockwise);
         final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
         if (hypotenuse < adjacentLeg) {
             return desiredHeading;
@@ -162,12 +161,13 @@ public class BattleField {
         return smoothedAngle;
     }
 
-    private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
+    public double calculateHypotenuse(LXXRobotState robot, boolean isClockwise) {
+        final Wall wall = getWall(robot, robot.getAbsoluteHeadingRadians());
         final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
         final double turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
         final int turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
 
-        return LXXUtils.getDistanceOnAcceleration(robot.getSpeed(), turnTime) + Rules.MAX_VELOCITY + 1;
+        return 165;// LXXUtils.getDistanceOnAcceleration(robot.getSpeed(), turnTime) + Rules.MAX_VELOCITY + 1;
     }
 
     public boolean contains(APoint point) {

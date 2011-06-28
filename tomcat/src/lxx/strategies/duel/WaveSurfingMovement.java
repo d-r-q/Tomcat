@@ -83,7 +83,42 @@ public class WaveSurfingMovement implements Movement, Painter {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets.get(0));
         final double desiredSpeed = timeToTravel > 0 ? distanceToTravel / timeToTravel : 8;
 
-        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot, duelOpponent, lxxBullets, desiredSpeed);
+        final MovementDecision movementDecision = getMovementDecision(surfPoint, minDangerOrbitDirection, robot, duelOpponent, lxxBullets, desiredSpeed);
+        System.out.println(prevPrediction.minDanger);
+        System.out.println(prevPrediction.orbitDirection);
+        if (duelOpponent != null) {
+            System.out.println("dist = " + robot.aDistance(duelOpponent));
+            System.out.println("gun heat = " + duelOpponent.getGunHeat());
+        }
+        System.out.println("velocity = " + robot.getVelocity());
+        System.out.println("heading = " + robot.getHeading());
+        System.out.println("absolute heading = " + Math.toDegrees(robot.getAbsoluteHeadingRadians()));
+        System.out.println("desired heading = " + toDegrees(distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets)));
+        System.out.println("smoothed heading = " + toDegrees(battleField.smoothWalls(robot.getState(), distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets), prevPrediction.orbitDirection == WaveSurfingMovement.OrbitDirection.CLOCKWISE)));
+        System.out.println("heading = " + robot.getHeading());
+        System.out.println("distance to wall = " + robot.getPosition().distanceToWall(battleField, robot.getAbsoluteHeadingRadians()));
+        System.out.println("trr = " + Math.toDegrees(movementDecision.getTurnRateRadians()));
+        System.out.println("flight time = " + lxxBullets.get(0).getFlightTime(robot));
+        BattleField.Wall battleFieldWall = battleField.getWall(robot, robot.getAbsoluteHeadingRadians());
+
+        System.out.println("hyp cw = " + battleField.calculateHypotenuse(robot.getState(), true));
+        double maxSmoothedAngle = battleFieldWall.wallType.clockwiseAngle;
+        double turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
+        System.out.println("Turn degrees = " + Math.toDegrees(turnRadians));
+        int turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
+        System.out.println("Turn time = " + turnTime);
+
+        System.out.println("hyp ccw = " + battleField.calculateHypotenuse(robot.getState(), false));
+        maxSmoothedAngle = battleFieldWall.wallType.counterClockwiseAngle;
+        turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
+        System.out.println("Turn degrees = " + Math.toDegrees(turnRadians));
+        turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
+
+        System.out.println("Turn time = " + turnTime);
+
+        System.out.println("============================");
+
+        return movementDecision;
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
@@ -142,12 +177,11 @@ public class WaveSurfingMovement implements Movement, Painter {
         return prediction;
     }
 
-    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, APoint pnt, LXXRobotState duelOpponent) {
+    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, APoint pnt, LXXRobot enemy) {
         final int bulletsSize = lxxBullets.size();
         final PointDangerOnWave firstWaveDng = bulletsSize == 0 ? null : getWaveDanger(pnt, lxxBullets.get(0));
         final PointDangerOnWave secondWaveDng = bulletsSize == 1 ? null : getWaveDanger(pnt, lxxBullets.get(1));
-        final double distToEnemy = duelOpponent != null ? pnt.aDistance(duelOpponent) : 0;
-        return new PointDanger(firstWaveDng, secondWaveDng, abs(distToEnemy - preferredDistance), battleField.center.aDistance(pnt));
+        return new PointDanger(firstWaveDng, secondWaveDng, abs(pnt.aDistance(enemy != null ? enemy : lxxBullets.get(0).getFirePosition()) - preferredDistance), battleField.center.aDistance(pnt));
     }
 
     private PointDangerOnWave getWaveDanger(APoint pnt, LXXBullet bullet) {
@@ -204,6 +238,7 @@ public class WaveSurfingMovement implements Movement, Painter {
                 enemyDesiredSpeed = -Rules.MAX_VELOCITY * signum(enemyProxy.getState().getVelocity());
             }
         }
+
         while (firePosition.aDistance(myProxy.getState()) - travelledDistance > bullet.getSpeed() * time) {
             final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, myProxy,
                     enemyProxy, simulator.getEnemyBullets(), 8);
@@ -212,7 +247,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             }
             simulator.setMyMovementDecision(md);
             simulator.doTurn();
-            points.add(new WSPoint(myProxy, getPointDanger(bullets, myProxy, enemyProxy == null ? null : enemyProxy.getState())));
+            points.add(new WSPoint(myProxy, getPointDanger(bullets, myProxy, enemyProxy)));
             time++;
         }
 
@@ -222,15 +257,15 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobot robot, LXXRobot enemy, List<LXXBullet> bullets, double desiredSpeed) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, enemy, orbitDirection, bullets);
-        //desiredHeading = battleField.smoothWalls(robot.getState(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        double smoothedHeadingCW = battleField.smoothWalls(robot.getState(), desiredHeading, true);
+        desiredHeading = battleField.smoothWalls(robot.getState(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        /*double smoothedHeadingCW = battleField.smoothWalls(robot.getState(), desiredHeading, true);
         double smoothedHeadingCCW = battleField.smoothWalls(robot.getState(), desiredHeading, false);
         if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
                 LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
             desiredHeading = smoothedHeadingCW;
         } else {
             desiredHeading = smoothedHeadingCCW;
-        }
+        }*/
 
         return MovementDecision.toMovementDecision(robot.getState(), desiredSpeed, desiredHeading);
     }
@@ -316,7 +351,7 @@ public class WaveSurfingMovement implements Movement, Painter {
                     abs(o.distanceToCenter - 200) / 400;
 
             if (res == 0) {
-                res = compareDoubles(thisDng, anotherDng, 0.3);
+                res = compareDoubles(thisDng, anotherDng, 0.05);
             }
 
             return res;
