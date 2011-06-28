@@ -34,6 +34,7 @@ import static java.lang.Math.*;
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
     private static final HashMap<Double, Double> SAFE_BULLET_MATCHES = new HashMap<Double, Double>();
+
     static {
         for (double bearingOffset = -LXXConstants.RADIANS_45; bearingOffset <= LXXConstants.RADIANS_45 + 0.01; bearingOffset += LXXConstants.RADIANS_1) {
             SAFE_BULLET_MATCHES.put(bearingOffset, 0.01D);
@@ -49,6 +50,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private final WaveManager waveManager;
     private final Tomcat robot;
+    private LXXBullet futureBullet;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot, office.getTomcatEyes());
@@ -198,12 +200,15 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public LXXBullet createFutureBullet(Target target) {
-        double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
-        final Bullet bullet = new BulletStub(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
+        if (futureBullet == null || futureBullet.getWave().getLaunchTime() <= robot.getTime()) {
+            double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
+            final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
+            final Bullet bullet = new BulletStub(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
+                    wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
+            futureBullet = new LXXBullet(bullet, wave, timeToFire < 2 ? enemyFireAnglePredictor.getPredictionData(target) : EMPTY_PREDICTION_DATA);
+        }
 
-        return new LXXBullet(bullet, wave, timeToFire < 2 ? enemyFireAnglePredictor.getPredictionData(target) : EMPTY_PREDICTION_DATA);
+        return futureBullet;
     }
 
     public void paint(LXXGraphics g) {

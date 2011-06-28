@@ -164,10 +164,10 @@ public class BattleField {
 
     private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
         final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
-        final double acceleratedSpeed = Rules.MAX_VELOCITY;
-        final double turnTime = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians()) / Rules.getTurnRateRadians(acceleratedSpeed);
+        final double turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
+        final int turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
 
-        return acceleratedSpeed * turnTime;
+        return LXXUtils.getDistanceOnAcceleration(robot.getSpeed(), turnTime) + Rules.MAX_VELOCITY + 1;
     }
 
     public boolean contains(APoint point) {

@@ -238,4 +238,27 @@ public class LXXUtils {
         return map;
     }
 
+    public static int getTurnTime(double speed, double turnRadians) {
+        double turnedDistance = 0;
+        int time = 0;
+        while (turnedDistance < turnRadians) {
+            turnedDistance += Rules.getTurnRateRadians(speed);
+            speed = min(speed + 1, Rules.MAX_VELOCITY);
+            time++;
+        }
+
+        return time;
+    }
+
+    public static double getDistanceOnAcceleration(double speed, int time) {
+        double distance = 0;
+
+        for (int i = 0; i < time; i++) {
+            speed = min(speed + 1, 8);
+            distance += speed;
+        }
+
+        return distance;
+    }
+
 }
