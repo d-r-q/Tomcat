@@ -261,4 +261,14 @@ public class LXXUtils {
         return distance;
     }
 
+    public static double getTurnDistance(double speed, double turnRadians) {
+        LXXPoint pnt = new LXXPoint();
+        for (double heading = 0; heading < turnRadians; heading += Rules.getTurnRateRadians(speed)) {
+            speed = LXXUtils.limit(0, speed, Rules.MAX_VELOCITY);
+            pnt = pnt.project(heading, speed);
+        }
+
+        return pnt.getY();
+    }
+
 }

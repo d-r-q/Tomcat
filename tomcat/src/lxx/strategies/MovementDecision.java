@@ -13,7 +13,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 
-import static java.lang.Math.*;
+import static java.lang.Math.toDegrees;
 
 public class MovementDecision implements Serializable {
 
@@ -47,27 +47,11 @@ public class MovementDecision implements Serializable {
                         turnRemaining,
                         Rules.getTurnRateRadians(robot.getSpeed()));
 
-        double futureHeading = robot.getHeadingRadians() + turnRateRadians;
-        if (robot.getVelocity() < 0) {
-            futureHeading = Utils.normalAbsoluteAngle(futureHeading + LXXConstants.RADIANS_180);
-        }
         final LXXPoint robotPos = new LXXPoint(robot);
-        final double acceleratedSpeed = min(robot.getSpeed() + 1, Rules.MAX_VELOCITY);
-        final double deceleratedSpeed1 = max(robot.getSpeed() - 1, 0);
-        final double deceleratedSpeed2 = max(robot.getSpeed() - 2, 0);
-        final double distanceToWall = robotPos.distanceToWall(robot.getBattleField(), futureHeading);
-        if (distanceToWall / deceleratedSpeed2 <
-                abs(turnRemaining) / Rules.getTurnRateRadians(deceleratedSpeed2) + 1) {
+        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, robot.getAbsoluteHeadingRadians()), robotPos);
+        final double turnDistance = LXXUtils.getTurnDistance(desiredSpeed, turnRemaining);
+        if (distanceToWall < turnDistance + 8) {
             desiredSpeed = 0;
-        } else if (distanceToWall / deceleratedSpeed1 <
-                abs(turnRemaining) / Rules.getTurnRateRadians(deceleratedSpeed1) + 1) {
-            desiredSpeed = min(deceleratedSpeed2, desiredSpeed);
-        } else if (distanceToWall / robot.getSpeed() <
-                abs(turnRemaining) / Rules.getTurnRateRadians(robot.getSpeed()) + 1) {
-            desiredSpeed = min(deceleratedSpeed1, desiredSpeed);
-        } else if (distanceToWall / acceleratedSpeed <
-                abs(turnRemaining) / Rules.getTurnRateRadians(acceleratedSpeed) + 1) {
-            desiredSpeed = min(robot.getSpeed(), desiredSpeed);
         }
 
         return new MovementDecision(desiredSpeed * (wantToGoFront ? 1 : -1), turnRateRadians);
