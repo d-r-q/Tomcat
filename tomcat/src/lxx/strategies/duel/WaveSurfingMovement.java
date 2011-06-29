@@ -203,7 +203,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private List<LXXBullet> getBullets() {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(1);
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(duelOpponent == null ? 0 : 2);
         if (bulletsOnAir.size() < 2 && duelOpponent != null) {
             bulletsOnAir.add(enemyBulletManager.createFutureBullet(duelOpponent));
         }
@@ -257,15 +257,15 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobot robot, LXXRobot enemy, List<LXXBullet> bullets, double desiredSpeed) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, enemy, orbitDirection, bullets);
-        desiredHeading = battleField.smoothWalls(robot.getState(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        /*double smoothedHeadingCW = battleField.smoothWalls(robot.getState(), desiredHeading, true);
+        //desiredHeading = battleField.smoothWalls(robot.getState(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        double smoothedHeadingCW = battleField.smoothWalls(robot.getState(), desiredHeading, true);
         double smoothedHeadingCCW = battleField.smoothWalls(robot.getState(), desiredHeading, false);
         if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
                 LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
             desiredHeading = smoothedHeadingCW;
         } else {
             desiredHeading = smoothedHeadingCCW;
-        }*/
+        }
 
         return MovementDecision.toMovementDecision(robot.getState(), desiredSpeed, desiredHeading);
     }
@@ -344,11 +344,9 @@ public class WaveSurfingMovement implements Movement, Painter {
                 res = dangerOnSecondWave.compareTo(o.dangerOnSecondWave);
             }
 
-            double thisDng = abs(distToEnemyDiff) / preferredDistance * 3 +
-                    abs(distanceToCenter - 200) / 400;
+            double thisDng = abs(distanceToCenter - 200) / 400;
 
-            double anotherDng = abs(o.distToEnemyDiff) / preferredDistance * 3 +
-                    abs(o.distanceToCenter - 200) / 400;
+            double anotherDng = abs(o.distanceToCenter - 200) / 400;
 
             if (res == 0) {
                 res = compareDoubles(thisDng, anotherDng, 0.05);

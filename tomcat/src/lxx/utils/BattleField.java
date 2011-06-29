@@ -141,10 +141,12 @@ public class BattleField {
     }
 
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        final double hypotenuse = calculateHypotenuse(robot, isClockwise);
+        double hypotenuse = calculateHypotenuse(robot, isClockwise);
         final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
-        if (hypotenuse < adjacentLeg) {
+        if (hypotenuse + 12 < adjacentLeg) {
             return desiredHeading;
+        } else if (hypotenuse < adjacentLeg) {
+            hypotenuse = 8 * (hypotenuse + 12 - adjacentLeg) / 12;
         }
         double smoothAngle = 0;
         try {
@@ -162,12 +164,7 @@ public class BattleField {
     }
 
     public double calculateHypotenuse(LXXRobotState robot, boolean isClockwise) {
-        final Wall wall = getWall(robot, robot.getAbsoluteHeadingRadians());
-        final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
-        final double turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
-        final int turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
-
-        return 165;// LXXUtils.getDistanceOnAcceleration(robot.getSpeed(), turnTime) + Rules.MAX_VELOCITY + 1;
+        return 135;
     }
 
     public boolean contains(APoint point) {
