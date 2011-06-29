@@ -191,7 +191,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         double bulletsCount = 0;
         for (Double bo : ((EnemyBulletsPredictionData) bullet.getAimPredictionData()).getPredictedBearingOffsets()) {
             final double dist = abs(bearingOffset - bo);
-            double closeRange = robotWidthInRadians * 0.51;
+            double closeRange = robotWidthInRadians * 0.65;
             if (dist < closeRange) {
                 bulletsCount++;
             } else if (dist < robotWidthInRadians * 3) {
@@ -349,7 +349,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             double anotherDng = abs(o.distanceToCenter - 200) / 400;
 
             if (res == 0) {
-                res = compareDoubles(thisDng, anotherDng, 0.05);
+                res = compareDoubles(thisDng, anotherDng, 0.3);
             }
 
             return res;

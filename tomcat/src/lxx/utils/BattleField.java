@@ -143,10 +143,10 @@ public class BattleField {
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
         double hypotenuse = calculateHypotenuse(robot, isClockwise);
         final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
-        if (hypotenuse + 12 < adjacentLeg) {
+        if (hypotenuse + 18 < adjacentLeg) {
             return desiredHeading;
         } else if (hypotenuse < adjacentLeg) {
-            hypotenuse = 8 * (hypotenuse + 12 - adjacentLeg) / 12;
+            hypotenuse = adjacentLeg + 18 * (hypotenuse + 18 - adjacentLeg) / 18;
         }
         double smoothAngle = 0;
         try {
