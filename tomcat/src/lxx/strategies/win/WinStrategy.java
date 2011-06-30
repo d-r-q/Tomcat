@@ -39,7 +39,7 @@ public class WinStrategy implements Strategy, Painter {
         boolean match = robot.getTime() > 10 && enemyBulletManager.getBulletsOnAir(1).size() == 0 &&
                 targetManager.isNoAliveEnemies();
 
-        if (match && winTime == null) {
+        if (match && winTime == -1L) {
             winTime = robot.getTime();
         }
 

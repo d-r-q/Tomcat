@@ -84,6 +84,12 @@ public class WaveSurfingMovement implements Movement, Painter {
         final double desiredSpeed = timeToTravel > 0 ? distanceToTravel / timeToTravel : 8;
 
         final MovementDecision movementDecision = getMovementDecision(surfPoint, minDangerOrbitDirection, robot, duelOpponent, lxxBullets, desiredSpeed);
+        //printDebugInfo(lxxBullets, surfPoint, movementDecision);
+
+        return movementDecision;
+    }
+
+    private void printDebugInfo(List<LXXBullet> lxxBullets, APoint surfPoint, MovementDecision movementDecision) {
         System.out.println(prevPrediction.minDanger);
         System.out.println(prevPrediction.orbitDirection);
         if (duelOpponent != null) {
@@ -94,7 +100,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         System.out.println("heading = " + robot.getHeading());
         System.out.println("absolute heading = " + Math.toDegrees(robot.getAbsoluteHeadingRadians()));
         System.out.println("desired heading = " + toDegrees(distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets)));
-        System.out.println("smoothed heading = " + toDegrees(battleField.smoothWalls(robot.getState(), distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets), prevPrediction.orbitDirection == WaveSurfingMovement.OrbitDirection.CLOCKWISE)));
+        System.out.println("smoothed heading = " + toDegrees(battleField.smoothWalls(robot.getState(), distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets), prevPrediction.orbitDirection == OrbitDirection.CLOCKWISE)));
         System.out.println("heading = " + robot.getHeading());
         System.out.println("distance to wall = " + robot.getPosition().distanceToWall(battleField, robot.getAbsoluteHeadingRadians()));
         System.out.println("trr = " + Math.toDegrees(movementDecision.getTurnRateRadians()));
@@ -117,8 +123,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         System.out.println("Turn time = " + turnTime);
 
         System.out.println("============================");
-
-        return movementDecision;
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
@@ -127,8 +131,8 @@ public class WaveSurfingMovement implements Movement, Painter {
                 !prevPrediction.bullet.equals(bullets.get(0)) ||
                 bullets.get(0).getFlightTime(robot) < 2 ||
                 duelOpponent != null && duelOpponent.aDistance(prevPrediction.enemyPos) > 50 ||
+                (timeToTravel > 0 ? distanceToTravel / timeToTravel : 8) > 8 ||
                 duelOpponent != null && duelOpponent.aDistance(robot) < 100;*/
-
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -166,7 +170,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         for (WSPoint pnt : prediction.points) {
             distance += prevPoint.aDistance(pnt);
 
-            if (pnt.danger.compareTo(prediction.minDanger) <= 0) {
+            if (pnt.danger.compareTo(prediction.minDanger) < 0) {
                 prediction.minDanger = pnt.danger;
                 prediction.distToMinDangerPoint = distance;
                 prediction.minDangerPoint = pnt;
@@ -203,7 +207,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private List<LXXBullet> getBullets() {
-        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(duelOpponent == null ? 0 : 2);
+        final List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
         if (bulletsOnAir.size() < 2 && duelOpponent != null) {
             bulletsOnAir.add(enemyBulletManager.createFutureBullet(duelOpponent));
         }
@@ -344,12 +348,14 @@ public class WaveSurfingMovement implements Movement, Painter {
                 res = dangerOnSecondWave.compareTo(o.dangerOnSecondWave);
             }
 
-            double thisDng = abs(distanceToCenter - 200) / 400;
+            double thisDng = abs(distToEnemyDiff) / preferredDistance * 5 +
+                    abs(distanceToCenter - 200) / 400;
 
-            double anotherDng = abs(o.distanceToCenter - 200) / 400;
+            double anotherDng = abs(o.distToEnemyDiff) / preferredDistance * 5 +
+                    abs(o.distanceToCenter - 200) / 400;
 
             if (res == 0) {
-                res = compareDoubles(thisDng, anotherDng, 0.3);
+                res = compareDoubles(thisDng, anotherDng, 0.15);
             }
 
             return res;

@@ -10,6 +10,8 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
+import static java.lang.Math.max;
+
 /**
  * User: jdev
  * Date: 17.02.2011
@@ -142,11 +144,12 @@ public class BattleField {
 
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
         double hypotenuse = calculateHypotenuse(robot, isClockwise);
-        final double adjacentLeg = getDistanceToWall(wall, robot) - 4;
-        if (hypotenuse + 18 < adjacentLeg) {
+        final double adjacentLeg = max(0, getDistanceToWall(wall, robot) - 4);
+        int buffer = 22;
+        if (hypotenuse + buffer < adjacentLeg) {
             return desiredHeading;
         } else if (hypotenuse < adjacentLeg) {
-            hypotenuse = adjacentLeg + 18 * (hypotenuse + 18 - adjacentLeg) / 18;
+            hypotenuse = adjacentLeg + 8 * (hypotenuse + buffer - adjacentLeg) / buffer;
         }
         double smoothAngle = 0;
         try {

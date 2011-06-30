@@ -48,9 +48,14 @@ public class MovementDecision implements Serializable {
                         Rules.getTurnRateRadians(robot.getSpeed()));
 
         final LXXPoint robotPos = new LXXPoint(robot);
-        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, robot.getAbsoluteHeadingRadians()), robotPos);
-        final double turnDistance = LXXUtils.getTurnDistance(desiredSpeed, turnRemaining);
-        if (distanceToWall < turnDistance + 8) {
+        final double heading = robot.getSpeed() > 0
+                ? robot.getAbsoluteHeadingRadians()
+                : wantToGoFront
+                ? robot.getHeadingRadians()
+                : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
+        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, heading), robotPos);
+        //final double turnDistance = LXXUtils.getMaxTurnDistance(robot.getSpeed(), turnRemaining);
+        if (distanceToWall - 4 < LXXUtils.getStopDistance(robot.getSpeed()) + 8) {
             desiredSpeed = 0;
         }
 

@@ -267,7 +267,7 @@ public class Target implements LXXRobot, Serializable {
 
     public boolean isFireLastTick() {
         ensureValid();
-        if (prevState != null && prevState.gunHeat > 0) {
+        if (prevState != null && prevState.gunHeat >= owner.getGunCoolingRate()) {
             return false;
         }
         double energyDiff = getExpectedEnergy() - state.energy;
@@ -290,7 +290,7 @@ public class Target implements LXXRobot, Serializable {
         }
 
         if (isHitWall()) {
-            expectedEnergy -= Rules.getWallHitDamage(prevState.velocity);
+            expectedEnergy -= Rules.getWallHitDamage(abs(prevState.velocity) + prevState.acceleration);
         }
 
         expectedEnergy -= info.enemyHitRobotEnergyLoss;

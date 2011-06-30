@@ -14,6 +14,7 @@ import lxx.bullets.LXXBulletState;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.office.Office;
+import lxx.office.PropertiesManager;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
@@ -41,8 +42,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
     }
 
-    private static boolean paintEnabled = false;
     private static final EnemyBulletsPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletsPredictionData(SAFE_BULLET_MATCHES, new ArrayList<Double>());
+    private static boolean paintEnabled = false;
+    private static int ghostBulletsCount = 0;
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -108,6 +110,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         final Wave w = getWave(e.getHitBullet());
         if (w == null) {
             System.out.println("[WARN] intercept not detected bullet");
+            ghostBulletsCount++;
+            PropertiesManager.setDebugProperty("Ghost bullets count", String.valueOf(ghostBulletsCount));
             return;
         }
 
@@ -123,6 +127,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         final Wave w = getWave(e.getBullet());
         if (w == null) {
             System.out.println("[WARN] hit by not detected bullet");
+            ghostBulletsCount++;
+            PropertiesManager.setDebugProperty("Ghost bullets count", String.valueOf(ghostBulletsCount));
             return;
         }
 
