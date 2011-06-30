@@ -15,6 +15,7 @@ import robocode.util.Utils;
 import java.util.List;
 
 import static java.lang.Math.max;
+import static java.lang.StrictMath.min;
 
 /**
  * User: jdev
@@ -22,8 +23,8 @@ import static java.lang.Math.max;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_20;
-    private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_20;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
+    private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_DISTANCE = 450;
 
@@ -50,7 +51,7 @@ public class DistanceController {
                                                 double desiredDistance, double timeToTravel) {
         final double distanceBetween = me.aDistance(surfPoint);
 
-        final double k = 1;
+        final double k = 1;// min(1, timeToTravel / (distanceBetween / getBulletSpeed(bulletsOnAir, enemy)));
         final double maxAttackAngle = LXXConstants.RADIANS_100 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double distanceDiff = distanceBetween - desiredDistance;
@@ -73,8 +74,10 @@ public class DistanceController {
     private double getBulletSpeed(List<LXXBullet> bulletsOnAir, LXXRobot duelOpponent) {
         if (bulletsOnAir.size() > 0) {
             return bulletsOnAir.get(0).getSpeed();
-        } else {
+        } else if (duelOpponent != null) {
             return Rules.getBulletSpeed(duelOpponent.getFirePower());
+        } else {
+            return Rules.getBulletSpeed(1);
         }
     }
 

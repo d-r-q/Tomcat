@@ -48,6 +48,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDirectionPrediction prevPrediction;
     private BattleField battleField;
     private double preferredDistance;
+    private MovementDirectionPrediction clockwisePrediction;
+    private MovementDirectionPrediction counterClockwisePrediction;
 
     public WaveSurfingMovement(Office office, TomcatEyes tomcatEyes) {
         this.robot = office.getRobot();
@@ -136,8 +138,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
-        final MovementDirectionPrediction clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
-        final MovementDirectionPrediction counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
+        clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
+        counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
         final LXXBullet bullet = lxxBullets.get(0);
         final int cmp = clockwisePrediction.minDanger.compareTo(counterClockwisePrediction.minDanger);
         if (cmp < 0) {
@@ -243,9 +245,10 @@ public class WaveSurfingMovement implements Movement, Painter {
             }
         }
 
-        while (firePosition.aDistance(myProxy.getState()) - travelledDistance > bullet.getSpeed() * time) {
+        while (firePosition.aDistance(myProxy.getState()) - travelledDistance - LXXConstants.ROBOT_SIDE_HALF_SIZE > bullet.getSpeed() * time ||
+                time < 2) {
             final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, myProxy,
-                    enemyProxy, simulator.getEnemyBullets(), 8);
+                    enemyProxy, simulator.getEnemyBullets(), Rules.MAX_VELOCITY);
             if (enemyProxy != null) {
                 simulator.setEnemyMovementDecision(new MovementDecision(enemyDesiredSpeed, 0));
             }
@@ -280,10 +283,16 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         g.setColor(Color.GREEN);
-        for (WSPoint pnt : prevPrediction.points) {
+        for (WSPoint pnt : clockwisePrediction.points) {
             g.fillCircle(pnt, 3);
         }
 
+        g.setColor(Color.YELLOW);
+        for (WSPoint pnt : counterClockwisePrediction.points) {
+            g.fillCircle(pnt, 3);
+        }
+
+        g.setColor(Color.WHITE);
         g.drawCircle(prevPrediction.minDangerPoint, 5);
     }
 

@@ -14,6 +14,7 @@ import robocode.util.Utils;
 import java.io.Serializable;
 
 import static java.lang.Math.toDegrees;
+import static java.lang.StrictMath.min;
 
 public class MovementDecision implements Serializable {
 
@@ -51,11 +52,11 @@ public class MovementDecision implements Serializable {
         final double heading = robot.getSpeed() > 0
                 ? robot.getAbsoluteHeadingRadians()
                 : wantToGoFront
-                ? robot.getHeadingRadians()
-                : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
-        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, heading), robotPos);
+                  ? robot.getHeadingRadians()
+                  : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
+        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, heading + turnRateRadians), robotPos);
         //final double turnDistance = LXXUtils.getMaxTurnDistance(robot.getSpeed(), turnRemaining);
-        if (distanceToWall - 4 < LXXUtils.getStopDistance(robot.getSpeed()) + 8) {
+        if (distanceToWall - 4 < LXXUtils.getStopDistance(min(Rules.MAX_VELOCITY, robot.getSpeed() + 1)) + 2) {
             desiredSpeed = 0;
         }
 
