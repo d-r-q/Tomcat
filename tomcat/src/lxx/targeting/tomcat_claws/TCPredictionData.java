@@ -23,15 +23,20 @@ import static java.lang.Math.min;
  */
 public class TCPredictionData extends AbstractGFAimingPredictionData {
 
+    private final Map<Double, Double> matches;
     private final List<APoint> predictedPoses;
     private final APoint robotPos;
     private final APoint initialPos;
 
     public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos) {
-        super(matches);
+        this.matches = matches;
         this.predictedPoses = predictedPoses;
         this.robotPos = robotPos;
         this.initialPos = initialPos;
+    }
+
+    public Map<Double, Double> getMatches() {
+        return matches;
     }
 
     @Override

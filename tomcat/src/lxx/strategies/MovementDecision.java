@@ -13,8 +13,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 
-import static java.lang.Math.toDegrees;
-import static java.lang.StrictMath.min;
+import static java.lang.Math.*;
 
 public class MovementDecision implements Serializable {
 
@@ -49,18 +48,39 @@ public class MovementDecision implements Serializable {
                         Rules.getTurnRateRadians(robot.getSpeed()));
 
         final LXXPoint robotPos = new LXXPoint(robot);
-        final double heading = robot.getSpeed() > 0
-                ? robot.getAbsoluteHeadingRadians()
-                : wantToGoFront
-                  ? robot.getHeadingRadians()
-                  : Utils.normalAbsoluteAngle(robot.getHeadingRadians() + LXXConstants.RADIANS_180);
-        final double distanceToWall = robot.getBattleField().getDistanceToWall(robot.getBattleField().getWall(robotPos, heading + turnRateRadians), robotPos);
-        //final double turnDistance = LXXUtils.getMaxTurnDistance(robot.getSpeed(), turnRemaining);
-        if (distanceToWall - 4 < LXXUtils.getStopDistance(min(Rules.MAX_VELOCITY, robot.getSpeed() + 1)) + 2) {
+        final double futureHeading = getFutureHeading(robot, wantToGoFront, turnRateRadians);
+        final double distanceToWall = robotPos.distanceToWall(robot.getBattleField(), futureHeading);
+        final double futureSpeed = getFutureSpeed(robot.getVelocity(), desiredSpeed, wantToGoFront);
+        if (distanceToWall - 4 < LXXUtils.getStopDistance(futureSpeed) + futureSpeed + 2) {
             desiredSpeed = 0;
         }
 
         return new MovementDecision(desiredSpeed * (wantToGoFront ? 1 : -1), turnRateRadians);
+    }
+
+    private static double getFutureSpeed(double velocity, double desiredSpeed, boolean wantToGoFront) {
+        if ((velocity > 0 && wantToGoFront) || (velocity < 0 && !wantToGoFront)) {
+            return LXXUtils.limit(max(0, abs(velocity) - Rules.DECELERATION),
+                    desiredSpeed - abs(velocity), min(Rules.MAX_VELOCITY, abs(velocity) + Rules.ACCELERATION));
+        } else if (velocity == 0) {
+            return min(desiredSpeed, Rules.ACCELERATION);
+        } else {
+            return max(0, abs(velocity) - Rules.DECELERATION);
+        }
+    }
+
+    private static double getFutureHeading(LXXRobotState robot, boolean wantToGoFront, double turnRateRadians) {
+        final double futureHeading;
+        if (robot.getVelocity() > 0) {
+            futureHeading = robot.getHeadingRadians() + turnRateRadians;
+        } else if (robot.getVelocity() < 0) {
+            futureHeading = Utils.normalAbsoluteAngle(robot.getHeadingRadians() + turnRateRadians + LXXConstants.RADIANS_180);
+        } else if (wantToGoFront) {
+            futureHeading = robot.getHeadingRadians() + turnRateRadians;
+        } else {
+            futureHeading = Utils.normalAbsoluteAngle(robot.getHeadingRadians() + turnRateRadians + LXXConstants.RADIANS_180);
+        }
+        return futureHeading;
     }
 
     public String toString() {

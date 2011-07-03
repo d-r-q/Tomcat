@@ -4,7 +4,6 @@
 
 package lxx.strategies.duel;
 
-import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
@@ -18,10 +17,7 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
-import lxx.ts_log.attributes.Attribute;
 import lxx.utils.*;
-import lxx.utils.simulator.RobocodeDuelSimulator;
-import lxx.utils.simulator.RobotProxy;
 import robocode.Rules;
 
 import java.awt.*;
@@ -48,8 +44,6 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDirectionPrediction prevPrediction;
     private BattleField battleField;
     private double preferredDistance;
-    private MovementDirectionPrediction clockwisePrediction;
-    private MovementDirectionPrediction counterClockwisePrediction;
 
     public WaveSurfingMovement(Office office, TomcatEyes tomcatEyes) {
         this.robot = office.getRobot();
@@ -57,7 +51,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         this.enemyBulletManager = office.getEnemyBulletManager();
         this.tomcatEyes = tomcatEyes;
 
-        distanceController = new DistanceController(office.getRobot().getGunCoolingRate());
+        distanceController = new DistanceController(office.getRobot(), office.getEnemyBulletManager(), office.getTargetManager(), tomcatEyes);
         battleField = robot.getState().getBattleField();
     }
 
@@ -85,46 +79,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets.get(0));
         final double desiredSpeed = timeToTravel > 0 ? distanceToTravel / timeToTravel : 8;
 
-        final MovementDecision movementDecision = getMovementDecision(surfPoint, minDangerOrbitDirection, robot, duelOpponent, lxxBullets, desiredSpeed);
-        //printDebugInfo(lxxBullets, surfPoint, movementDecision);
-
-        return movementDecision;
-    }
-
-    private void printDebugInfo(List<LXXBullet> lxxBullets, APoint surfPoint, MovementDecision movementDecision) {
-        System.out.println(prevPrediction.minDanger);
-        System.out.println(prevPrediction.orbitDirection);
-        if (duelOpponent != null) {
-            System.out.println("dist = " + robot.aDistance(duelOpponent));
-            System.out.println("gun heat = " + duelOpponent.getGunHeat());
-        }
-        System.out.println("velocity = " + robot.getVelocity());
-        System.out.println("heading = " + robot.getHeading());
-        System.out.println("absolute heading = " + Math.toDegrees(robot.getAbsoluteHeadingRadians()));
-        System.out.println("desired heading = " + toDegrees(distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets)));
-        System.out.println("smoothed heading = " + toDegrees(battleField.smoothWalls(robot.getState(), distanceController.getDesiredHeading(surfPoint, robot, duelOpponent, minDangerOrbitDirection, lxxBullets), prevPrediction.orbitDirection == OrbitDirection.CLOCKWISE)));
-        System.out.println("heading = " + robot.getHeading());
-        System.out.println("distance to wall = " + robot.getPosition().distanceToWall(battleField, robot.getAbsoluteHeadingRadians()));
-        System.out.println("trr = " + Math.toDegrees(movementDecision.getTurnRateRadians()));
-        System.out.println("flight time = " + lxxBullets.get(0).getFlightTime(robot));
-        BattleField.Wall battleFieldWall = battleField.getWall(robot, robot.getAbsoluteHeadingRadians());
-
-        System.out.println("hyp cw = " + battleField.calculateHypotenuse(robot.getState(), true));
-        double maxSmoothedAngle = battleFieldWall.wallType.clockwiseAngle;
-        double turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
-        System.out.println("Turn degrees = " + Math.toDegrees(turnRadians));
-        int turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
-        System.out.println("Turn time = " + turnTime);
-
-        System.out.println("hyp ccw = " + battleField.calculateHypotenuse(robot.getState(), false));
-        maxSmoothedAngle = battleFieldWall.wallType.counterClockwiseAngle;
-        turnRadians = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians());
-        System.out.println("Turn degrees = " + Math.toDegrees(turnRadians));
-        turnTime = LXXUtils.getTurnTime(robot.getSpeed(), turnRadians) + 1;
-
-        System.out.println("Turn time = " + turnTime);
-
-        System.out.println("============================");
+        return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), desiredSpeed, lxxBullets);
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
@@ -133,13 +88,13 @@ public class WaveSurfingMovement implements Movement, Painter {
                 !prevPrediction.bullet.equals(bullets.get(0)) ||
                 bullets.get(0).getFlightTime(robot) < 2 ||
                 duelOpponent != null && duelOpponent.aDistance(prevPrediction.enemyPos) > 50 ||
-                (timeToTravel > 0 ? distanceToTravel / timeToTravel : 8) > 8 ||
                 duelOpponent != null && duelOpponent.aDistance(robot) < 100;*/
+
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
-        clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
-        counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
+        final MovementDirectionPrediction clockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE);
+        final MovementDirectionPrediction counterClockwisePrediction = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE);
         final LXXBullet bullet = lxxBullets.get(0);
         final int cmp = clockwisePrediction.minDanger.compareTo(counterClockwisePrediction.minDanger);
         if (cmp < 0) {
@@ -172,7 +127,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         for (WSPoint pnt : prediction.points) {
             distance += prevPoint.aDistance(pnt);
 
-            if (pnt.danger.compareTo(prediction.minDanger) < 0) {
+            if (pnt.danger.compareTo(prediction.minDanger) <= 0) {
                 prediction.minDanger = pnt.danger;
                 prediction.distToMinDangerPoint = distance;
                 prediction.minDangerPoint = pnt;
@@ -183,29 +138,29 @@ public class WaveSurfingMovement implements Movement, Painter {
         return prediction;
     }
 
-    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, APoint pnt, LXXRobot enemy) {
+    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, APoint pnt, LXXRobotState duelOpponent) {
         final int bulletsSize = lxxBullets.size();
         final PointDangerOnWave firstWaveDng = bulletsSize == 0 ? null : getWaveDanger(pnt, lxxBullets.get(0));
         final PointDangerOnWave secondWaveDng = bulletsSize == 1 ? null : getWaveDanger(pnt, lxxBullets.get(1));
-        return new PointDanger(firstWaveDng, secondWaveDng, abs(pnt.aDistance(enemy != null ? enemy : lxxBullets.get(0).getFirePosition()) - preferredDistance), battleField.center.aDistance(pnt));
+        final double distToEnemy = duelOpponent != null ? pnt.aDistance(duelOpponent) : 0;
+        return new PointDanger(firstWaveDng, secondWaveDng, abs(distToEnemy - preferredDistance), battleField.center.aDistance(pnt));
     }
 
     private PointDangerOnWave getWaveDanger(APoint pnt, LXXBullet bullet) {
         final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), pnt);
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
 
-        double bulletsCount = 0;
+        double minDist = Integer.MAX_VALUE;
+        int bulletsCount = 0;
         for (Double bo : ((EnemyBulletsPredictionData) bullet.getAimPredictionData()).getPredictedBearingOffsets()) {
             final double dist = abs(bearingOffset - bo);
-            double closeRange = robotWidthInRadians * 0.65;
-            if (dist < closeRange) {
+            if (dist < robotWidthInRadians * 0.55) {
                 bulletsCount++;
-            } else if (dist < robotWidthInRadians * 3) {
-                bulletsCount += 1 - 1 * (dist - closeRange) / (robotWidthInRadians * 3 - closeRange);
             }
+            minDist = min(minDist, dist);
         }
 
-        return new PointDangerOnWave(robotWidthInRadians, bulletsCount);
+        return new PointDangerOnWave(minDist, LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsCount);
     }
 
     private List<LXXBullet> getBullets() {
@@ -228,33 +183,20 @@ public class WaveSurfingMovement implements Movement, Painter {
         final LXXBullet bullet = bullets.get(0);
         final List<WSPoint> points = new LinkedList<WSPoint>();
 
-        final RobocodeDuelSimulator simulator = new RobocodeDuelSimulator(enemy, robot, robot.getTime(), robot.getRoundNum(),
-                new Attribute[0], new ArrayList<LXXBullet>(), bullets);
+        final RobotImage robotImg = new RobotImage(robot.getPosition(), robot.getVelocity(), robot.getHeadingRadians(), robot.battleField, 0, robot.getEnergy());
+        final RobotImage opponentImg = enemy == null ? null : new RobotImage(enemy.getPosition(), enemy.getVelocity(), enemy.getState().getHeadingRadians(), robot.battleField, 0,
+                enemy.getEnergy());
         int time = 0;
-        final APoint surfPoint = getSurfPoint(enemy != null ? enemy.getState() : null, bullet);
+        final APoint surfPoint = getSurfPoint(opponentImg, bullet);
         final double travelledDistance = bullet.getTravelledDistance();
         final APoint firePosition = bullet.getFirePosition();
-        final LXXRobot myProxy = simulator.getMyProxy();
-        final RobotProxy enemyProxy = simulator.getEnemyProxy();
-        double enemyDesiredSpeed = 0;
-        if (enemyProxy != null) {
-            if (enemyProxy.getAcceleration() >= 0) {
-                enemyDesiredSpeed = Rules.MAX_VELOCITY * signum(enemyProxy.getState().getVelocity());
-            } else {
-                enemyDesiredSpeed = -Rules.MAX_VELOCITY * signum(enemyProxy.getState().getVelocity());
+        while (firePosition.aDistance(robotImg) - travelledDistance > bullet.getSpeed() * time) {
+            final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, robotImg, 8, bullets);
+            if (opponentImg != null) {
+                opponentImg.apply(new MovementDecision(Rules.MAX_VELOCITY * signum(opponentImg.getVelocity()), 0));
             }
-        }
-
-        while (firePosition.aDistance(myProxy.getState()) - travelledDistance - LXXConstants.ROBOT_SIDE_HALF_SIZE > bullet.getSpeed() * time ||
-                time < 2) {
-            final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, myProxy,
-                    enemyProxy, simulator.getEnemyBullets(), Rules.MAX_VELOCITY);
-            if (enemyProxy != null) {
-                simulator.setEnemyMovementDecision(new MovementDecision(enemyDesiredSpeed, 0));
-            }
-            simulator.setMyMovementDecision(md);
-            simulator.doTurn();
-            points.add(new WSPoint(myProxy, getPointDanger(bullets, myProxy, enemyProxy)));
+            robotImg.apply(md);
+            points.add(new WSPoint(robotImg, getPointDanger(bullets, robotImg, opponentImg)));
             time++;
         }
 
@@ -262,19 +204,19 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
-                                                 LXXRobot robot, LXXRobot enemy, List<LXXBullet> bullets, double desiredSpeed) {
-        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, enemy, orbitDirection, bullets);
-        //desiredHeading = battleField.smoothWalls(robot.getState(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        double smoothedHeadingCW = battleField.smoothWalls(robot.getState(), desiredHeading, true);
-        double smoothedHeadingCCW = battleField.smoothWalls(robot.getState(), desiredHeading, false);
+                                                 LXXRobotState robot, double desiredSpeed, List<LXXBullet> bulletsOnAir) {
+        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection, bulletsOnAir);
+        desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        /*double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
+        double smoothedHeadingCCW = battleField.smoothWalls(robot, desiredHeading, false);
         if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
                 LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
             desiredHeading = smoothedHeadingCW;
         } else {
             desiredHeading = smoothedHeadingCCW;
-        }
+        }*/
 
-        return MovementDecision.toMovementDecision(robot.getState(), desiredSpeed, desiredHeading);
+        return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);
     }
 
     public void paint(LXXGraphics g) {
@@ -283,16 +225,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         g.setColor(Color.GREEN);
-        for (WSPoint pnt : clockwisePrediction.points) {
+        for (WSPoint pnt : prevPrediction.points) {
             g.fillCircle(pnt, 3);
         }
 
-        g.setColor(Color.YELLOW);
-        for (WSPoint pnt : counterClockwisePrediction.points) {
-            g.fillCircle(pnt, 3);
-        }
-
-        g.setColor(Color.WHITE);
         g.drawCircle(prevPrediction.minDangerPoint, 5);
     }
 
@@ -320,8 +256,8 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     public class MovementDirectionPrediction {
 
-        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(LXXConstants.RADIANS_90, 100),
-                new PointDangerOnWave(LXXConstants.RADIANS_90, 100), 0, 1000);
+        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100),
+                new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100), 0, 1000);
 
         private PointDanger minDanger = MAX_POINT_DANGER;
         private APoint minDangerPoint;
@@ -357,14 +293,14 @@ public class WaveSurfingMovement implements Movement, Painter {
                 res = dangerOnSecondWave.compareTo(o.dangerOnSecondWave);
             }
 
-            double thisDng = abs(distToEnemyDiff) / preferredDistance * 5 +
+            double thisDng = abs(distToEnemyDiff) / preferredDistance * 3 +
                     abs(distanceToCenter - 200) / 400;
 
-            double anotherDng = abs(o.distToEnemyDiff) / preferredDistance * 5 +
+            double anotherDng = abs(o.distToEnemyDiff) / preferredDistance * 3 +
                     abs(o.distanceToCenter - 200) / 400;
 
             if (res == 0) {
-                res = compareDoubles(thisDng, anotherDng, 0.15);
+                res = compareDoubles(thisDng, anotherDng, 0.1);
             }
 
             return res;
@@ -378,23 +314,40 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     private static class PointDangerOnWave implements Comparable<PointDangerOnWave> {
 
-        //public final double minDistToBulletRadians;
+        public final double minDistToBulletRadians;
         public final double robotWidthInRadians;
-        public final double bulletsCount;
+        public final int bulletsCount;
 
-        public PointDangerOnWave(double robotWidthInRadians, double bulletsCount) {
+        public PointDangerOnWave(double minDistToBulletRadians, double robotWidthInRadians, int bulletsCount) {
+            this.minDistToBulletRadians = minDistToBulletRadians;
             this.robotWidthInRadians = robotWidthInRadians;
             this.bulletsCount = bulletsCount;
         }
 
         public int compareTo(PointDangerOnWave o) {
-            return compareDoubles(bulletsCount, o.bulletsCount, 0.05);
+            if (!hasCloseBullets() && !o.hasCloseBullets()) {
+                return 0;
+            } else if (hasCloseBullets() && !o.hasCloseBullets()) {
+                return 1;
+            } else if (!hasCloseBullets() && o.hasCloseBullets()) {
+                return -1;
+            } else {
+                if (bulletsCount != o.bulletsCount) {
+                    return (int) signum(bulletsCount - o.bulletsCount);
+                } else {
+                    return compareDoubles(o.minDistToBulletRadians, minDistToBulletRadians, 0.1);
+                }
+            }
+        }
+
+        private boolean hasCloseBullets() {
+            return minDistToBulletRadians < robotWidthInRadians * 1.55;
         }
 
         @Override
         public String toString() {
-            return String.format("PointDangerOnWave (%3.3f, %3.3f)",
-                    Math.toDegrees(robotWidthInRadians), bulletsCount);
+            return String.format("PointDangerOnWave (%3.3f, %3.3f, %d)",
+                    Math.toDegrees(minDistToBulletRadians), Math.toDegrees(robotWidthInRadians), bulletsCount);
         }
     }
 

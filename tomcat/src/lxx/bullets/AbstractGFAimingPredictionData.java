@@ -29,12 +29,15 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     private static final NumberFormat format = new DecimalFormat("###.###");
 
     private final List<BearingOffsetDanger> dangers = new ArrayList<BearingOffsetDanger>();
-    private final double step;
+    private double step;
 
     private double maxBearingOffset = 0;
     protected double maxDanger;
 
-    public AbstractGFAimingPredictionData(Map<Double, Double> matches) {
+    public AbstractGFAimingPredictionData() {
+    }
+
+    private void calculateDangers(Map<Double, Double> matches) {
         for (Double bearingOffset : matches.keySet()) {
             double danger = matches.get(bearingOffset);
             if (danger == -1) {
@@ -73,6 +76,9 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     }
 
     public void paint(LXXGraphics g, LXXBullet bullet) {
+        if (dangers.size() == 0) {
+            calculateDangers(getMatches());
+        }
         final APoint firePosition = bullet.getFirePosition();
         final double baseDistance = bullet.getTravelledDistance() - 5;
 
@@ -118,5 +124,7 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
 
         g.setFont(oldFont);
     }
+
+    protected abstract Map<Double,Double> getMatches();
 
 }

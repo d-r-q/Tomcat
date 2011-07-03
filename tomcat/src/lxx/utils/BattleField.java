@@ -5,12 +5,14 @@
 package lxx.utils;
 
 import lxx.LXXRobotState;
+import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * User: jdev
@@ -142,8 +144,8 @@ public class BattleField {
         return smoothWall(getWall(robot, desiredHeading), robot, desiredHeading, isClockwise);
     }
 
-    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        double hypotenuse = calculateHypotenuse(robot, isClockwise);
+    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading,  boolean isClockwise) {
+        double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
         final double adjacentLeg = max(0, getDistanceToWall(wall, robot) - 4);
         int buffer = 22;
         if (hypotenuse + buffer < adjacentLeg) {
@@ -166,8 +168,11 @@ public class BattleField {
         return smoothedAngle;
     }
 
-    public double calculateHypotenuse(LXXRobotState robot, boolean isClockwise) {
-        return 135;
+    private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
+        final double maxSmoothedAngle = isClockwise ? wall.wallType.clockwiseAngle : wall.wallType.counterClockwiseAngle;
+        final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + 1);
+        final double turnTime = LXXUtils.anglesDiff(maxSmoothedAngle, robot.getAbsoluteHeadingRadians()) / Rules.getTurnRateRadians(acceleratedSpeed);
+        return acceleratedSpeed * (turnTime + 3);
     }
 
     public boolean contains(APoint point) {

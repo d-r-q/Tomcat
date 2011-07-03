@@ -69,20 +69,20 @@ public class TomcatClaws implements Gun {
 
     private double getBearingOffset(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
         futurePoses = getFuturePoses(t, starts, bulletSpeed);
-        final List<IntervalDouble> botIntervals = new ArrayList<IntervalDouble>();
+        final List<IntervalDouble> botIntervalsRadians = new ArrayList<IntervalDouble>();
         for (APoint pnt : futurePoses) {
             final double bearingOffset = LXXUtils.bearingOffset(robotPosAtFireTime, t, pnt);
             final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt);
             final double bo1 = bearingOffset - botWidth / 2;
             final double bo2 = bearingOffset + botWidth / 2;
-            botIntervals.add(new IntervalDouble(min(bo1, bo2), max(bo1, bo2)));
+            botIntervalsRadians.add(new IntervalDouble(min(bo1, bo2), max(bo1, bo2)));
         }
 
         bearingOffsetDangers = new TreeMap<Double, Double>();
         double maxDanger = 0;
         for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
             double bearingOffsetDanger = 0;
-            for (IntervalDouble ival : botIntervals) {
+            for (IntervalDouble ival : botIntervalsRadians) {
                 if (ival.contains(wavePointBearingOffset)) {
                     //final double dist = abs(wavePointBearingOffset - ival.center());
                     bearingOffsetDanger++;
