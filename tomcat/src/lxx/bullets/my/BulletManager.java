@@ -12,11 +12,15 @@ import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
 import lxx.paint.LXXGraphics;
+import lxx.utils.LXXPoint;
+import lxx.utils.wave.Wave;
 import robocode.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -68,10 +72,12 @@ public class BulletManager implements RobotListener {
         removeBullet(b);
     }
 
-    private LXXBullet getBullet(Bullet bullet) {
-        for (LXXBullet b : bullets) {
-            if (bullet.equals(b.getBullet())) {
-                return b;
+    private LXXBullet getBullet(Bullet b) {
+        for (LXXBullet bullet : bullets) {
+            final Wave w = bullet.getWave();
+            if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.1 &&
+                    abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() + 1) {
+                return bullet;
             }
         }
 
