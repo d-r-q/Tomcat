@@ -19,15 +19,16 @@ public class Challenge implements IBattleListener {
 
     private final List<BattleResults[]> battleResults = new ArrayList<BattleResults[]>();
     private final String challengerBotName;
-    private final String referenceBotName;
+    private final String[] referenceBotsNames;
     private final int seasons;
 
     private long startTime;
     private BenchmarkResults benchmarkResults;
+    private String currentReferenceBot;
 
-    public Challenge(String challengerBotName, String referenceBotName, BenchmarkResults benchmarkResults, int seasons) {
+    public Challenge(String challengerBotName, String[] referenceBotsName, BenchmarkResults benchmarkResults, int seasons) {
         this.challengerBotName = challengerBotName;
-        this.referenceBotName = referenceBotName;
+        this.referenceBotsNames = referenceBotsName;
         this.benchmarkResults = benchmarkResults;
         this.seasons = seasons;
     }
@@ -35,28 +36,32 @@ public class Challenge implements IBattleListener {
     public void execute(RobocodeEngine engine) {
         engine.addBattleListener(this);
         try {
-            for (int i = 0; i < seasons; i++) {
-                final BattlefieldSpecification specification1 = new BattlefieldSpecification(800, 600);
-                final RobotSpecification[] specs = new RobotSpecification[2];
-                int idx = 0;
-                for (RobotSpecification rs : engine.getLocalRepository()) {
-                    if (rs.getName().equals(challengerBotName)) {
-                        specs[idx++] = rs;
-                    } else if (rs.getName().equals(referenceBotName)) {
-                        specs[idx++] = rs;
+            for (String referenceBotName : referenceBotsNames) {
+                currentReferenceBot = referenceBotName;
+                for (int i = 0; i < seasons; i++) {
+                    final BattlefieldSpecification specification1 = new BattlefieldSpecification(800, 600);
+                    final RobotSpecification[] specs = new RobotSpecification[2];
+                    int idx = 0;
+                    for (RobotSpecification rs : engine.getLocalRepository()) {
+                        if (rs.getName().equals(challengerBotName)) {
+                            specs[idx++] = rs;
+                        } else {
+                            if (rs.getName().equals(currentReferenceBot)) {
+                                specs[idx++] = rs;
+                            }
+                        }
                     }
+                    final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
+                    startTime = System.currentTimeMillis();
+                    engine.runBattle(specification);
+                    engine.waitTillBattleOver();
                 }
-                final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
-                startTime = System.currentTimeMillis();
-                engine.runBattle(specification);
-                engine.waitTillBattleOver();
             }
         } finally {
             engine.removeBattleListener(this);
         }
     }
 
-    @Override
     public void onBattleCompleted(BattleCompletedEvent event) {
         battleResults.add(event.getSortedResults());
     }
@@ -92,45 +97,51 @@ public class Challenge implements IBattleListener {
         }
     }
 
-    @Override
     public void onRoundEnded(RoundEndedEvent event) {
-        System.out.println(challengerBotName + " vs " + referenceBotName + " " + (event.getRound() + 1) + " round ended");
+        System.out.println(challengerBotName + " vs " + currentReferenceBot + " " + (event.getRound() + 1) + " round ended");
     }
 
-    @Override
     public void onBattleStarted(BattleStartedEvent event) {
     }
 
-    @Override
     public void onBattleFinished(BattleFinishedEvent event) {
     }
 
-    @Override
     public void onBattlePaused(BattlePausedEvent event) {
     }
 
-    @Override
     public void onBattleResumed(BattleResumedEvent event) {
     }
 
-    @Override
     public void onRoundStarted(RoundStartedEvent event) {
     }
 
-    @Override
     public void onTurnStarted(TurnStartedEvent event) {
     }
 
-    @Override
     public void onTurnEnded(TurnEndedEvent event) {
     }
 
-    @Override
     public void onBattleMessage(BattleMessageEvent event) {
     }
 
-    @Override
     public void onBattleError(BattleErrorEvent event) {
         System.out.println("onBattleError: " + event.getError());
+    }
+
+    public List<BattleResults[]> getBattleResults() {
+        return battleResults;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public String getChallengerBotName() {
+        return challengerBotName;
+    }
+
+    public int getSeasons() {
+        return seasons;
     }
 }

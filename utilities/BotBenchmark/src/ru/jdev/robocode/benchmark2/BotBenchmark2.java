@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,20 +24,19 @@ public class BotBenchmark2 {
 
     private BenchmarkResults benchmarkResults = new BenchmarkResults();
 
-    private void run(String challengerBotName, String[] rrReferenceBotNames, int seasons) {
+    private void run(String challengerBotName, String[] referenceBotNames, int seasons) throws SQLException {
         System.out.println("Rounds: " + ROUNDS);
-        RobocodeEngine engine = new RobocodeEngine(new File("D:\\my\\rc\\"));
+        RobocodeEngine engine = new RobocodeEngine(new File("D:\\my\\rc1730\\"));
         long startTime = System.currentTimeMillis();
         List<Challenge> challenges = new ArrayList<Challenge>();
-        for (String referenceBotName : rrReferenceBotNames) {
-            try {
-                Challenge c = new Challenge(challengerBotName, referenceBotName, benchmarkResults, seasons);
-                c.execute(engine);
-                challenges.add(c);
-                System.gc();
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+        DAO dao = new DAO();
+        try {
+            Challenge c = new Challenge(challengerBotName, referenceBotNames, benchmarkResults, seasons);
+            c.execute(engine);
+            challenges.add(c);
+            dao.storeChallenge(c);
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
 
         for (Challenge c : challenges) {
@@ -50,9 +50,11 @@ public class BotBenchmark2 {
         System.out.println("Avg exec time: " + dateFormat.format(new Date((long) benchmarkResults.avgExecTime.getCurrentValue())));
         long globalExecTime = System.currentTimeMillis() - startTime;
         System.out.println("Global exec time: " + dateFormat.format(new Date(globalExecTime)));
+
+        dao.dispose();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
         BotBenchmark2 bb2 = new BotBenchmark2();
         bb2.run(args[0], getBotList(args[1]), Integer.valueOf(args[2]));
     }
