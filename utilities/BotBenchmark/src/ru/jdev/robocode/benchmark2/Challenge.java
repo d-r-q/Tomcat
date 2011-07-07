@@ -11,12 +11,14 @@ import robocode.control.RobocodeEngine;
 import robocode.control.RobotSpecification;
 import robocode.control.events.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class Challenge implements IBattleListener {
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("mm:ss");
     private final List<BattleResults[]> battleResults = new ArrayList<BattleResults[]>();
     private final String challengerBotName;
     private final String[] referenceBotsNames;
@@ -35,6 +37,7 @@ public class Challenge implements IBattleListener {
 
     public void execute(RobocodeEngine engine) {
         engine.addBattleListener(this);
+        startTime = System.currentTimeMillis();
         try {
             for (String referenceBotName : referenceBotsNames) {
                 currentReferenceBot = referenceBotName;
@@ -52,53 +55,26 @@ public class Challenge implements IBattleListener {
                         }
                     }
                     final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
-                    startTime = System.currentTimeMillis();
+                    System.gc();
+                    System.out.printf("Start battle (%d/%d)\n", battleResults.size() + 1, seasons);
+                    long battleStartTime = System.currentTimeMillis();
                     engine.runBattle(specification);
                     engine.waitTillBattleOver();
+                    System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), seasons * referenceBotsNames.length,
+                            (System.currentTimeMillis() - battleStartTime) / 1000);
                 }
             }
         } finally {
             engine.removeBattleListener(this);
         }
+        System.out.println("Challenge finished, execution time: " + dateFormat.format(new Date(System.currentTimeMillis() - startTime)));
     }
 
     public void onBattleCompleted(BattleCompletedEvent event) {
         battleResults.add(event.getSortedResults());
     }
 
-    public void printBattleResults() {
-        for (BattleResults[] brs : battleResults) {
-            int totalScore = 0;
-            for (BattleResults br : brs) {
-                totalScore += br.getScore();
-            }
-
-            System.out.println("=====================================");
-            for (BattleResults br : brs) {
-                final int percentageScore = (int) ((double) br.getScore() / totalScore * 100);
-                final int percentageSurv = (int) ((double) br.getFirsts() / BotBenchmark2.ROUNDS * 100);
-                System.out.println(br.getTeamLeaderName() + ": " +
-                        percentageScore + "%, " +
-                        br.getScore() + ", " + br.getBulletDamage() + ", " +
-                        br.getSurvival());
-
-                if (br.getTeamLeaderName().indexOf(challengerBotName) != -1) {
-                    benchmarkResults.avgBulletDamage.addValue(br.getBulletDamage());
-                    benchmarkResults.avgPS.addValue(percentageScore);
-                    benchmarkResults.avgScore.addValue(br.getScore());
-                    benchmarkResults.avgSS.addValue(percentageSurv);
-                }
-            }
-            final long execTime = System.currentTimeMillis() - startTime;
-            System.out.println("Exec time: " + BotBenchmark2.dateFormat.format(new Date(execTime)));
-            System.out.println("Avg round time: " + BotBenchmark2.dateFormat.format(new Date(execTime / BotBenchmark2.ROUNDS)));
-            benchmarkResults.avgExecTime.addValue(execTime);
-            System.out.println("=====================================");
-        }
-    }
-
     public void onRoundEnded(RoundEndedEvent event) {
-        System.out.println(challengerBotName + " vs " + currentReferenceBot + " " + (event.getRound() + 1) + " round ended");
     }
 
     public void onBattleStarted(BattleStartedEvent event) {
