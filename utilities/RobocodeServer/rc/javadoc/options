@@ -1,0 +1,24 @@
+-classpath
+'R:/robocode-trunk/robocode.api/target/classes'
+-encoding
+'cp1252'
+-protected
+-sourcepath
+'R:/robocode-trunk/robocode.api/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2011 <a href="http://robocode.sf.net">Robocode</a>. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'R:/robocode-trunk/robocode.api/target/site/apidocs'
+-docencoding
+'UTF-8'
+-docfilessubdirs
+-doctitle
+'<h1>Robocode 1.7.3.0 API</h1>'
+-link
+'http://java.sun.com/j2se/1.5.0/docs/api'
+-version
+-windowtitle
+'Robocode 1.7.3.0 API'

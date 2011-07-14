@@ -1,0 +1,30 @@
+roborumble,35,800x600,Jdev,1309930710825,SERVER
+bayen.UbaMicro 1.4,5592,3110,32
+homerbots.h1 1.0,1055,817,3
+roborumble,35,800x600,Jdev,1309930713669,SERVER
+brainfade.Fallen 0.63,4171,2133,28
+fullsail.LaxativeTeaTwo 1.0,1747,1248,7
+roborumble,35,800x600,Jdev,1309930716231,SERVER
+AIR.iRobot 1.0,3030,1307,25
+wiki.nano.RaikoNano 1.1,1844,1153,10
+roborumble,35,800x600,Jdev,1309930717997,SERVER
+lrem.Spectre 0.4.4,6097,3109,32
+radnor.RamRod 1.0,2678,1872,3
+roborumble,35,800x600,Jdev,1309930720200,SERVER
+nanoskank.NanoSkank 1.0,3217,1527,24
+ntc.Plains 0.9,1500,750,11
+roborumble,35,800x600,Jdev,1309930730403,SERVER
+kinsen.nano.Quarrelet 1.0,5069,2596,33
+throxbot.ThroxBot 0.1,1099,957,2
+roborumble,35,800x600,Jdev,1309930732481,SERVER
+myl.micro.NekoNinja 1.30,3749,2095,22
+kjc.Karaykan 1.0,1866,956,13
+roborumble,35,800x600,Jdev,1309930739544,SERVER
+kid.Gladiator .7.2,2770,879,29
+davidalves.net.DuelistMini 1.1,1550,1111,6
+roborumble,35,800x600,Jdev,1309930752747,SERVER
+exauge.LemonDrop 1.6.130,3631,2020,22
+oog.micro.SavantMicro 1.0,2722,1759,13
+roborumble,35,800x600,Jdev,1309930755747,SERVER
+wcsv.Stampede2.Stampede2 1.1.0,5383,2735,35
+jsal.Jsalbot 1.0,393,392,0
