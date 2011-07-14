@@ -42,9 +42,11 @@ public class CodeManager {
 
             if (idx != eName.length() - 1) {
                 FileOutputStream fos = new FileOutputStream(new File(dir.getAbsolutePath() + File.separator + eName.substring(idx + 1)));
-                byte[] buff = new byte[(int) e.getSize()];
-                int len = jis.read(buff, 0, buff.length);
-                fos.write(buff, 0, len);
+                byte[] buff = new byte[1024];
+                int len;
+                while ((len = jis.read(buff)) != -1) {
+                    fos.write(buff, 0, len);
+                }
                 fos.flush();
                 fos.close();
             }
