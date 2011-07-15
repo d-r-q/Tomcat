@@ -125,6 +125,6 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
         g.setFont(oldFont);
     }
 
-    protected abstract Map<Double,Double> getMatches();
+    protected abstract Map<Double, Double> getMatches();
 
 }

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  ~ Copyright (c) 2011 Zodiac Interactive, LLC. All Rights Reserved.
+  -->
+
 <project name="Tomcat" basedir="."
          default="archive">
     <property file="build.properties"/>
@@ -39,14 +43,16 @@
         </tstamp>
 
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
-robot.java.source.included=false
-robot.version=${robot.version}
-robot.author.name=Alexey Zhidkov
-robot.classname=lxx.${robot.name}
-robot.name=${robot.name}</echo>
+            robot.java.source.included=false
+            robot.version=${robot.version}
+            robot.author.name=Alexey Zhidkov
+            robot.classname=lxx.${robot.name}
+            robot.name=${robot.name}
+        </echo>
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal
-lxx.Tomcat.build_time=${TODAY} ${NOW}</echo>
+            lxx.Tomcat.build_time=${TODAY} ${NOW}
+        </echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}.jar" compress="true">
             <fileset dir="${bin.dir}"/>
@@ -62,15 +68,17 @@ lxx.Tomcat.build_time=${TODAY} ${NOW}</echo>
 
         <delete file="lxx.${robot.name}_${robot.version}.jar"/>
 
-        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
-robot.java.source.included=false
-robot.version=${robot.version}TCc
-robot.author.name=Alexey Zhidkov
-robot.classname=lxx.${robot.name}
-robot.name=${robot.name}</echo>
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
+            robot.java.source.included=false
+            robot.version=${robot.version}TCc
+            robot.author.name=Alexey Zhidkov
+            robot.classname=lxx.${robot.name}
+            robot.name=${robot.name}
+        </echo>
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc
-lxx.Tomcat.build_time=${TODAY} ${NOW}</echo>
+            lxx.Tomcat.build_time=${TODAY} ${NOW}
+        </echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}TCc.jar" compress="true">
             <fileset dir="${bin.dir}"/>

@@ -206,15 +206,15 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, double desiredSpeed, List<LXXBullet> bulletsOnAir) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection, bulletsOnAir);
-        desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        /*double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
+        //desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
         double smoothedHeadingCCW = battleField.smoothWalls(robot, desiredHeading, false);
         if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
                 LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
             desiredHeading = smoothedHeadingCW;
         } else {
             desiredHeading = smoothedHeadingCCW;
-        }*/
+        }
 
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);
     }
