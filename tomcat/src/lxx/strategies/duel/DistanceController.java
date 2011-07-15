@@ -27,7 +27,7 @@ import static java.lang.Math.*;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_40;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
     private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_DISTANCE = 450;
@@ -57,14 +57,12 @@ public class DistanceController {
                                                 double desiredDistance, double timeToTravel, List<LXXBullet> bulletsOnAir) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
-        final double k = min(1, timeToTravel / (distanceBetween / getBulletSpeed(bulletsOnAir)));
-        final double maxAttackAngle = LXXConstants.RADIANS_110 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * k);
+        final double k = 1;//min(1, timeToTravel / (distanceBetween / getBulletSpeed(bulletsOnAir)));
+        final double maxAttackAngle = LXXConstants.RADIANS_100 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double distanceDiff = distanceBetween - desiredDistance;
-        final double attackAngleKoeff = distanceDiff < 0
-                ? -sqrt(abs(distanceDiff)) / sqrt(desiredDistance)
-                : distanceDiff / desiredDistance;
-        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_90 * attackAngleKoeff);
+        final double attackAngleKoeff = distanceDiff / desiredDistance;
+        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_30 * attackAngleKoeff);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
