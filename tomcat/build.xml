@@ -42,7 +42,7 @@
             <format property="NOW" pattern="HH:mm:ss"/>
         </tstamp>
 
-        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.6
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
             robot.java.source.included=false
             robot.version=${robot.version}
             robot.author.name=Alexey Zhidkov

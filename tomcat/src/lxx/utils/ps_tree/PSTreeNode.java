@@ -63,7 +63,12 @@ public class PSTreeNode<T extends Serializable> {
                     range.b = value;
                 }
             }
-            for (PSTreeNode<T> n : children) {
+            int left = 0;
+            int right = children.size();
+            int medin;
+            while (left < right){
+                medin = (left + right) / 2;
+                PSTreeNode<T> n = children.get(medin);
                 if (n.interval.contains(attrValue)) {
                     List<PSTreeNode<T>> subRes = n.addEntry(PSTreeEntry);
                     if (subRes != null) {
@@ -72,6 +77,10 @@ public class PSTreeNode<T extends Serializable> {
                         children.addAll(idx, subRes);
                     }
                     break;
+                } else if (attrValue < n.interval.a) {
+                    right = medin;
+                } else {
+                    left = medin;
                 }
             }
             return null;
@@ -233,9 +242,10 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public List<PSTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
+    public void getEntries(Map<Attribute, Interval> limits, List<PSTreeEntry<T>> res) {
         if (children.size() == 0) {
-            return entries;
+            res.addAll(entries);
+            return;
         }
 
         int fromIdx = Integer.MAX_VALUE;
@@ -249,14 +259,11 @@ public class PSTreeNode<T extends Serializable> {
         }
 
         if (fromIdx == Integer.MAX_VALUE) {
-            return emptyList;
+            return;
         }
 
-        List<PSTreeEntry<T>> entries = new ArrayList<PSTreeEntry<T>>();
         for (int i = fromIdx; i <= toIdx; i++) {
-            entries.addAll(children.get(i).getEntries(limits));
+            children.get(i).getEntries(limits, res);
         }
-
-        return entries;
     }
 }
