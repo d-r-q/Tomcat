@@ -16,13 +16,15 @@ import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.Interval;
-import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import robocode.Rules;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
@@ -61,16 +63,17 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
                 predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
         final double bulletSpeed = Rules.getBulletSpeed(firePower);
-        final double maxEscapeAngle = LXXUtils.getMaxEscapeAngle(t, robot.getState(), bulletSpeed);
+        final double maxEscapeAngleAcc = LXXUtils.getMaxEscapeAngle(t, robot.getState(), bulletSpeed);
+        final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
         final List<Double> bearingOffsets = new LinkedList<Double>();
         if (entries.size() > 0) {
             for (PSTreeEntry<Double> entry : entries) {
-                bearingOffsets.add(entry.result * lateralDirection);
+                bearingOffsets.add(entry.result * lateralDirection * maxEscapeAngleQuick);
             }
         } else {
             final GunType enemyGunType = tomcatEyes.getEnemyGunType(t);
             if (enemyGunType != GunType.HEAD_ON) {
-                bearingOffsets.add(maxEscapeAngle * lateralDirection);
+                bearingOffsets.add(maxEscapeAngleAcc * lateralDirection);
             }
             if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
                 bearingOffsets.add(0D);
@@ -118,7 +121,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public void setBulletGF(LXXBullet bullet) {
-        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection();
+        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         final PSTree<Double> log = getLog(bullet.getOwner().getName());
 
         final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);

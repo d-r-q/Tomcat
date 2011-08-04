@@ -54,6 +54,9 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     }
 
     public double getDangerExt(double baseBearingOffset, double botWidthRadians) {
+        if (dangers.size() == 0) {
+            calculateDangers(getMatches());
+        }
         final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         double danger = 0;
@@ -65,6 +68,9 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     }
 
     public double getDangerInt(double baseBearingOffset, double botWidthRadians) {
+        if (dangers.size() == 0) {
+            calculateDangers(getMatches());
+        }
         final int fromIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
         final int toIdx = (int) LXXUtils.limit(0, max(floor((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), fromIdx), dangers.size() - 1);
         double danger = 0;
