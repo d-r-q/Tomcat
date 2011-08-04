@@ -54,7 +54,11 @@ public class WaveSurfingMovement implements Movement, Painter {
     public MovementDecision getMovementDecision() {
         duelOpponent = targetManager.getDuelOpponent();
         final List<LXXBullet> lxxBullets = getBullets();
-        selectOrbitDirection(lxxBullets);
+        if (needToReselectOrbitDirection(lxxBullets)) {
+            selectOrbitDirection(lxxBullets);
+        } else {
+            distanceToTravel -= robot.getSpeed();
+        }
 
         cmps.add(prevPrediction.orbitDirection);
         if (cmps.size() > 3) {
@@ -70,6 +74,14 @@ public class WaveSurfingMovement implements Movement, Painter {
         final double desiredSpeed = distanceToTravel > LXXUtils.getStopDistance(robot.getSpeed()) ? 8 : 0;
 
         return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), desiredSpeed, lxxBullets);
+    }
+
+    private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
+        //return true;
+        return prevPrediction == null ||
+                !prevPrediction.bullet.equals(bullets.get(0)) ||
+                (duelOpponent != null && signum(duelOpponent.getAcceleration()) != prevPrediction.enemyAccelSign) ||
+                (duelOpponent != null && duelOpponent.aDistance(robot) < prevPrediction.distanceBetween - 25);
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -100,6 +112,9 @@ public class WaveSurfingMovement implements Movement, Painter {
         double distance = 0;
         LXXPoint prevPoint = robot.getPosition();
         prediction.points = generatePoints(orbitDirection, lxxBullets, duelOpponent);
+        prediction.bullet = lxxBullets.get(0);
+        prediction.enemyAccelSign = duelOpponent != null ? signum(duelOpponent.getAcceleration()) : 0;
+        prediction.distanceBetween = duelOpponent != null ? duelOpponent.aDistance(robot) : 0;
         for (LXXPoint pnt : prediction.points) {
             distance += prevPoint.aDistance(pnt);
             double danger = getPointDanger(lxxBullets, pnt);
@@ -239,5 +254,8 @@ public class WaveSurfingMovement implements Movement, Painter {
         private OrbitDirection orbitDirection;
 
         public List<LXXPoint> points;
+        public LXXBullet bullet;
+        public double enemyAccelSign;
+        public double distanceBetween;
     }
 }
