@@ -4,6 +4,7 @@
 
 package lxx.office;
 
+import lxx.LXXRobot;
 import lxx.RobotListener;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
@@ -132,4 +133,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         return myRawHitRate.getHitRate();
     }
 
+    public HitRate getEnemyHitRate() {
+        return enemyHitRate;
+    }
 }

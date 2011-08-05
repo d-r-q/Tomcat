@@ -6,6 +6,7 @@ package lxx.ts_log.attributes.attribute_extractors;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
+import lxx.office.Office;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class DistanceBetweenVE implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return me.aDistance(enemy);
     }
 

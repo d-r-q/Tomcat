@@ -10,6 +10,7 @@ import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
+import lxx.bullets.PastBearingOffset;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.office.Office;
@@ -36,7 +37,7 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
-    private static final EnemyBulletsPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletsPredictionData(new ArrayList<Double>());
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), -1);
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
 

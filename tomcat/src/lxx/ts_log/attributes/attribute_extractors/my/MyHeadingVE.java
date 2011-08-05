@@ -6,6 +6,7 @@ package lxx.ts_log.attributes.attribute_extractors.my;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
+import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import static java.lang.Math.toDegrees;
  */
 public class MyHeadingVE implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets) {
+    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return toDegrees(me.getState().getAbsoluteHeadingRadians());
     }
 

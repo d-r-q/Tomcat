@@ -87,9 +87,9 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         final TargetingProfile tp = getTargetingProfile(enemy);
         if (tp.bearingOffsets == 0) {
             return GunType.UNKNOWN;
-        } else if (tp.distWithHoBoMedian.getMedian() < LXXConstants.RADIANS_10) {
+        } else if (tp.distWithHoBoMedian.getMedian() < LXXConstants.RADIANS_10 && tp.bearingOffsetsInteval.a > -LXXConstants.RADIANS_15) {
             return GunType.HEAD_ON;
-        } else if (tp.distWithLinearBOMedian.getMedian() < LXXConstants.RADIANS_15) {
+        } else if (tp.distWithLinearBOMedian.getMedian() < LXXConstants.RADIANS_15 && tp.bearingOffsetsInteval.a > -LXXConstants.RADIANS_15) {
             return GunType.LINEAR;
         } else {
             return GunType.ADVANCED;

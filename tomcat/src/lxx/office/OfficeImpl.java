@@ -59,7 +59,7 @@ public class OfficeImpl implements Office {
         paintManager = new PaintManager();
         tomcat.addListener(paintManager);
 
-        PluginManager pluginManager = new PluginManager(this);
+        final PluginManager pluginManager = new PluginManager(this);
         tomcat.addListener(pluginManager);
 
         dataViewManager = new DataViewManager(targetManager, turnSnapshotsLog);

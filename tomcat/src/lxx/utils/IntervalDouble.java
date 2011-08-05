@@ -29,4 +29,13 @@ public class IntervalDouble {
     public boolean contains(double x) {
         return a <= x && b >= x;
     }
+
+    public void extend(double x) {
+        if (a > x) {
+            a = x;
+        }
+        if (b < x) {
+            b = x;
+        }
+    }
 }
