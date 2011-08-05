@@ -67,7 +67,7 @@ public class TomcatClaws implements Gun {
         return Utils.normalRelativeAngle(angleToPredictedPos - robot.getGunHeadingRadians());
     }
 
-    private double getBearingOffset(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
+    private double getBearingOffset(Target t, Collection<TurnSnapshot> starts, double bulletSpeed) {
         futurePoses = getFuturePoses(t, starts, bulletSpeed);
         final List<IntervalDouble> botIntervalsRadians = new ArrayList<IntervalDouble>();
         for (APoint pnt : futurePoses) {
@@ -108,10 +108,16 @@ public class TomcatClaws implements Gun {
         return candidates.get((int) (candidates.size() * random()));
     }
 
-    private List<APoint> getFuturePoses(Target t, Set<TurnSnapshot> starts, double bulletSpeed) {
+    private List<APoint> getFuturePoses(Target t, Collection<TurnSnapshot> starts, double bulletSpeed) {
         final List<APoint> futurePoses = new ArrayList<APoint>();
+        final Map<TurnSnapshot, APoint> futurePosesCache = new HashMap<TurnSnapshot, APoint>();
         for (TurnSnapshot start : starts) {
-            final APoint futurePos = getFuturePos(t, start, bulletSpeed);
+            APoint futurePos = futurePosesCache.get(start);
+            if (futurePos == null) {
+                futurePos = getFuturePos(t, start, bulletSpeed);
+                futurePosesCache.put(start, futurePos);
+            }
+
             if (futurePos != null) {
                 futurePoses.add(futurePos);
             }

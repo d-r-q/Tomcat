@@ -42,7 +42,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.enemyBearingOffsetOnFirstBullet,
             AttributesManager.enemyBearingOffsetOnSecondBullet,
@@ -51,7 +51,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration, 0,
             AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
-            AttributesManager.enemyBearingToForwardWall, 20,
+            AttributesManager.enemyBearingToMe, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,
             AttributesManager.enemyBearingOffsetOnFirstBullet, 10,
             AttributesManager.enemyBearingOffsetOnSecondBullet, 15
@@ -62,7 +62,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.distBetween,
     };
@@ -70,7 +70,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration, 0,
             AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
-            AttributesManager.enemyBearingToForwardWall, 20,
+            AttributesManager.enemyBearingToMe, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,
             AttributesManager.distBetween, 50
     );
@@ -80,7 +80,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
+            AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.enemyTimeSinceLastDirChange,
     };
@@ -88,7 +88,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration, 0,
             AttributesManager.enemySpeed, 2,
             AttributesManager.enemyDistanceToForwardWall, 20,
-            AttributesManager.enemyBearingToForwardWall, 20,
+            AttributesManager.enemyBearingToMe, 20,
             AttributesManager.firstBulletFlightTimeToEnemy, 1,
             AttributesManager.enemyTimeSinceLastDirChange, 2
     );

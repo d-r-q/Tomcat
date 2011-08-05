@@ -58,7 +58,13 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     private List<Double> getBearingOffsets(PSTree<Double> log, TurnSnapshot predicate, double firePower, Target t) {
-        final List<PSTreeEntry<Double>> entries = log.getSimilarEntries(getLimits(predicate));
+        List<PSTreeEntry<Double>> entries = null;
+        for (int delta = 0; delta <= 2; delta++) {
+            entries = log.getSimilarEntries(getLimits(predicate, delta));
+            if (entries.size() > 0) {
+                break;
+            }
+        }
         final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                 predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
         final double lateralDirection = signum(lateralVelocity);
@@ -83,10 +89,10 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return bearingOffsets;
     }
 
-    private Map<Attribute, Interval> getLimits(TurnSnapshot ts) {
+    private Map<Attribute, Interval> getLimits(TurnSnapshot ts, int delta) {
         return LXXUtils.toMap(AttributesManager.myLateralSpeed,
-                new Interval((int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) - 1)),
-                        (int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + 1))));
+                new Interval((int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) - delta)),
+                        (int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + delta))));
     }
 
     private static PSTree<Double> getLog(String enemyName) {

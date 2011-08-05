@@ -1,8 +1,12 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.ts_log.TurnSnapshot;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * User: jdev
@@ -10,7 +14,7 @@ import java.util.Set;
  */
 public interface DataView {
 
-    Set<TurnSnapshot> getDataSet(TurnSnapshot ts);
+    Collection<TurnSnapshot> getDataSet(TurnSnapshot ts);
 
     void addEntry(TurnSnapshot ts);
 

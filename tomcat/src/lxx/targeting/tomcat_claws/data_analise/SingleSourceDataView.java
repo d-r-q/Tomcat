@@ -1,12 +1,16 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.targeting.tomcat_claws.data_analise;
 
-import lxx.utils.ps_tree.PSTree;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
-import lxx.utils.ps_tree.EntryMatch;
-import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.Interval;
 import lxx.utils.LXXUtils;
+import lxx.utils.ps_tree.EntryMatch;
+import lxx.utils.ps_tree.PSTree;
+import lxx.utils.ps_tree.PSTreeEntry;
 
 import java.io.Serializable;
 import java.util.*;
@@ -21,7 +25,7 @@ public class SingleSourceDataView implements DataView {
 
     private final PSTree<Serializable> dataSource;
 
-    private final Map<Attribute,Integer> ranges;
+    private final Map<Attribute, Integer> ranges;
     private final Attribute[] attributes;
     private final int roundsLimit;
 
@@ -33,10 +37,10 @@ public class SingleSourceDataView implements DataView {
         dataSource = new PSTree<Serializable>(attributes, 2, 0.0001);
     }
 
-    public Set<TurnSnapshot> getDataSet(TurnSnapshot ts) {
+    public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
         final List<EntryMatch<Serializable>> similarEntries = dataSource.getSortedSimilarEntries(ts, getLimits(ts));
         filterOutByTime(similarEntries, ts);
-        final Set<TurnSnapshot> dataSet = new HashSet<TurnSnapshot>();
+        final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
 
         for (EntryMatch e : similarEntries) {
             dataSet.add(e.predicate);
