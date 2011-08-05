@@ -1,0 +1,1 @@
+java -cp "libs/h2-1.2.147.jar;D:\projects\prj\out\production\BotBenchmark;D:\my\rc1730\libs\robocode.jar" ru.jdev.robocode.benchmark2.BotBenchmark2 lxx.Tomcat rr 3 > log.txt

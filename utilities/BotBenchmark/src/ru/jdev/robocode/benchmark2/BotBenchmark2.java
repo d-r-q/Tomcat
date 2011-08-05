@@ -45,6 +45,7 @@ public class BotBenchmark2 {
     }
 
     public static void main(String[] args) throws IOException, SQLException {
+        System.setProperty("PARALLEL", "true");
         BotBenchmark2 bb2 = new BotBenchmark2();
         bb2.run(args[0], getBotList(args[1]), Integer.valueOf(args[2]));
     }

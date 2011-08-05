@@ -5,16 +5,14 @@
 package ru.jdev.robocode.benchmark2;
 
 import robocode.BattleResults;
-import robocode.control.BattleSpecification;
-import robocode.control.BattlefieldSpecification;
-import robocode.control.RobocodeEngine;
-import robocode.control.RobotSpecification;
+import robocode.control.*;
 import robocode.control.events.*;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class Challenge implements IBattleListener {
 
@@ -48,16 +46,15 @@ public class Challenge implements IBattleListener {
                     for (RobotSpecification rs : engine.getLocalRepository()) {
                         if (rs.getName().equals(challengerBotName)) {
                             specs[idx++] = rs;
-                        } else {
-                            if (rs.getName().equals(currentReferenceBot)) {
-                                specs[idx++] = rs;
-                            }
+                        } else if (rs.getName().equals(currentReferenceBot)) {
+                            specs[idx++] = rs;
                         }
                     }
                     final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
                     System.gc();
                     System.out.printf("Start battle (%d/%d)\n", battleResults.size() + 1, seasons);
                     long battleStartTime = System.currentTimeMillis();
+                    RandomFactory.setRandom(new Random(i));
                     engine.runBattle(specification);
                     engine.waitTillBattleOver();
                     System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), seasons * referenceBotsNames.length,
