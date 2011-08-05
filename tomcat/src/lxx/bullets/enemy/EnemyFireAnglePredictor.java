@@ -68,7 +68,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         List<PSTreeEntry<Double>> entries = null;
         for (int delta = 0; delta <= 2; delta++) {
             entries = hitLog.getSimilarEntries(getLimits(predicate, delta));
-            if (entries.size() > 0) {
+            if (entries.size() > 3) {
                 break;
             }
         }
@@ -82,7 +82,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
         final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
         if (entries.size() > 0) {
-            for (PSTreeEntry<Double> entry : entries.subList(0, min(11, entries.size()))) {
+            for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
                 bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick));
             }
         }
@@ -95,16 +95,13 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
             }
         }
 
-        final int hitsCount = bearingOffsets.size();
         if (enemyGunType == GunType.ADVANCED) {
-            entries = visitLog.getSimilarEntries(getLimits(predicate, 0));
-            int idx = 0;
+            entries = visitLog.getSimilarEntries(getLimits(predicate, 1));
             for (PSTreeEntry<Double> entry : entries) {
-                if (idx > ceil(hitsCount / 2)) {
+                if (bearingOffsets.size() > 6) {
                     break;
                 }
                 bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick));
-                idx++;
             }
         }
 

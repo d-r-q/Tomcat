@@ -32,6 +32,10 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         this.enemyWavesCollected = enemyWavesCollected;
     }
 
+    public int getEnemyWavesCollected() {
+        return enemyWavesCollected;
+    }
+
     @Override
     public void paint(LXXGraphics g, LXXBullet bullet) {
         super.paint(g, bullet);

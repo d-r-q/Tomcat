@@ -18,6 +18,7 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
+import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.*;
 import robocode.Rules;
 
@@ -151,16 +152,22 @@ public class WaveSurfingMovement implements Movement, Painter {
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
 
         double minDist = Integer.MAX_VALUE;
-        int bulletsCount = 0;
-        for (PastBearingOffset bo : ((EnemyBulletPredictionData) bullet.getAimPredictionData()).getPredictedBearingOffsets()) {
+        double bulletsDanger = 0;
+        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
+        for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
             final double dist = abs(bearingOffset - bo.bearingOffset);
-            if (dist < robotWidthInRadians * 0.55) {
-                bulletsCount++;
+            final double timeK = aimPredictionData.getEnemyWavesCollected() != -1
+                    ? bo.source.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) / aimPredictionData.getEnemyWavesCollected()
+                    : 1;
+            if (dist < robotWidthInRadians * 0.45) {
+                bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.45))) * timeK;
+            } else if (dist < robotWidthInRadians * 1.55) {
+                bulletsDanger += (1 - (dist / (robotWidthInRadians * 1.55))) * timeK;
             }
             minDist = min(minDist, dist);
         }
 
-        return new PointDangerOnWave(minDist, LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsCount);
+        return new PointDangerOnWave(LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsDanger);
     }
 
     private List<LXXBullet> getBullets() {
@@ -256,8 +263,8 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     public class MovementDirectionPrediction {
 
-        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100),
-                new PointDangerOnWave(0, LXXConstants.RADIANS_90, 100), 0, 1000);
+        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(LXXConstants.RADIANS_90, 100),
+                new PointDangerOnWave(LXXConstants.RADIANS_90, 100), 0, 1000);
 
         private PointDanger minDanger = MAX_POINT_DANGER;
         private APoint minDangerPoint;
@@ -316,40 +323,22 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     private static class PointDangerOnWave implements Comparable<PointDangerOnWave> {
 
-        public final double minDistToBulletRadians;
         public final double robotWidthInRadians;
-        public final int bulletsCount;
+        public final double bulletsDanger;
 
-        public PointDangerOnWave(double minDistToBulletRadians, double robotWidthInRadians, int bulletsCount) {
-            this.minDistToBulletRadians = minDistToBulletRadians;
+        public PointDangerOnWave(double robotWidthInRadians, double bulletsDanger) {
             this.robotWidthInRadians = robotWidthInRadians;
-            this.bulletsCount = bulletsCount;
+            this.bulletsDanger = bulletsDanger;
         }
 
         public int compareTo(PointDangerOnWave o) {
-            if (!hasCloseBullets() && !o.hasCloseBullets()) {
-                return 0;
-            } else if (hasCloseBullets() && !o.hasCloseBullets()) {
-                return 1;
-            } else if (!hasCloseBullets() && o.hasCloseBullets()) {
-                return -1;
-            } else {
-                if (bulletsCount != o.bulletsCount) {
-                    return (int) signum(bulletsCount - o.bulletsCount);
-                } else {
-                    return compareDoubles(o.minDistToBulletRadians, minDistToBulletRadians, 0.1);
-                }
-            }
-        }
-
-        private boolean hasCloseBullets() {
-            return minDistToBulletRadians < robotWidthInRadians * 1.55;
+            return compareDoubles(bulletsDanger, o.bulletsDanger, 0.01);
         }
 
         @Override
         public String toString() {
-            return String.format("PointDangerOnWave (%3.3f, %3.3f, %d)",
-                    Math.toDegrees(minDistToBulletRadians), Math.toDegrees(robotWidthInRadians), bulletsCount);
+            return String.format("PointDangerOnWave (%3.3f, %3.3f)",
+                    Math.toDegrees(robotWidthInRadians), bulletsDanger);
         }
     }
 
