@@ -35,6 +35,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
     private final DistanceController distanceController;
+    private final TomcatEyes tomcatEyes;
 
     private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
     private double distanceToTravel;
@@ -46,6 +47,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
         this.enemyBulletManager = office.getEnemyBulletManager();
+        this.tomcatEyes = office.getTomcatEyes();
 
         distanceController = new DistanceController(office.getRobot(), office.getEnemyBulletManager(), office.getTargetManager(), tomcatEyes);
         battleField = robot.getState().getBattleField();
@@ -71,7 +73,11 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets.get(0));
-        final double desiredSpeed = distanceToTravel > LXXUtils.getStopDistance(robot.getSpeed()) ? 8 : 0;
+        final double desiredSpeed =
+                (distanceToTravel > LXXUtils.getStopDistance(robot.getSpeed()) ||
+                        (duelOpponent != null && tomcatEyes.isRammingNow(duelOpponent)))
+                        ? 8
+                        : 0;
 
         return getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), desiredSpeed, lxxBullets);
     }
@@ -155,9 +161,9 @@ public class WaveSurfingMovement implements Movement, Painter {
     protected double getPointDanger(APoint pnt, Target opponent) {
         double danger = 0;
 
-        final double distanceToCenterDanger = round(pnt.aDistance(robot.battleField.center) / 10);
+        final double distanceToCenterDanger = round(pnt.aDistance(robot.battleField.center) / 10) * (tomcatEyes.isRammingNow(opponent) ? 0 : 1);
         danger += distanceToCenterDanger;
-        final double distanceEnemyDanger = round(distanceController.getPreferredDistance() / pnt.aDistance(opponent) * 10);
+        final double distanceEnemyDanger = round(distanceController.getPreferredDistance() / pnt.aDistance(opponent) * (tomcatEyes.isRammingNow(opponent) ? 20 : 10));
         danger += distanceEnemyDanger;
 
         return danger;
@@ -208,14 +214,17 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, double desiredSpeed, List<LXXBullet> bulletsOnAir) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection, bulletsOnAir);
-        //desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
-        double smoothedHeadingCCW = battleField.smoothWalls(robot, desiredHeading, false);
-        if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
-                LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
-            desiredHeading = smoothedHeadingCW;
+        if (duelOpponent != null && tomcatEyes.isRammingNow(duelOpponent)) {
+            desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
         } else {
-            desiredHeading = smoothedHeadingCCW;
+            double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
+            double smoothedHeadingCCW = battleField.smoothWalls(robot, desiredHeading, false);
+            if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
+                    LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
+                desiredHeading = smoothedHeadingCW;
+            } else {
+                desiredHeading = smoothedHeadingCCW;
+            }
         }
 
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);

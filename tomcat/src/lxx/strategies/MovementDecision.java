@@ -51,7 +51,7 @@ public class MovementDecision implements Serializable {
         final double futureHeading = getFutureHeading(robot, wantToGoFront, turnRateRadians);
         final double distanceToWall = robotPos.distanceToWall(robot.getBattleField(), futureHeading);
         final double futureSpeed = getFutureSpeed(robot.getVelocity(), desiredSpeed, wantToGoFront);
-        if (distanceToWall - 4 < LXXUtils.getStopDistance(futureSpeed) + futureSpeed + 12) {
+        if (distanceToWall - 4 < LXXUtils.getStopDistance(futureSpeed) + futureSpeed + 22) {
             desiredSpeed = 0;
         }
 

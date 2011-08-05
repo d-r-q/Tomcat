@@ -145,7 +145,7 @@ public class BattleField {
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
         double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
         final double adjacentLeg = max(0, getDistanceToWall(wall, robot) - 4);
-        int buffer = 35;
+        int buffer = 55;
         if (hypotenuse + buffer < adjacentLeg) {
             return desiredHeading;
         } else if (hypotenuse < adjacentLeg) {
@@ -167,7 +167,7 @@ public class BattleField {
     }
 
     private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
-        return 150;
+        return 160;
     }
 
     public boolean contains(APoint point) {

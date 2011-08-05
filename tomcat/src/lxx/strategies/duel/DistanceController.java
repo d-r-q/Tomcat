@@ -19,7 +19,7 @@ import robocode.util.Utils;
 
 import java.util.List;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
 
 /**
  * User: jdev
@@ -31,6 +31,7 @@ public class DistanceController {
     private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_DISTANCE = 450;
+    private static final int ANTI_RAM_DISTANCE = 150;
 
     private final Tomcat robot;
     private final EnemyBulletManager enemyBulletManager;
@@ -62,7 +63,11 @@ public class DistanceController {
         final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double distanceDiff = distanceBetween - desiredDistance;
         final double attackAngleKoeff = distanceDiff / desiredDistance;
-        final double attackAngle = LXXConstants.RADIANS_90 + (LXXConstants.RADIANS_30 * attackAngleKoeff);
+        final Target duelOpponent = targetManager.getDuelOpponent();
+        final double antiRamAngle = (duelOpponent != null && distanceBetween < ANTI_RAM_DISTANCE && tomcatEyes.isRammingNow(duelOpponent))
+                ? LXXConstants.RADIANS_50 * (ANTI_RAM_DISTANCE - distanceBetween) / ANTI_RAM_DISTANCE
+                : 0;
+        final double attackAngle = LXXConstants.RADIANS_90 + ((LXXConstants.RADIANS_40 + antiRamAngle) * attackAngleKoeff);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
