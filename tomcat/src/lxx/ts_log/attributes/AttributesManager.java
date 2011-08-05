@@ -82,7 +82,6 @@ public class AttributesManager {
             myDistToForwardWall,
             myDistToReverseWall,
             myTravelTime,
-            myIncomingHitsCollected,
     };
 
     private final Office office;
