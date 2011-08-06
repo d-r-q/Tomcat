@@ -31,14 +31,14 @@ public class DuelFirePowerSelector implements FirePowerSelector {
             return 0;
         }
 
-        double bulletPower = 2.25;
+        double bulletPower = 1.95;
         if (robot.aDistance(target) < 60 || tomcatEyes.isRammingNow(target)) {
             return 3;
         }
 
         final double firesPerHits = (statisticsManager.getMyRawHitRate() > 0
                 ? ceil(1 / statisticsManager.getMyRawHitRate()) + 1
-                : 20) * max(1, target.getEnergy() / robot.getEnergy()) * 2;
+                : 20) * max(1, target.getEnergy() / robot.getEnergy()) * 3;
         bulletPower = LXXUtils.limit(0.1, min(bulletPower, robot.getEnergy() / firesPerHits), 3);
 
         if (Rules.getBulletDamage(bulletPower) > target.getEnergy()) {
