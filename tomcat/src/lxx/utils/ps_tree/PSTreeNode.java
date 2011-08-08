@@ -11,9 +11,7 @@ import lxx.utils.Interval;
 import java.io.Serializable;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 /**
  * User: jdev
@@ -66,7 +64,7 @@ public class PSTreeNode<T extends Serializable> {
             int left = 0;
             int right = children.size();
             int medin;
-            while (left < right){
+            while (left < right) {
                 medin = (left + right) / 2;
                 PSTreeNode<T> n = children.get(medin);
                 if (n.interval.contains(attrValue)) {
@@ -262,8 +260,23 @@ public class PSTreeNode<T extends Serializable> {
             return;
         }
 
-        for (int i = fromIdx; i <= toIdx; i++) {
-            children.get(i).getEntries(limits, res);
+        int medin = (fromIdx + toIdx) / 2;
+        children.get(medin).getEntries(limits, res);
+
+        for (int delta = 1; delta <= limit.getLength(); delta++) {
+            boolean isUpdate = false;
+            if (medin - delta >= fromIdx) {
+                children.get(medin - delta).getEntries(limits, res);
+                isUpdate = true;
+            }
+            if (medin + delta <= toIdx) {
+                children.get(medin + delta).getEntries(limits, res);
+                isUpdate = true;
+            }
+
+            if (!isUpdate) {
+                break;
+            }
         }
     }
 }

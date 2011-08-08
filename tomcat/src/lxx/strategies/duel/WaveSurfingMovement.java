@@ -18,7 +18,6 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
-import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.*;
 import robocode.Rules;
 
@@ -156,13 +155,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
             final double dist = abs(bearingOffset - bo.bearingOffset);
-            final double timeK = aimPredictionData.getEnemyWavesCollected() != -1
-                    ? bo.source.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) / aimPredictionData.getEnemyWavesCollected()
-                    : 1;
             if (dist < robotWidthInRadians * 0.45) {
-                bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.45))) * timeK;
-            } else if (dist < robotWidthInRadians * 1.55) {
-                bulletsDanger += (1 - (dist / (robotWidthInRadians * 1.55))) * timeK;
+                bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.45))) * bo.danger;
+            } else if (dist < robotWidthInRadians * 1.05) {
+                bulletsDanger += (1 - (dist / (robotWidthInRadians * 1.05))) * bo.danger;
             }
             minDist = min(minDist, dist);
         }
@@ -332,7 +328,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         public int compareTo(PointDangerOnWave o) {
-            return compareDoubles(bulletsDanger, o.bulletsDanger, 0.01);
+            return compareDoubles(bulletsDanger, o.bulletsDanger, 0.001);
         }
 
         @Override

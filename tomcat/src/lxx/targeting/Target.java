@@ -343,6 +343,10 @@ public class Target implements LXXRobot, Serializable {
         return info.enemyLastFirePower;
     }
 
+    public int getRound() {
+        return owner.getRound();
+    }
+
     public double getGunHeat() {
         return state.gunHeat;
     }

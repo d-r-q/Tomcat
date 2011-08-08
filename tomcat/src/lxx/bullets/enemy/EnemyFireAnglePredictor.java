@@ -30,7 +30,6 @@ import java.util.Map;
 
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
-import static java.lang.StrictMath.ceil;
 import static java.lang.StrictMath.min;
 
 public class EnemyFireAnglePredictor implements BulletManagerListener {
@@ -61,7 +60,6 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         final GunType enemyGunType = tomcatEyes.getEnemyGunType(t);
 
         return new EnemyBulletPredictionData(bearingOffsets, enemyGunType == GunType.ADVANCED ? (int) predicate.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) : -1);
-
     }
 
     private List<PastBearingOffset> getBearingOffsets(PSTree<Double> hitLog, PSTree<Double> visitLog, TurnSnapshot predicate, double firePower, Target t) {
@@ -83,15 +81,15 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
         if (entries.size() > 0) {
             for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
-                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick));
+                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 0));
             }
         }
         if (bearingOffsets.size() == 0) {
             if (enemyGunType != GunType.HEAD_ON) {
-                bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * lateralDirection));
+                bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * lateralDirection, 0));
             }
             if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
-                bearingOffsets.add(new PastBearingOffset(predicate, 0D));
+                bearingOffsets.add(new PastBearingOffset(predicate, 0D, 0));
             }
         }
 
@@ -101,7 +99,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
                 if (bearingOffsets.size() > 6) {
                     break;
                 }
-                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick));
+                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 0));
             }
         }
 

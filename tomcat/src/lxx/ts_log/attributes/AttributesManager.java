@@ -43,7 +43,7 @@ public class AttributesManager {
     public static final Attribute myY = new Attribute("My y", 0, 1200, new MyYVE());
     public static final Attribute myVelocity = new Attribute("My velocity", -8, 8, new MyVelocityVE());
     public static final Attribute mySpeed = new Attribute("My speed", 0, 8, new MySpeedVE());
-    public static final Attribute myLateralSpeed = new Attribute("My lateral velocity speed", 0, 8, new MyLateralSpeed());
+    public static final Attribute myLateralSpeed = new Attribute("My lateral speed", 0, 8, new MyLateralSpeed());
     public static final Attribute myAbsoluteHeadingDegrees = new Attribute("My absolute heading", 0, 360, new MyHeadingVE());
     public static final Attribute myRelativeHeading = new Attribute("My relative heading", -180, 180, new MyRelativeHeadingVE());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());

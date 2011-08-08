@@ -267,4 +267,9 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     public LXXRobotState getPrevState() {
         return prevState;
     }
+
+    public int getRound() {
+        return getRoundNum();
+    }
+
 }
