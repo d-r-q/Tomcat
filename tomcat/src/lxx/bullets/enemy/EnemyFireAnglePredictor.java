@@ -23,6 +23,7 @@ import lxx.utils.ps_tree.PSTreeEntry;
 import robocode.Bullet;
 import robocode.Rules;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,10 +37,10 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     private static final int FIRE_DETECTION_LATENCY = 2;
 
-    private static final Map<String, PSTree<Double>> hitLogs = new HashMap<String, PSTree<Double>>();
-    private static final Map<String, PSTree<Double>> visitLogs = new HashMap<String, PSTree<Double>>();
+    private static final Map<String, PSTree<UndirectedGuessFactor>> hitLogs = new HashMap<String, PSTree<UndirectedGuessFactor>>();
+    private static final Map<String, PSTree<UndirectedGuessFactor>> visitLogs = new HashMap<String, PSTree<UndirectedGuessFactor>>();
 
-    private final Map<LXXBullet, PSTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<Double>>();
+    private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
     private final Tomcat robot;
@@ -52,8 +53,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public AimingPredictionData getPredictionData(Target t) {
-        final PSTree<Double> hitLog = getHitLog(t.getName());
-        final PSTree<Double> visitLog = getVisitLog(t.getName());
+        final PSTree<UndirectedGuessFactor> hitLog = getHitLog(t.getName());
+        final PSTree<UndirectedGuessFactor> visitLog = getVisitLog(t.getName());
 
         final TurnSnapshot predicate = turnSnapshotsLog.getLastSnapshot(t, FIRE_DETECTION_LATENCY);
         final List<PastBearingOffset> bearingOffsets = getBearingOffsets(hitLog, visitLog, predicate, t.getFirePower(), t);
@@ -62,8 +63,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return new EnemyBulletPredictionData(bearingOffsets, enemyGunType == GunType.ADVANCED ? (int) predicate.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) : -1);
     }
 
-    private List<PastBearingOffset> getBearingOffsets(PSTree<Double> hitLog, PSTree<Double> visitLog, TurnSnapshot predicate, double firePower, Target t) {
-        List<PSTreeEntry<Double>> entries = null;
+    private List<PastBearingOffset> getBearingOffsets(PSTree<UndirectedGuessFactor> hitLog, PSTree<UndirectedGuessFactor> visitLog, TurnSnapshot predicate, double firePower, Target t) {
+        List<PSTreeEntry<UndirectedGuessFactor>> entries = null;
         for (int delta = 0; delta <= 2; delta++) {
             entries = hitLog.getSimilarEntries(getLimits(predicate, delta));
             if (entries.size() > 3) {
@@ -79,15 +80,13 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         final GunType enemyGunType = tomcatEyes.getEnemyGunType(t);
 
         final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
-        if (entries.size() > 0) {
-            if (lateralDirection != 0) {
-                for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 1));
-                }
-            } else {
-                for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * 1 * maxEscapeAngleQuick, 1));
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * -1 * maxEscapeAngleQuick, 1));
+        if (entries != null && entries.size() > 0) {
+            for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(3, entries.size()))) {
+                if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * lateralDirection * entry.result.lateralDirection * maxEscapeAngleQuick, 1));
+                } else {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * 1 * maxEscapeAngleQuick, 1));
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * -1 * maxEscapeAngleQuick, 1));
                 }
             }
         }
@@ -107,11 +106,16 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
         if (enemyGunType == GunType.ADVANCED) {
             entries = visitLog.getSimilarEntries(getLimits(predicate, 1));
-            for (PSTreeEntry<Double> entry : entries) {
+            for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
                 if (bearingOffsets.size() > 6) {
                     break;
                 }
-                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 1));
+                if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * lateralDirection * entry.result.lateralDirection * maxEscapeAngleQuick, 1));
+                } else {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * 1 * maxEscapeAngleQuick, 1));
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * -1 * maxEscapeAngleQuick, 1));
+                }
             }
         }
 
@@ -124,8 +128,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
                         (int) round(LXXUtils.limit(AttributesManager.myLateralSpeed, ts.getAttrValue(AttributesManager.myLateralSpeed) + delta))));
     }
 
-    private static PSTree<Double> getHitLog(String enemyName) {
-        PSTree<Double> log = hitLogs.get(enemyName);
+    private static PSTree<UndirectedGuessFactor> getHitLog(String enemyName) {
+        PSTree<UndirectedGuessFactor> log = hitLogs.get(enemyName);
         if (log == null) {
             log = createLog();
             hitLogs.put(enemyName, log);
@@ -133,8 +137,8 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return log;
     }
 
-    private static PSTree<Double> getVisitLog(String enemyName) {
-        PSTree<Double> log = visitLogs.get(enemyName);
+    private static PSTree<UndirectedGuessFactor> getVisitLog(String enemyName) {
+        PSTree<UndirectedGuessFactor> log = visitLogs.get(enemyName);
         if (log == null) {
             log = createLog();
             visitLogs.put(enemyName, log);
@@ -142,15 +146,15 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         return log;
     }
 
-    private static PSTree<Double> createLog() {
+    private static PSTree<UndirectedGuessFactor> createLog() {
         final Attribute[] splitAttributes = {
                 AttributesManager.myLateralSpeed,
         };
-        return new PSTree<Double>(splitAttributes, 2, 0.001);
+        return new PSTree<UndirectedGuessFactor>(splitAttributes, 2, 0.001);
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<Double> entry = new PSTreeEntry<Double>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
+        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
         entriesByBullets.put(bullet, entry);
     }
 
@@ -164,18 +168,11 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
         entriesByBullets.remove(bullet);
     }
 
-    public void setBulletGF(LXXBullet bullet, final PSTree<Double> log) {
-        final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);
+    public void setBulletGF(LXXBullet bullet, final PSTree<UndirectedGuessFactor> log) {
+        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
         final double lateralDirection = bullet.getTargetLateralDirection();
-        if (lateralDirection != 0) {
-            entry.result = bullet.getRealBearingOffsetRadians() * lateralDirection / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            log.addEntry(entry);
-        } else {
-            entry.result = bullet.getRealBearingOffsetRadians() * 1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            log.addEntry(entry);
-            entry.result = bullet.getRealBearingOffsetRadians() * -1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            log.addEntry(entry);
-        }
+        entry.result = new UndirectedGuessFactor(bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed()), lateralDirection);
+        log.addEntry(entry);
     }
 
 
@@ -188,4 +185,16 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
     public void bulletPassing(LXXBullet bullet) {
     }
+
+    private class UndirectedGuessFactor implements Serializable {
+
+        public final double guessFactor;
+        public final double lateralDirection;
+
+        private UndirectedGuessFactor(double guessFactor, double lateralDirection) {
+            this.guessFactor = guessFactor;
+            this.lateralDirection = lateralDirection;
+        }
+    }
+
 }
