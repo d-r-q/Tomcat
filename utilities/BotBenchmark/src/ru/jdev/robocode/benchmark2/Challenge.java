@@ -52,7 +52,7 @@ public class Challenge implements IBattleListener {
                     }
                     final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
                     System.gc();
-                    System.out.printf("Start battle (%d/%d)\n", battleResults.size() + 1, seasons);
+                    System.out.printf("Start battle (%d/%d) (%s: (%d/%d))\n", battleResults.size() + 1, seasons * referenceBotsNames.length, currentReferenceBot, i + 1, seasons);
                     long battleStartTime = System.currentTimeMillis();
                     RandomFactory.setRandom(new Random(i));
                     engine.runBattle(specification);
