@@ -80,16 +80,28 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
 
         final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
         if (entries.size() > 0) {
-            for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
-                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 0));
+            if (lateralDirection != 0) {
+                for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 1));
+                }
+            } else {
+                for (PSTreeEntry<Double> entry : entries.subList(0, min(3, entries.size()))) {
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * 1 * maxEscapeAngleQuick, 1));
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * -1 * maxEscapeAngleQuick, 1));
+                }
             }
         }
         if (bearingOffsets.size() == 0) {
             if (enemyGunType != GunType.HEAD_ON) {
-                bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * lateralDirection, 0));
+                if (lateralDirection != 0) {
+                    bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * lateralDirection, 1));
+                } else {
+                    bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * 1, 1));
+                    bearingOffsets.add(new PastBearingOffset(predicate, maxEscapeAngleAcc * -1, 1));
+                }
             }
             if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
-                bearingOffsets.add(new PastBearingOffset(predicate, 0D, 0));
+                bearingOffsets.add(new PastBearingOffset(predicate, 0D, 1));
             }
         }
 
@@ -99,7 +111,7 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
                 if (bearingOffsets.size() > 6) {
                     break;
                 }
-                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 0));
+                bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick, 1));
             }
         }
 
@@ -153,11 +165,17 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public void setBulletGF(LXXBullet bullet, final PSTree<Double> log) {
-        final double guessFactor = bullet.getRealBearingOffsetRadians() * bullet.getTargetLateralDirection() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-
         final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);
-        entry.result = guessFactor;
-        log.addEntry(entry);
+        final double lateralDirection = bullet.getTargetLateralDirection();
+        if (lateralDirection != 0) {
+            entry.result = bullet.getRealBearingOffsetRadians() * lateralDirection / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            log.addEntry(entry);
+        } else {
+            entry.result = bullet.getRealBearingOffsetRadians() * 1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            log.addEntry(entry);
+            entry.result = bullet.getRealBearingOffsetRadians() * -1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            log.addEntry(entry);
+        }
     }
 
 

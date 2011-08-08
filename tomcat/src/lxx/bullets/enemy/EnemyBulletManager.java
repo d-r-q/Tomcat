@@ -43,7 +43,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
-    private final AdvancedEnemyGunModel enemyFireAnglePredictor;
+    private final EnemyFireAnglePredictor enemyFireAnglePredictor;
 
     private final WaveManager waveManager;
     private final Tomcat robot;
@@ -51,7 +51,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private AimingPredictionData futureBulletAimingPredictionData;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyFireAnglePredictor = new AdvancedEnemyGunModel(office.getTurnSnapshotsLog());
+        enemyFireAnglePredictor = new EnemyFireAnglePredictor(office.getTurnSnapshotsLog(), robot, office.getTomcatEyes());
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;

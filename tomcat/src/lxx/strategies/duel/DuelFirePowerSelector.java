@@ -32,8 +32,11 @@ public class DuelFirePowerSelector implements FirePowerSelector {
         }
 
         double bulletPower = 1.95;
-        if (robot.aDistance(target) < 60 && tomcatEyes.isRammingNow(target)) {
-            return 3;
+        if (robot.aDistance(target) < 75) {
+            return min(3, robot.getEnergy() - 0.1);
+        }
+        if (tomcatEyes.isRammingNow(target) && robot.aDistance(target) < 150) {
+            bulletPower = 3;
         }
 
         final double firesPerHits = (statisticsManager.getMyRawHitRate() > 0

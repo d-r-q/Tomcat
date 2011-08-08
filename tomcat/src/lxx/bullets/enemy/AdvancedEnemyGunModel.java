@@ -57,8 +57,17 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         if (processedBullets.contains(bullet)) {
             return;
         }
-        entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * bullet.getTargetLateralDirection() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        getLogSet(bullet.getOwner().getName()).learn(entry);
+        final double direction = bullet.getTargetLateralDirection();
+
+        if (direction != 0) {
+            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * direction / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            getLogSet(bullet.getOwner().getName()).learn(entry);
+        } else {
+            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * 1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            getLogSet(bullet.getOwner().getName()).learn(entry);
+            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * -1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            getLogSet(bullet.getOwner().getName()).learn(entry);
+        }
         processedBullets.add(bullet);
     }
 
