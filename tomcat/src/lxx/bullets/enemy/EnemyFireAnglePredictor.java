@@ -23,7 +23,6 @@ import lxx.utils.ps_tree.PSTreeEntry;
 import robocode.Bullet;
 import robocode.Rules;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,17 +183,6 @@ public class EnemyFireAnglePredictor implements BulletManagerListener {
     }
 
     public void bulletPassing(LXXBullet bullet) {
-    }
-
-    private class UndirectedGuessFactor implements Serializable {
-
-        public final double guessFactor;
-        public final double lateralDirection;
-
-        private UndirectedGuessFactor(double guessFactor, double lateralDirection) {
-            this.guessFactor = guessFactor;
-            this.lateralDirection = lateralDirection;
-        }
     }
 
 }

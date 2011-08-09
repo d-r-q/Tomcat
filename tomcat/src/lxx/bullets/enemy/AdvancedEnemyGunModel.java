@@ -8,6 +8,8 @@ import lxx.LXXRobot;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
+import lxx.office.Office;
+import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
@@ -22,8 +24,7 @@ import robocode.Rules;
 
 import java.util.*;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
+import static java.lang.Math.*;
 import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.signum;
 
@@ -33,14 +34,17 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
-    private final Map<LXXBullet, PSTreeEntry<Double>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<Double>>();
+    private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
 
-    private final Set<LXXBullet> processedBullets = new HashSet();
+    private final Set<LXXBullet> processedBullets = new HashSet<LXXBullet>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
 
-    public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog) {
+    private final Office office;
+
+    public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog, Office office) {
         this.turnSnapshotsLog = turnSnapshotsLog;
+        this.office = office;
     }
 
     public EnemyBulletPredictionData getPredictionData(Target t) {
@@ -48,26 +52,21 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<Double> entry = new PSTreeEntry<Double>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
+        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
         entriesByBullets.put(bullet, entry);
     }
 
     public void bulletPassing(LXXBullet bullet) {
-        final PSTreeEntry<Double> entry = entriesByBullets.get(bullet);
+        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
         if (processedBullets.contains(bullet)) {
             return;
         }
-        final double direction = bullet.getTargetLateralDirection();
 
-        if (direction != 0) {
-            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * direction / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            getLogSet(bullet.getOwner().getName()).learn(entry);
-        } else {
-            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * 1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            getLogSet(bullet.getOwner().getName()).learn(entry);
-            entry.result = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget()) * -1 / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            getLogSet(bullet.getOwner().getName()).learn(entry);
-        }
+        final double direction = bullet.getTargetLateralDirection();
+        double undirectedGuessFactor = bullet.getBearingOffsetRadians(bullet.getTarget().getPosition()) / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+        entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+        getLogSet(bullet.getOwner().getName()).learn(entry);
+
         processedBullets.add(bullet);
     }
 
@@ -75,13 +74,17 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate);
     }
 
-    private static LogSet getLogSet(String enemyName) {
+    private LogSet getLogSet(String enemyName) {
         LogSet logSet = logSets.get(enemyName);
         if (logSet == null) {
-            logSet = LogSet.createLogSet();
+            logSet = createLogSet();
             logSets.put(enemyName, logSet);
         }
         return logSet;
+    }
+
+    private double getVisitLogWeight() {
+        return max(office.getStatisticsManager().getEnemyHitRate().getHitRate() - 0.08, 0) / 0.05;
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
@@ -90,29 +93,27 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     public void bulletMiss(LXXBullet bullet) {
     }
 
-    private static class Log {
+    private class Log {
 
-        private PSTree<Double> log;
+        private PSTree<UndirectedGuessFactor> log;
         private double sideLengthPercents;
-        private double decayRate;
         private double efficiency = 1;
         private Attribute[] attrs;
 
-        private Log(Attribute[] attrs, double sideLengthPercents, double decayRate) {
+        private Log(Attribute[] attrs, double sideLengthPercents) {
             this.attrs = attrs;
-            this.log = new PSTree<Double>(this.attrs, 2, 0.0001);
+            this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
             this.sideLengthPercents = sideLengthPercents;
-            this.decayRate = decayRate;
         }
 
-        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
-            final List<PastBearingOffset> bearingOffsets = getBearingOffsets(ts, t.getFirePower());
+        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t, double weight) {
+            final List<PastBearingOffset> bearingOffsets = getBearingOffsets(ts, t.getFirePower(), weight);
 
             return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected));
         }
 
-        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower) {
-            List<PSTreeEntry<Double>> entries = log.getSimilarEntries(getLimits(predicate));
+        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, double weight) {
+            List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
 
             final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                     predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
@@ -122,20 +123,20 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             if (entries.size() > 0) {
-                for (PSTreeEntry<Double> entry : entries.subList(0, min(69, entries.size()))) {
+                for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(3, entries.size()))) {
                     try {
-                        final double danger = entry.predicate.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) /
-                                predicate.getAttrValue(AttributesManager.enemyOutgoingWavesCollected);
-                        bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result * lateralDirection * maxEscapeAngleQuick,
-                                1 * efficiency));
+                        if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
+                            bearingOffsets.add(new PastBearingOffset(entry.predicate,
+                                    entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick,
+                                    weight * efficiency));
+                        } else {
+                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * 1 * maxEscapeAngleQuick, weight * efficiency));
+                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * -1 * maxEscapeAngleQuick, weight * efficiency));
+                        }
                     } catch (NullPointerException npe) {
                         npe.printStackTrace();
                     }
                 }
-            }
-
-            if (bearingOffsets.size() == 0) {
-                bearingOffsets.add(new PastBearingOffset(predicate, 0, 0));
             }
 
             return bearingOffsets;
@@ -155,74 +156,92 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     }
 
-    private static class LogSet {
+    private class LogSet {
 
-        private List<Log> logSet = new ArrayList<Log>();
-        private Log bestLog;
+        private List<Log> hitLogsSet = new ArrayList<Log>();
 
-        public void learn(PSTreeEntry<Double> entry) {
-            for (Log log : logSet) {
+        private List<Log> visitLogsSet = new ArrayList<Log>();
+
+        public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
+            for (Log log : visitLogsSet) {
                 log.log.addEntry(entry);
             }
         }
 
         public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, Target t) {
             final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
-            for (int i = 0; i < 1; i++) {
-                bearingOffsets.addAll(logSet.get(i).getBearingOffsets(ts, t.getFirePower()));
+            for (int i = 0; i < 3; i++) {
+                bearingOffsets.addAll(hitLogsSet.get(i).getBearingOffsets(ts, t.getFirePower(), 1));
             }
+
+            final GunType enemyGunType = office.getTomcatEyes().getEnemyGunType(t);
+            double visitLogWeight = getVisitLogWeight();
+            if (office.getRobot().getRound() < 2) {
+                visitLogWeight = 0;
+            } else if (bearingOffsets.size() == 0 && enemyGunType == GunType.ADVANCED) {
+                visitLogWeight = 1;
+            }
+
+            if (visitLogWeight > 0) {
+                for (int i = 0; i < 3; i++) {
+                    bearingOffsets.addAll(visitLogsSet.get(i).getBearingOffsets(ts, t.getFirePower(), visitLogWeight));
+                }
+            }
+
+            if (bearingOffsets.size() == 0) {
+                fillWithSimpleBOs(ts, t, bearingOffsets, enemyGunType);
+            }
+
             return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected));
         }
 
-        private static LogSet createLogSet() {
-            final LogSet res = new LogSet();
-            final Attribute[] possibleAttributes = {
-                    AttributesManager.myAcceleration,
-                    AttributesManager.distBetween,
-                    AttributesManager.myDistToForwardWall,
-            };
-
-            final double[] sideLengths = {0.1};
-            final double[] decayRates = {2};
-
-            for (int i = 2; i < pow(possibleAttributes.length, 2); i++) {
-                final List<Attribute> attrs = new LinkedList<Attribute>();
-                attrs.add(AttributesManager.myLateralSpeed);
-                for (int bit = 0; bit < possibleAttributes.length; bit++) {
-                    if ((i & (1 << bit)) != 0) {
-                        attrs.add(possibleAttributes[bit]);
-                    }
-                }
-
-                if (attrs.size() < 2) {
-                    continue;
-                }
-
-                for (double sideLength : sideLengths) {
-                    for (double decayRate : decayRates) {
-                        res.logSet.add(new Log(attrs.toArray(new Attribute[attrs.size()]), sideLength, decayRate));
-                    }
+        private void fillWithSimpleBOs(TurnSnapshot ts, Target t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
+            final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(ts), LXXUtils.getMyPos(ts),
+                    ts.getMySpeed(), ts.getMyAbsoluteHeadingRadians());
+            final double lateralDirection = Math.signum(lateralVelocity);
+            final double bulletSpeed = Rules.getBulletSpeed(t.getFirePower());
+            final double maxEscapeAngleAcc = LXXUtils.getMaxEscapeAngle(t, office.getRobot().getState(), bulletSpeed);
+            if (enemyGunType != GunType.HEAD_ON) {
+                if (lateralDirection != 0) {
+                    bearingOffsets.add(new PastBearingOffset(ts, maxEscapeAngleAcc * lateralDirection, 1));
+                } else {
+                    bearingOffsets.add(new PastBearingOffset(ts, maxEscapeAngleAcc * 1, 1));
+                    bearingOffsets.add(new PastBearingOffset(ts, maxEscapeAngleAcc * -1, 1));
                 }
             }
-
-            res.bestLog = res.logSet.get(res.logSet.size() - 1);
-
-            return res;
+            if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
+                bearingOffsets.add(new PastBearingOffset(ts, 0D, 1));
+            }
         }
 
         public void learn(LXXBullet bullet, TurnSnapshot predicate) {
+            learnLogSet(bullet, predicate, visitLogsSet);
+
+            learnLogSet(bullet, predicate, hitLogsSet);
+
+            final double direction = bullet.getTargetLateralDirection();
+            final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+            final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
+            entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+            for (Log log : hitLogsSet) {
+                log.log.addEntry(entry);
+            }
+        }
+
+        private void learnLogSet(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet) {
+            Log bestVisitLog = null;
             for (Log log : logSet) {
-                final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner());
+                final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner(), 1);
                 double logEfficiency = calculateEfficiency(bullet, ebpd);
                 log.efficiency = log.efficiency * 0.75 + logEfficiency * 0.25;
-                if (log.efficiency > bestLog.efficiency) {
-                    bestLog = log;
+                if (bestVisitLog == null || log.efficiency > bestVisitLog.efficiency) {
+                    bestVisitLog = log;
                 }
             }
 
             for (Log log : logSet) {
-                if (bestLog.efficiency > 0) {
-                    log.efficiency = log.efficiency / bestLog.efficiency;
+                if (bestVisitLog != null && bestVisitLog.efficiency > 0) {
+                    log.efficiency = log.efficiency / bestVisitLog.efficiency;
                 }
             }
 
@@ -235,7 +254,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
         private double calculateEfficiency(LXXBullet bullet, EnemyBulletPredictionData ebpd) {
             final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
-            final double currentBO = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), bullet.getTarget());
+            final double currentBO = bullet.getRealBearingOffsetRadians();
             final IntervalDouble robotIntervalRadians = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
 
             double totalDanger = 0;
@@ -258,6 +277,74 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             return realDanger / totalDanger;
         }
+
+    }
+
+    private LogSet createLogSet() {
+        final LogSet res = new LogSet();
+
+        res.visitLogsSet.addAll(createVisitLogs());
+        res.hitLogsSet.addAll(createHitLogs());
+
+        return res;
+    }
+
+    private List<Log> createVisitLogs() {
+        final Attribute[] possibleAttributes = {
+                AttributesManager.myLateralSpeed,
+                AttributesManager.myAcceleration,
+                AttributesManager.distBetween,
+                AttributesManager.myDistToForwardWall,
+        };
+
+        final double[] sideLengths = {0.1};
+        final List<Log> logs = new ArrayList<Log>();
+        for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
+            final List<Attribute> attrs = new LinkedList<Attribute>();
+            for (int bit = 0; bit < possibleAttributes.length; bit++) {
+                if ((i & (1 << bit)) != 0) {
+                    attrs.add(possibleAttributes[bit]);
+                }
+            }
+
+            if (attrs.size() < 1) {
+                continue;
+            }
+
+            for (double sideLength : sideLengths) {
+                logs.add(new Log(attrs.toArray(new Attribute[attrs.size()]), sideLength));
+            }
+        }
+        return logs;
+    }
+
+    private List<Log> createHitLogs() {
+        final Attribute[] possibleAttributes = {
+                AttributesManager.myAcceleration,
+                AttributesManager.distBetween,
+                AttributesManager.myDistToForwardWall,
+        };
+
+        final double[] sideLengths = {0.1};
+        final List<Log> logs = new ArrayList<Log>();
+        for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
+            final List<Attribute> attrs = new LinkedList<Attribute>();
+            attrs.add(AttributesManager.myLateralSpeed);
+            for (int bit = 0; bit < possibleAttributes.length; bit++) {
+                if ((i & (1 << bit)) != 0) {
+                    attrs.add(possibleAttributes[bit]);
+                }
+            }
+
+            if (attrs.size() < 1) {
+                continue;
+            }
+
+            for (double sideLength : sideLengths) {
+                logs.add(new Log(attrs.toArray(new Attribute[attrs.size()]), sideLength));
+            }
+        }
+        return logs;
     }
 
 }

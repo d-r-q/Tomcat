@@ -157,8 +157,8 @@ public class WaveSurfingMovement implements Movement, Painter {
             final double dist = abs(bearingOffset - bo.bearingOffset);
             if (dist < robotWidthInRadians * 0.45) {
                 bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.45))) * bo.danger;
-            } else if (dist < robotWidthInRadians * 1.05) {
-                bulletsDanger += (1 - (dist / (robotWidthInRadians * 1.05))) * bo.danger;
+            } else if (dist < robotWidthInRadians * 1.55) {
+                bulletsDanger += (1 - (dist / (robotWidthInRadians * 1.55))) * bo.danger;
             }
             minDist = min(minDist, dist);
         }

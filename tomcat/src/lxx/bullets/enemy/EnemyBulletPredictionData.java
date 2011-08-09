@@ -8,7 +8,6 @@ import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
 import lxx.paint.LXXGraphics;
-import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 
@@ -62,10 +61,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
                     final double difference = bulletBearingOffset.bearingOffset - wavePointBearingOffset;
                     final double differenceSquare = difference * difference;
                     final double bearingOffsetsDifference = differenceSquare + A;
-                    final double d = enemyWavesCollected == -1
-                            ? 1
-                            : (bulletBearingOffset.source.getAttrValue(AttributesManager.enemyOutgoingWavesCollected) / enemyWavesCollected);
-                    bearingOffsetDanger += (d * d * d) / (bearingOffsetsDifference * B);
+                    bearingOffsetDanger += 1 / (bearingOffsetsDifference * B);
                 }
             }
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
