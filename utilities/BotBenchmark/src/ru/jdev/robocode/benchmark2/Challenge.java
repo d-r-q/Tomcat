@@ -5,14 +5,16 @@
 package ru.jdev.robocode.benchmark2;
 
 import robocode.BattleResults;
-import robocode.control.*;
+import robocode.control.BattleSpecification;
+import robocode.control.BattlefieldSpecification;
+import robocode.control.RobocodeEngine;
+import robocode.control.RobotSpecification;
 import robocode.control.events.*;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 public class Challenge implements IBattleListener {
 
@@ -37,29 +39,50 @@ public class Challenge implements IBattleListener {
         engine.addBattleListener(this);
         startTime = System.currentTimeMillis();
         try {
+            final List<BattleSpecification> battleSpecs = new ArrayList<BattleSpecification>();
+            boolean hasAllBots = true;
             for (String referenceBotName : referenceBotsNames) {
                 currentReferenceBot = referenceBotName;
                 for (int i = 0; i < seasons; i++) {
                     final BattlefieldSpecification specification1 = new BattlefieldSpecification(800, 600);
                     final RobotSpecification[] specs = new RobotSpecification[2];
-                    int idx = 0;
                     for (RobotSpecification rs : engine.getLocalRepository()) {
                         if (rs.getName().equals(challengerBotName)) {
-                            specs[idx++] = rs;
+                            specs[0] = rs;
                         } else if (rs.getName().equals(currentReferenceBot)) {
-                            specs[idx++] = rs;
+                            specs[1] = rs;
                         }
                     }
+                    if (specs[0] == null) {
+                        System.out.println("Chellenger bot not found");
+                        hasAllBots = false;
+                        break;
+                    }
+
+                    if (specs[1] == null) {
+                        System.out.printf("Reference bot %s not found\n", currentReferenceBot);
+                        hasAllBots = false;
+                        break;
+                    }
                     final BattleSpecification specification = new BattleSpecification(BotBenchmark2.ROUNDS, specification1, specs);
-                    System.gc();
-                    System.out.printf("Start battle (%d/%d) (%s: (%d/%d))\n", battleResults.size() + 1, seasons * referenceBotsNames.length, currentReferenceBot, i + 1, seasons);
-                    long battleStartTime = System.currentTimeMillis();
-                    RandomFactory.setRandom(new Random(i));
-                    engine.runBattle(specification);
-                    engine.waitTillBattleOver();
-                    System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), seasons * referenceBotsNames.length,
-                            (System.currentTimeMillis() - battleStartTime) / 1000);
+                    battleSpecs.add(specification);
                 }
+            }
+
+            if (!hasAllBots) {
+                return;
+            }
+
+            int i = 0;
+            for (BattleSpecification bs : battleSpecs) {
+                System.gc();
+                System.out.printf("Start battle (%d/%d) (%s: (%d/%d))\n", battleResults.size() + 1, seasons * referenceBotsNames.length, bs.getRobots()[1].getNameAndVersion(), i + 1, seasons);
+                long battleStartTime = System.currentTimeMillis();
+                engine.runBattle(bs);
+                engine.waitTillBattleOver();
+                System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), seasons * referenceBotsNames.length,
+                        (System.currentTimeMillis() - battleStartTime) / 1000);
+                i++;
             }
         } finally {
             engine.removeBattleListener(this);
