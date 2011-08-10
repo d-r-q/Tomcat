@@ -96,14 +96,17 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     private class Log {
 
         private PSTree<UndirectedGuessFactor> log;
-        private double sideLengthPercents;
+        private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
+                AttributesManager.myLateralSpeed, 2D,
+                AttributesManager.myAcceleration, 0D,
+                AttributesManager.distBetween, 75D,
+                AttributesManager.myDistToForwardWall, 50D);
         private double efficiency = 1;
         private Attribute[] attrs;
 
-        private Log(Attribute[] attrs, double sideLengthPercents) {
+        private Log(Attribute[] attrs) {
             this.attrs = attrs;
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
-            this.sideLengthPercents = sideLengthPercents;
         }
 
         public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t, double weight) {
@@ -113,7 +116,15 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, double weight) {
-            List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
+            final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
+            Collections.sort(entries, new Comparator<PSTreeEntry>() {
+                public int compare(PSTreeEntry o1, PSTreeEntry o2) {
+                    if (o1.predicate.getRound() == o2.predicate.getRound()) {
+                        return (int) (o2.predicate.getTime() - o1.predicate.getTime());
+                    }
+                    return o2.predicate.getRound() - o1.predicate.getRound();
+                }
+            });
 
             final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                     predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
@@ -145,7 +156,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         private Map<Attribute, Interval> getLimits(TurnSnapshot center) {
             final Map<Attribute, Interval> res = new HashMap<Attribute, Interval>();
             for (Attribute attr : attrs) {
-                double delta = attr.getActualRange() * sideLengthPercents;
+                double delta = halfSideLength.get(attr);
                 res.put(attr,
                         new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
                                 (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta))));
@@ -297,7 +308,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.myDistToForwardWall,
         };
 
-        final double[] sideLengths = {0.1};
         final List<Log> logs = new ArrayList<Log>();
         for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
             final List<Attribute> attrs = new LinkedList<Attribute>();
@@ -311,9 +321,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 continue;
             }
 
-            for (double sideLength : sideLengths) {
-                logs.add(new Log(attrs.toArray(new Attribute[attrs.size()]), sideLength));
-            }
+            logs.add(new Log(attrs.toArray(new Attribute[attrs.size()])));
         }
         return logs;
     }
@@ -325,7 +333,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.myDistToForwardWall,
         };
 
-        final double[] sideLengths = {0.1};
         final List<Log> logs = new ArrayList<Log>();
         for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
             final List<Attribute> attrs = new LinkedList<Attribute>();
@@ -339,10 +346,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             if (attrs.size() < 1) {
                 continue;
             }
-
-            for (double sideLength : sideLengths) {
-                logs.add(new Log(attrs.toArray(new Attribute[attrs.size()]), sideLength));
-            }
+            logs.add(new Log(attrs.toArray(new Attribute[attrs.size()])));
         }
         return logs;
     }

@@ -1,0 +1,4 @@
+v. 3.15.155, internal rating: 76,69
+ * initial release
+ * sort data by time in movement data analysis added
+ * hypercube calculation for movement data analyses improved (use different side lengths for different dimensions)
