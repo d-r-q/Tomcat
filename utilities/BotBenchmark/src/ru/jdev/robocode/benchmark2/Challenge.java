@@ -15,46 +15,44 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class Challenge implements IBattleListener {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("mm:ss");
-    private final List<BattleResults[]> battleResults = new ArrayList<BattleResults[]>();
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    private final List<BattleResults[]> battleResults = new ArrayList<>();
     private final String challengerBotName;
-    private final String[] referenceBotsNames;
-    private final int seasons;
+    private final Pairing[] pairings;
 
     private long startTime;
-    private BenchmarkResults benchmarkResults;
-    private String currentReferenceBot;
 
-    public Challenge(String challengerBotName, String[] referenceBotsName, BenchmarkResults benchmarkResults, int seasons) {
+    public Challenge(String challengerBotName, Pairing[] referenceBotsName) {
         this.challengerBotName = challengerBotName;
-        this.referenceBotsNames = referenceBotsName;
-        this.benchmarkResults = benchmarkResults;
-        this.seasons = seasons;
+        this.pairings = referenceBotsName;
+
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     public void execute(RobocodeEngine engine) {
         engine.addBattleListener(this);
         startTime = System.currentTimeMillis();
         try {
-            final List<BattleSpecification> battleSpecs = new ArrayList<BattleSpecification>();
+            final List<BattleSpecification> battleSpecs = new ArrayList<>();
             boolean hasAllBots = true;
-            for (String referenceBotName : referenceBotsNames) {
-                currentReferenceBot = referenceBotName;
-                for (int i = 0; i < seasons; i++) {
+            for (Pairing pairing : pairings) {
+                String currentReferenceBot = pairing.botName;
+                for (int i = 0; i < pairing.seasons; i++) {
                     final BattlefieldSpecification specification1 = new BattlefieldSpecification(800, 600);
                     final RobotSpecification[] specs = new RobotSpecification[2];
                     for (RobotSpecification rs : engine.getLocalRepository()) {
                         if (rs.getName().equals(challengerBotName)) {
                             specs[0] = rs;
-                        } else if (rs.getName().equals(currentReferenceBot)) {
+                        } else if (rs.getNameAndVersion().equals(currentReferenceBot)) {
                             specs[1] = rs;
                         }
                     }
                     if (specs[0] == null) {
-                        System.out.println("Chellenger bot not found");
+                        System.out.println("Challenger bot not found");
                         hasAllBots = false;
                         break;
                     }
@@ -73,16 +71,15 @@ public class Challenge implements IBattleListener {
                 return;
             }
 
-            int i = 0;
             for (BattleSpecification bs : battleSpecs) {
                 System.gc();
-                System.out.printf("Start battle (%d/%d) (%s: (%d/%d))\n", battleResults.size() + 1, seasons * referenceBotsNames.length, bs.getRobots()[1].getNameAndVersion(), i + 1, seasons);
+                System.out.printf("Start battle (%d/%d) (%s)\n", battleResults.size() + 1, battleSpecs.size(), bs.getRobots()[1].getNameAndVersion());
                 long battleStartTime = System.currentTimeMillis();
                 engine.runBattle(bs);
                 engine.waitTillBattleOver();
-                System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), seasons * referenceBotsNames.length,
+                System.out.printf("Battle ended (%d/%d), execution time: %d secs\n", battleResults.size(), battleSpecs.size(),
                         (System.currentTimeMillis() - battleStartTime) / 1000);
-                i++;
+                System.out.printf("Estimated remaining time: %s\n", dateFormat.format(new Date((System.currentTimeMillis() - startTime) / battleResults.size() * (battleSpecs.size() - battleResults.size()))));
             }
         } finally {
             engine.removeBattleListener(this);
@@ -137,7 +134,4 @@ public class Challenge implements IBattleListener {
         return challengerBotName;
     }
 
-    public int getSeasons() {
-        return seasons;
-    }
 }
