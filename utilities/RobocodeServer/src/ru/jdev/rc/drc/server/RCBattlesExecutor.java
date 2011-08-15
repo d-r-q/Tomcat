@@ -101,9 +101,9 @@ public class RCBattlesExecutor implements IBattleListener {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         final RCBattlesExecutor rcBattlesExecutor = new RCBattlesExecutor();
-        final Competitor c = new Competitor("lxx.Tomcat", "3.7.95");
+        /*final Competitor c = new Competitor("lxx.Tomcat", "3.7.95", codeCheckSum, code);
         rcBattlesExecutor.executeBattle(new Competitor[]{c, c},
-                new BattlefieldSpecification(800, 600), 10);
+                new BattlefieldSpecification(800, 600), 10);*/
     }
 
 }

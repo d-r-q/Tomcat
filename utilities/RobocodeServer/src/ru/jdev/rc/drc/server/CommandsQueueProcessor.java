@@ -6,21 +6,21 @@ package ru.jdev.rc.drc.server;
 
 public class CommandsQueueProcessor implements Runnable {
 
-    private final CommandsQueue commandsQueue;
+    private final BattleRequestsQueue battleRequestsQueue;
     private final RCBattlesExecutor rcBattlesExecutor;
 
     private volatile boolean isRunned = true;
 
-    public CommandsQueueProcessor(CommandsQueue commandsQueue,
+    public CommandsQueueProcessor(BattleRequestsQueue battleRequestsQueue,
                                   RCBattlesExecutor rcBattlesExecutor) {
-        this.commandsQueue = commandsQueue;
+        this.battleRequestsQueue = battleRequestsQueue;
         this.rcBattlesExecutor = rcBattlesExecutor;
     }
 
     public void run() {
         while (isRunned && !Thread.interrupted()) {
             try {
-                final Command command = commandsQueue.getBattleRequest();
+                final Command command = battleRequestsQueue.getBattleRequest();
                 if (!command.client.isAlive()) {
                     continue;
                 }

@@ -7,28 +7,28 @@ package ru.jdev.rc.drc.server;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CommandsQueue {
+public class BattleRequestsQueue {
 
-    private final List<Command> priorityQueue = new LinkedList<Command>();
-    private final List<Command> commonQueue = new LinkedList<Command>();
+    private final List<BattleRequest> priorityQueue = new LinkedList<>();
+    private final List<BattleRequest> commonQueue = new LinkedList<>();
 
     private final String secureToken;
 
-    public CommandsQueue(String secureToken) {
+    public BattleRequestsQueue(String secureToken) {
         this.secureToken = secureToken;
     }
 
-    public synchronized void addBattleRequest(Command command) {
-        if (command.battleRequest.secureToken.equals(secureToken)) {
-            priorityQueue.add(command);
+    public synchronized void addBattleRequest(BattleRequest battleRequest) {
+        if (battleRequest.secureToken.equals(secureToken)) {
+            priorityQueue.add(battleRequest);
         } else {
-            commonQueue.add(command);
+            commonQueue.add(battleRequest);
         }
 
         notify();
     }
 
-    public synchronized Command getBattleRequest() throws InterruptedException {
+    public synchronized BattleRequest getBattleRequest() throws InterruptedException {
         while (priorityQueue.size() == 0 && commonQueue.size() == 0) {
             wait();
         }

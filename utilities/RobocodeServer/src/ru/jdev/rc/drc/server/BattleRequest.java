@@ -10,22 +10,28 @@ import java.util.Map;
 
 public class BattleRequest {
 
-    public final long requestId;
     public final String secureToken;
 
     public final Competitor[] competitors;
-    public final Map<Competitor, CompetitorCode> competitorsCode;
     public final int rounds;
     public final BattlefieldSpecification bfSpec;
 
-    public BattleRequest(long requestId, String secureToken, Competitor[] competitors, Map<Competitor, CompetitorCode> competitorsCode,
+    public long requestId;
+
+    public BattleRequest(String secureToken, Competitor[] competitors,
                          int rounds, BattlefieldSpecification bfSpec) {
-        this.requestId = requestId;
         this.secureToken = secureToken;
 
         this.competitors = competitors;
-        this.competitorsCode = competitorsCode;
         this.rounds = rounds;
         this.bfSpec = bfSpec;
+    }
+
+    public long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(long requestId) {
+        this.requestId = requestId;
     }
 }
