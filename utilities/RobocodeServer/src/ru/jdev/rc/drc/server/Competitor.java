@@ -8,11 +8,14 @@ import java.io.Serializable;
 
 public class Competitor implements Serializable {
 
-    public final String name;
-    public final String version;
-    public final byte[] codeCheckSum;
+    public String name;
+    public String version;
+    public byte[] codeCheckSum;
 
     public byte[] code;
+
+    public Competitor() {
+    }
 
     public Competitor(String name, String version, byte[] codeCheckSum, byte[] code) {
         this.name = name;

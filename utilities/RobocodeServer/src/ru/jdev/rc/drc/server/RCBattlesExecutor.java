@@ -39,7 +39,14 @@ public class RCBattlesExecutor implements IBattleListener {
         robocodeEngine.runBattle(battleSpecification);
         robocodeEngine.waitTillBattleOver();
 
-        return new RSBattleResults(new ArrayList<IScoreSnapshot[]>(roundResults), currentBattleResults);
+        CompetitorResults[] compRess = new CompetitorResults[currentBattleResults.length];
+        int idx = 0;
+        for (BattleResults br : currentBattleResults) {
+            compRess[idx] = new CompetitorResults(br.getFirsts(), br.getScore(), br.getBulletDamage());
+            idx++;
+        }
+
+        return new RSBattleResults(compRess);
     }
 
     private RobotSpecification[] getRobotSpecs(Competitor[] competitors) {
@@ -59,13 +66,16 @@ public class RCBattlesExecutor implements IBattleListener {
     }
 
     public void onBattleStarted(BattleStartedEvent battleStartedEvent) {
+        System.out.println("Battle started");
     }
 
     public void onBattleFinished(BattleFinishedEvent battleFinishedEvent) {
+        System.out.println("Battle finished");
     }
 
     public void onBattleCompleted(BattleCompletedEvent battleCompletedEvent) {
         currentBattleResults = battleCompletedEvent.getSortedResults();
+        System.out.println("Battle completed");
     }
 
     public void onBattlePaused(BattlePausedEvent battlePausedEvent) {
@@ -75,10 +85,12 @@ public class RCBattlesExecutor implements IBattleListener {
     }
 
     public void onRoundStarted(RoundStartedEvent roundStartedEvent) {
+        System.out.println("Round started");
     }
 
     public void onRoundEnded(RoundEndedEvent roundEndedEvent) {
         roundResults.add(currentSortedTeamScores);
+        System.out.println("Round finished");
     }
 
     public void onTurnStarted(TurnStartedEvent turnStartedEvent) {

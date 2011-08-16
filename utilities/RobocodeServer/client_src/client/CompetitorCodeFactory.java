@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ * Copyright (c) 2011 Zodiac Interactive, LLC. All Rights Reserved.
  */
 
 package ru.jdev.rc.drc.client;
@@ -19,7 +19,7 @@ public class CompetitorCodeFactory {
         byte[] competitorCode;
         try (
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                final FileInputStream fis = new FileInputStream(competitorJar);
+                final FileInputStream fis = new FileInputStream(competitorJar)
         ) {
             byte[] buffer = new byte[1024 * 200];
             int len;
@@ -32,7 +32,7 @@ public class CompetitorCodeFactory {
 
         byte[] codeCheckSum;
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
             codeCheckSum = md.digest(competitorCode);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Can not find md5 algorithm");

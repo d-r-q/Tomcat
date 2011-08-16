@@ -6,20 +6,20 @@ package ru.jdev.rc.drc.server;
 
 import robocode.control.BattlefieldSpecification;
 
-import java.util.Map;
-
 public class BattleRequest {
 
+    public final int requestId;
     public final String secureToken;
 
     public final Competitor[] competitors;
     public final int rounds;
     public final BattlefieldSpecification bfSpec;
 
-    public long requestId;
+    public BattleRequestState state = BattleRequestState.RECEIVED;
 
-    public BattleRequest(String secureToken, Competitor[] competitors,
+    public BattleRequest(int battleRequestId, String secureToken, Competitor[] competitors,
                          int rounds, BattlefieldSpecification bfSpec) {
+        requestId = battleRequestId;
         this.secureToken = secureToken;
 
         this.competitors = competitors;
@@ -27,11 +27,7 @@ public class BattleRequest {
         this.bfSpec = bfSpec;
     }
 
-    public long getRequestId() {
+    public int getRequestId() {
         return requestId;
-    }
-
-    public void setRequestId(long requestId) {
-        this.requestId = requestId;
     }
 }

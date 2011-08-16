@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package ru.jdev.rc.drc.server;
 
 import java.io.*;
@@ -12,12 +16,12 @@ public class Utils {
     }
 
     public static void copyDirectory(File sourceLocation, File targetLocation)
-            throws IOException {
+            throws java.io.IOException {
 
         if (sourceLocation.isDirectory()) {
             if (!targetLocation.exists()) {
                 if (!targetLocation.mkdir()) {
-                    throw new IOException("Cannot create dir " + targetLocation.getCanonicalPath());
+                    throw new java.io.IOException("Cannot create dir " + targetLocation.getCanonicalPath());
                 }
             }
 

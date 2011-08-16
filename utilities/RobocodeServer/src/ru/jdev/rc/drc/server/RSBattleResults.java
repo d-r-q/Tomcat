@@ -4,22 +4,18 @@
 
 package ru.jdev.rc.drc.server;
 
-import robocode.BattleResults;
-import robocode.control.snapshot.IScoreSnapshot;
-
 import java.io.Serializable;
-import java.util.List;
 
 public class RSBattleResults implements Serializable {
 
-    // todo(zhidkov): make serializable
-    public final transient List<IScoreSnapshot[]> roundResults;
-    public final BattleResults[] currentBattleResults;
+    public CompetitorResults[] competitorResults;
 
     public long requestId;
 
-    public RSBattleResults(List<IScoreSnapshot[]> roundResults, BattleResults[] currentBattleResults) {
-        this.roundResults = roundResults;
-        this.currentBattleResults = currentBattleResults;
+    public RSBattleResults() {
+    }
+
+    public RSBattleResults(CompetitorResults[] compRess) {
+        competitorResults = compRess;
     }
 }

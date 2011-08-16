@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package ru.jdev.rc.drc.server;
 
 import java.util.HashMap;
@@ -11,12 +15,12 @@ public class BattleResultsBuffer {
 
     private final Map<Integer, RSBattleResults> battleResults = new HashMap<>();
 
-    public synchronized void addBattleReult(Integer battleRequestId, RSBattleResults battleResults) {
+    public synchronized void addBattleResult(Integer battleRequestId, RSBattleResults battleResults) {
         this.battleResults.put(battleRequestId, battleResults);
     }
 
     public RSBattleResults getResults(Integer battleRequestId) {
-        return null;
+        return battleResults.get(battleRequestId);
     }
 
 }

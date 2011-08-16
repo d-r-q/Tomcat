@@ -4,8 +4,12 @@
 
 package ru.jdev.rc.drc.server;
 
-import javax.jws.WebService;
+public enum BattleRequestState {
 
-@WebService
-public interface RobocodeServer {
+    RECEIVED,
+    QUEUED,
+    EXECUTING,
+    EXECUTED,
+    REJECTED
+
 }
