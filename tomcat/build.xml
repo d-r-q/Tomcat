@@ -52,7 +52,6 @@
         </echo>
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal
-            lxx.Tomcat.build_time=${TODAY} ${NOW}
         </echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}.jar" compress="true">
@@ -78,7 +77,6 @@
         </echo>
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc
-            lxx.Tomcat.build_time=${TODAY} ${NOW}
         </echo>
 
         <jar destfile="lxx.${robot.name}_${robot.version}TCc.jar" compress="true">
@@ -90,62 +88,6 @@
         </copy>
 
         <delete file="lxx.${robot.name}_${robot.version}TCc.jar"/>
-    </target>
-
-    <target name="init_benchmark" depends="archive">
-        <tstamp>
-            <format property="TODAY" pattern="yyMMdd"/>
-        </tstamp>
-
-        <tstamp>
-            <format property="NOW" pattern="HHmm"/>
-        </tstamp>
-
-        <property name="bench.results.dir" value="${benchmark.dir}\${TODAY}\${NOW}"/>
-
-        <mkdir dir="${bench.results.dir}"/>
-    </target>
-
-    <target name="simple_targeters_bench" depends="init_benchmark">
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} simple_targeters 2 35 ${bench.results.dir}\simple_targeters.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <copydir src="${bench.results.dir}" dest="${benchmark.dir}"/>
-
-    </target>
-
-    <target name="bench" depends="archive, simple_targeters_bench">
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} barracuda 1000 35 ${bench.results.dir}\barracuda.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} devil_fish 1000 35 ${bench.results.dir}\devil_fish.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} quick_roborumble 3 35 ${bench.results.dir}\quick_roborumble.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} top10 3 35 ${bench.results.dir}\top10.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <java classpath="${bot.benchmark.classes};${robocode.jar}" classname="ru.jdev.robocode.benchmark2.BotBenchmark2"
-              args="lxx.${robot.name} roborumble 1 35 ${bench.results.dir}\roborumble.br"
-              dir="${bot.benchmark.dir}" fork="yes">
-        </java>
-
-        <copydir src="${bench.results.dir}" dest="${benchmark.dir}"/>
-
     </target>
 
 </project>

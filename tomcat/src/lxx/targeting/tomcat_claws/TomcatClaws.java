@@ -126,21 +126,24 @@ public class TomcatClaws implements Gun {
     }
 
     private APoint getFuturePos(Target t, TurnSnapshot start, double bulletSpeed) {
-        APoint futurePos = new LXXPoint(t.getPosition());
+        final LXXPoint targetPos = t.getPosition();
+        APoint futurePos = new LXXPoint(targetPos);
 
         int timeDelta = -AIMING_TIME;
-        TurnSnapshot currentSnapshot = start.getNext();
+        TurnSnapshot currentSnapshot = start.next;
+        final BattleField battleField = robot.getState().getBattleField();
+        final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
         while (!isBulletHitEnemy(futurePos, timeDelta, bulletSpeed)) {
             if (currentSnapshot == null) {
                 return null;
             }
             final DeltaVector dv = LXXUtils.getEnemyDeltaVector(start, currentSnapshot);
-            final double alpha = t.getAbsoluteHeadingRadians() + dv.getAlphaRadians();
-            futurePos = new LXXPoint(t.getPosition().project(alpha, dv.getLength()));
-            if (!robot.getState().getBattleField().contains(futurePos)) {
+            final double alpha = absoluteHeadingRadians + dv.getAlphaRadians();
+            futurePos = targetPos.project(alpha, dv.getLength());
+            if (!battleField.contains(futurePos)) {
                 return null;
             }
-            currentSnapshot = currentSnapshot.getNext();
+            currentSnapshot = currentSnapshot.next;
             timeDelta++;
         }
 

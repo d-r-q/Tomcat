@@ -25,7 +25,7 @@ public class TurnSnapshot implements Serializable {
     private final String targetName;
 
     private TurnSnapshot prev;
-    private TurnSnapshot next;
+    public TurnSnapshot next;
 
     public TurnSnapshot(double[] attributeValues, long time, int round, String targetName) {
         this.attributeValues = attributeValues;
