@@ -7,7 +7,7 @@
 <project name="Tomcat" basedir="."
          default="archive">
     <property file="build.properties"/>
-    <property name="robot.version" value="3.15.155"/>
+    <property name="robot.version" value="3.16.166"/>
 
     <path id="src.files">
         <pathelement location="src"/>
@@ -19,7 +19,7 @@
 
     <target name="compile" depends="init" description="Compiles source files">
 
-        <javac destdir="${bin.dir}" debug="on" debuglevel="lines,vars,source" optimize="yes">
+        <javac destdir="${bin.dir}" debug="on" debuglevel="lines,vars,source" optimize="yes" target="1.5">
             <src refid="src.files"/>
 
             <classpath>
@@ -42,6 +42,10 @@
         <tstamp>
             <format property="NOW" pattern="HH:mm:ss"/>
         </tstamp>
+
+        <copy todir="${bin.dir}">
+            <fileset dir="src"/>
+        </copy>
 
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
             robot.java.source.included=false
@@ -88,6 +92,8 @@
         </copy>
 
         <delete file="lxx.${robot.name}_${robot.version}TCc.jar"/>
+
+        <delete dir="${bin.dir}"/>
     </target>
 
 </project>

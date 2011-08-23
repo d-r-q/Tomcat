@@ -52,7 +52,7 @@ public class PSTree<T extends Serializable> {
     }
 
     public List<PSTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {
-        final LinkedList<PSTreeEntry<T>> res = new LinkedList<PSTreeEntry<T>>();
+        final List<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(10000);
         root.getEntries(limits, res);
         return res;
     }

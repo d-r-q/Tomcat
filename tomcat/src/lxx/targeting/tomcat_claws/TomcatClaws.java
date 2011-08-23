@@ -72,7 +72,7 @@ public class TomcatClaws implements Gun {
         final List<IntervalDouble> botIntervalsRadians = new ArrayList<IntervalDouble>();
         for (APoint pnt : futurePoses) {
             final double bearingOffset = LXXUtils.bearingOffset(robotPosAtFireTime, t, pnt);
-            final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt);
+            final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt) * 0.75;
             final double bo1 = bearingOffset - botWidth / 2;
             final double bo2 = bearingOffset + botWidth / 2;
             botIntervalsRadians.add(new IntervalDouble(min(bo1, bo2), max(bo1, bo2)));
