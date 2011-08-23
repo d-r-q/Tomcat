@@ -22,7 +22,7 @@ import static java.lang.Math.*;
 
 public class TomcatClaws implements Gun {
 
-    private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
+    private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_0_5;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
     private static final int AIMING_TIME = 2;
@@ -129,11 +129,15 @@ public class TomcatClaws implements Gun {
         final LXXPoint targetPos = t.getPosition();
         APoint futurePos = new LXXPoint(targetPos);
 
-        int timeDelta = -AIMING_TIME;
         TurnSnapshot currentSnapshot = start.next;
+        currentSnapshot = skip(currentSnapshot, AIMING_TIME);
         final BattleField battleField = robot.getState().getBattleField();
         final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
-        while (!isBulletHitEnemy(futurePos, timeDelta, bulletSpeed)) {
+        BulletState bs;
+        final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;
+        long timeDelta;
+        double bulletTravelledDistance = bulletSpeed;
+        while ((bs = isBulletHitEnemy(futurePos, bulletTravelledDistance)) == BulletState.COMING) {
             if (currentSnapshot == null) {
                 return null;
             }
@@ -143,19 +147,47 @@ public class TomcatClaws implements Gun {
             if (!battleField.contains(futurePos)) {
                 return null;
             }
-            currentSnapshot = currentSnapshot.next;
-            timeDelta++;
+            timeDelta = currentSnapshot.getTime() - start.getTime() - AIMING_TIME;
+            bulletTravelledDistance = timeDelta * bulletSpeed;
+            int minBulletFlightTime = max((int) ((robotPosAtFireTime.aDistance(futurePos) - bulletTravelledDistance) / speedSum) - 1, 1);
+            currentSnapshot = skip(currentSnapshot, minBulletFlightTime);
+        }
+
+        if (bs == BulletState.PASSED) {
+            throw new RuntimeException("Future pos calculation error");
         }
 
         return futurePos;
     }
 
-    private boolean isBulletHitEnemy(APoint predictedPos, long timeDelta, double bulletSpeed) {
+    private TurnSnapshot skip(TurnSnapshot start, int count) {
+
+        for (int i = 0; i < count; i++) {
+            if (start == null) {
+                return null;
+            }
+            start = start.next;
+        }
+
+        return start;
+    }
+
+    private BulletState isBulletHitEnemy(APoint predictedPos, double bulletTravelledDistance) {
         final double angleToPredictedPos = robotPosAtFireTime.angleTo(predictedPos);
-        final int bulletTravelledDistance = (int) (timeDelta * bulletSpeed);
         final LXXPoint bulletPos = (LXXPoint) robotPosAtFireTime.project(angleToPredictedPos, bulletTravelledDistance);
         final Rectangle2D enemyRectAtPredictedPos = LXXUtils.getBoundingRectangleAt(predictedPos);
-        return enemyRectAtPredictedPos.contains(bulletPos) || bulletTravelledDistance > robotPosAtFireTime.aDistance(predictedPos) + LXXConstants.ROBOT_SIDE_HALF_SIZE;
+        if (enemyRectAtPredictedPos.contains(bulletPos)) {
+            return BulletState.HITTING;
+        } else if (bulletTravelledDistance > robotPosAtFireTime.aDistance(predictedPos) + LXXConstants.ROBOT_SIDE_HALF_SIZE) {
+            return BulletState.PASSED;
+        }
+        return BulletState.COMING;
+    }
+
+    private enum BulletState {
+        COMING,
+        HITTING,
+        PASSED
     }
 
 }

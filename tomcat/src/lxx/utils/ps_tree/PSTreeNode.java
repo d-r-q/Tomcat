@@ -19,7 +19,6 @@ import static java.lang.Math.*;
  */
 public class PSTreeNode<T extends Serializable> {
 
-    private LinkedList<PSTreeEntry<T>> entries = new LinkedList<PSTreeEntry<T>>();
     private final List<PSTreeNode<T>> children = new ArrayList<PSTreeNode<T>>();
 
     private final int loadFactor;
@@ -31,7 +30,7 @@ public class PSTreeNode<T extends Serializable> {
 
     private Double mediana = null;
     private boolean isLoaded = false;
-    private final List<PSTreeEntry<T>> emptyList = Collections.unmodifiableList(new ArrayList<PSTreeEntry<T>>());
+    private ArrayList<PSTreeEntry<T>> entries = new ArrayList<PSTreeEntry<T>>();
 
     public PSTreeNode(int loadFactor, Interval interval, int attributeIdx, Attribute[] attributes,
                       double maxIntervalLength) {
@@ -88,7 +87,7 @@ public class PSTreeNode<T extends Serializable> {
         } else {
             mediana = (mediana * entries.size() + getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
         }
-        entries.addFirst(PSTreeEntry);
+        entries.add(0, PSTreeEntry);
         final int value = getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx]);
         if (value < range.a) {
             range.a = value;

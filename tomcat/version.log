@@ -1,3 +1,8 @@
+v. 3.16.167, internal rating: 77.35
+ * getFuturePosition optimised
+ * stupid LinkedList addAll and sorting removed
+ * effective bearing offset interval in targeting reduced to 75%
+ * angle step in targeting reduced to 0.5 rad
 v. 3.15.155, internal rating: 76,511; 85,230; 1865; 4003; 1499; 6900;
  * initial release
  * sort data by time in movement data analysis added
