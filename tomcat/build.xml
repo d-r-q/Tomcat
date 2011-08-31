@@ -48,7 +48,7 @@
         </copy>
 
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
-            robot.java.source.included=false
+            robot.java.source.included=true
             robot.version=${robot.version}
             robot.author.name=Alexey Zhidkov
             robot.classname=lxx.${robot.name}
@@ -73,7 +73,7 @@
         <delete file="lxx.${robot.name}_${robot.version}.jar"/>
 
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
-            robot.java.source.included=false
+            robot.java.source.included=true
             robot.version=${robot.version}TCc
             robot.author.name=Alexey Zhidkov
             robot.classname=lxx.${robot.name}
@@ -87,11 +87,40 @@
             <fileset dir="${bin.dir}"/>
         </jar>
 
+        <copy todir="${robocode.dir}\robots\">
+            <fileset file="lxx.${robot.name}_${robot.version}TCc.jar"/>
+        </copy>
+
         <copy todir="${builds.dir}\">
             <fileset file="lxx.${robot.name}_${robot.version}TCc.jar"/>
         </copy>
 
         <delete file="lxx.${robot.name}_${robot.version}TCc.jar"/>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
+            robot.java.source.included=true
+            robot.version=${robot.version}MCc
+            robot.author.name=Alexey Zhidkov
+            robot.classname=lxx.${robot.name}
+            robot.name=${robot.name}
+        </echo>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=MCc
+        </echo>
+
+        <jar destfile="lxx.${robot.name}_${robot.version}MCc.jar" compress="true">
+            <fileset dir="${bin.dir}"/>
+        </jar>
+
+        <copy todir="${robocode.dir}\robots\">
+            <fileset file="lxx.${robot.name}_${robot.version}MCc.jar"/>
+        </copy>
+
+        <copy todir="${builds.dir}\">
+            <fileset file="lxx.${robot.name}_${robot.version}MCc.jar"/>
+        </copy>
+
+        <delete file="lxx.${robot.name}_${robot.version}MCc.jar"/>
 
         <delete dir="${bin.dir}"/>
     </target>
