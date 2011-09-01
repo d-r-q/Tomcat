@@ -74,6 +74,10 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate);
     }
 
+    public void bulletIntercepted(LXXBullet bullet) {
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate);
+    }
+
     private LogSet getLogSet(String enemyName) {
         LogSet logSet = logSets.get(enemyName);
         if (logSet == null) {
@@ -85,9 +89,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private double getVisitLogWeight() {
         return max(office.getStatisticsManager().getEnemyHitRate().getHitRate() - 0.08, 0) / 0.05;
-    }
-
-    public void bulletIntercepted(LXXBullet bullet) {
     }
 
     public void bulletMiss(LXXBullet bullet) {
@@ -226,9 +227,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         }
 
         public void learn(LXXBullet bullet, TurnSnapshot predicate) {
-            learnLogSet(bullet, predicate, visitLogsSet);
-
-            learnLogSet(bullet, predicate, hitLogsSet);
+            recalculateLogSetEfficiency(bullet, predicate, visitLogsSet);
+            recalculateLogSetEfficiency(bullet, predicate, hitLogsSet);
 
             final double direction = bullet.getTargetLateralDirection();
             final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
@@ -239,7 +239,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             }
         }
 
-        private void learnLogSet(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet) {
+        private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet) {
             Log bestVisitLog = null;
             for (Log log : logSet) {
                 final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner(), 1);
