@@ -177,7 +177,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
         double prevAcceleration = acceleration;
         acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
-        if (signum(prevAcceleration) != signum(acceleration) && getSpeed() > 0.1 && getSpeed() < 7.9) {
+        if (prevState != null && signum(prevState.getVelocity()) != signum(currentState.getVelocity())) {
             lastDirChangeTime = e.getTime() - 1;
         }
 

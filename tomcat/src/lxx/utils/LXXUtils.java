@@ -65,6 +65,17 @@ public class LXXUtils {
         return res;
     }
 
+    public static double factoredEuqDistance(int[] indexes, double[] a, double[] b, double[] factors) {
+        double res = 0;
+
+        final int len = indexes.length;
+        for (int i = 0; i < len; i++) {
+            final double diff = a[indexes[i]] - b[indexes[i]];
+            res += (diff * diff) * factors[indexes[i]];
+        }
+
+        return Math.sqrt(res);
+    }
 
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
