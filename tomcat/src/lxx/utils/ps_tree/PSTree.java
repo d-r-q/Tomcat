@@ -52,11 +52,31 @@ public class PSTree<T extends Serializable> {
     }
 
     public List<PSTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {
-        return root.getEntries(limits);
+        final List<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(10000);
+        root.getEntries(limits, res);
+        return res;
     }
 
-    public List<EntryMatch<T>> getSimilarEntries(Map<Attribute, Interval> limits, TurnSnapshot ts) {
-        return root.getEntries(limits, ts, 0);
+    public List<EntryMatch<T>> getSortedSimilarEntries(TurnSnapshot ts, Map<Attribute, Interval> limits) {
+        final double[] weights = new double[AttributesManager.attributesCount()];
+        final int[] indexes = new int[limits.size()];
+        int idx = 0;
+        for (Attribute a : limits.keySet()) {
+            weights[a.getId()] = 100D / a.getActualRange();
+            indexes[idx++] = a.getId();
+        }
+        final List<EntryMatch<T>> entries = new ArrayList<EntryMatch<T>>();
+        for (PSTreeEntry<T> entry : getSimilarEntries(limits)) {
+            entries.add(new EntryMatch<T>(entry.result,
+                    LXXUtils.factoredManhettanDistance(indexes, ts.toArray(), entry.predicate.toArray(), weights), entry.predicate));
+        }
+        Collections.sort(entries, new Comparator<EntryMatch>() {
+            public int compare(EntryMatch o1, EntryMatch o2) {
+                return (int) signum(o1.match - o2.match);
+            }
+        });
+
+        return entries;
     }
 
 }

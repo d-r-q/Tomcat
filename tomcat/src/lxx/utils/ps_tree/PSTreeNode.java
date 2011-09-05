@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.*;
 
 import static java.lang.Math.*;
-import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -20,7 +19,6 @@ import static java.lang.Math.abs;
  */
 public class PSTreeNode<T extends Serializable> {
 
-    private static final ArrayList EMPTY_LIST = new ArrayList();
     private final List<PSTreeNode<T>> children = new ArrayList<PSTreeNode<T>>();
 
     private final int loadFactor;
@@ -241,9 +239,10 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public ArrayList<PSTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
+    public void getEntries(Map<Attribute, Interval> limits, List<PSTreeEntry<T>> res) {
         if (children.size() == 0) {
-            return entries;
+            res.addAll(entries);
+            return;
         }
 
         int fromIdx = Integer.MAX_VALUE;
@@ -257,20 +256,20 @@ public class PSTreeNode<T extends Serializable> {
         }
 
         if (fromIdx == Integer.MAX_VALUE) {
-            return EMPTY_LIST;
+            return;
         }
 
         int medin = (fromIdx + toIdx) / 2;
-        ArrayList<PSTreeEntry<T>> res = children.get(medin).getEntries(limits);
+        children.get(medin).getEntries(limits, res);
 
         for (int delta = 1; delta <= limit.getLength(); delta++) {
             boolean isUpdate = false;
             if (medin - delta >= fromIdx) {
-                res = merge1(res, children.get(medin - delta).getEntries(limits));
+                children.get(medin - delta).getEntries(limits, res);
                 isUpdate = true;
             }
             if (medin + delta <= toIdx) {
-                res = merge1(res, children.get(medin + delta).getEntries(limits));
+                children.get(medin + delta).getEntries(limits, res);
                 isUpdate = true;
             }
 
@@ -278,121 +277,5 @@ public class PSTreeNode<T extends Serializable> {
                 break;
             }
         }
-
-        return res;
-    }
-
-    public ArrayList<EntryMatch<T>> getEntries(Map<Attribute, Interval> limits, TurnSnapshot predicate, double dist) {
-        if (children.size() == 0) {
-            ArrayList<EntryMatch<T>> res = new ArrayList<EntryMatch<T>>();
-            for (PSTreeEntry<T> e : entries) {
-                final double diff = abs(predicate.getAttrValue(attributes[attributeIdx]) - e.predicate.getAttrValue(attributes[attributeIdx]));
-                res.add(new EntryMatch<T>(e.result, dist + (diff * diff), e.predicate));
-            }
-            return res;
-        }
-
-        int fromIdx = Integer.MAX_VALUE;
-        int toIdx = Integer.MIN_VALUE;
-        Interval limit = limits.get(attributes[attributeIdx + 1]);
-        for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).range.intersects(limit)) {
-                fromIdx = min(fromIdx, i);
-                toIdx = max(toIdx, i);
-            }
-        }
-
-        if (fromIdx == Integer.MAX_VALUE) {
-            return EMPTY_LIST;
-        }
-
-        int medin = (fromIdx + toIdx) / 2;
-        final double diff = attributeIdx >= 0 ? abs(predicate.getAttrValue(attributes[attributeIdx]) - mediana) : 0;
-        ArrayList<EntryMatch<T>> res = children.get(medin).getEntries(limits, predicate, dist + (diff * diff));
-
-        for (int delta = 1; delta <= limit.getLength(); delta++) {
-            boolean isUpdate = false;
-            if (medin - delta >= fromIdx) {
-                res = merge2(res, children.get(medin - delta).getEntries(limits, predicate, dist + (diff * diff)));
-                isUpdate = true;
-            }
-            if (medin + delta <= toIdx) {
-                res = merge2(res, children.get(medin + delta).getEntries(limits, predicate, dist + (diff * diff)));
-                isUpdate = true;
-            }
-
-            if (!isUpdate) {
-                break;
-            }
-        }
-
-        return res;
-    }
-
-    private ArrayList<PSTreeEntry<T>> merge1(ArrayList<PSTreeEntry<T>> lst1, ArrayList<PSTreeEntry<T>> lst2) {
-        final int lst1Size = lst1.size();
-        final int lst2Size = lst2.size();
-        ArrayList<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(lst1Size + lst2Size);
-
-        int idx1 = 0;
-        int idx2 = 0;
-
-        while (idx1 < lst1Size || idx2 < lst2Size) {
-            if (idx1 == lst1Size) {
-                res.add(lst2.get(idx2++));
-            } else if (idx2 == lst2Size) {
-                res.add(lst1.get(idx1++));
-            } else {
-                int cmp;
-                final TurnSnapshot p1 = lst1.get(idx1).predicate;
-                final TurnSnapshot p2 = lst2.get(idx2).predicate;
-                if (p1.round != p2.round) {
-                    cmp = p2.round - p1.round;
-                } else {
-                    cmp = (int) (p2.time - p1.time);
-                }
-                if (cmp < 0) {
-                    res.add(lst1.get(idx1++));
-                } else {
-                    res.add(lst2.get(idx2++));
-                }
-            }
-        }
-
-        return res;
-    }
-
-    private ArrayList<EntryMatch<T>> merge2(ArrayList<EntryMatch<T>> lst1, ArrayList<EntryMatch<T>> lst2) {
-        final int lst1Size = lst1.size();
-        final int lst2Size = lst2.size();
-        ArrayList<EntryMatch<T>> res = new ArrayList<EntryMatch<T>>(lst1Size + lst2Size);
-
-        int idx1 = 0;
-        int idx2 = 0;
-
-        while (idx1 < lst1Size || idx2 < lst2Size) {
-            if (idx1 == lst1Size) {
-                res.add(lst2.get(idx2++));
-            } else if (idx2 == lst2Size) {
-                res.add(lst1.get(idx1++));
-            } else {
-                int cmp;
-                final TurnSnapshot p1 = lst1.get(idx1).predicate;
-                final TurnSnapshot p2 = lst2.get(idx2).predicate;
-                if (p1.round != p2.round) {
-                    cmp = p2.round - p1.round;
-                } else {
-                    cmp = (int) (p2.time - p1.time);
-                }
-
-                if (cmp < 0) {
-                    res.add(lst1.get(idx1++));
-                } else {
-                    res.add(lst2.get(idx2++));
-                }
-            }
-        }
-
-        return res;
     }
 }

@@ -38,8 +38,8 @@ public class SingleSourceDataView implements DataView {
     }
 
     public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
-        List<EntryMatch<Serializable>> similarEntries = dataSource.getSimilarEntries(getLimits(ts), ts);
-        similarEntries = filterOutByTime(similarEntries, ts);
+        final List<EntryMatch<Serializable>> similarEntries = dataSource.getSortedSimilarEntries(ts, getLimits(ts));
+        filterOutByTime(similarEntries, ts);
         final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
 
         for (EntryMatch e : similarEntries) {
@@ -49,25 +49,28 @@ public class SingleSourceDataView implements DataView {
         return dataSet;
     }
 
-    private List<EntryMatch<Serializable>> filterOutByTime(List<EntryMatch<Serializable>> similarSnapshots, TurnSnapshot ts) {
-        final LinkedList<EntryMatch<Serializable>> res = new LinkedList<EntryMatch<Serializable>>();
+    private void filterOutByTime(List<EntryMatch<Serializable>> similarSnapshots, TurnSnapshot ts) {
+        Collections.sort(similarSnapshots, new ByTimeComparator());
 
-        for (EntryMatch<Serializable> s : similarSnapshots) {
-            if (ts.getRound() - s.predicate.getRound() > roundsLimit) {
-                break;
+        for (int i = 0; i < similarSnapshots.size() - 1; i++) {
+            final EntryMatch em1 = similarSnapshots.get(i);
+            if (ts.getRound() - em1.predicate.getRound() > roundsLimit) {
+                similarSnapshots.remove(i);
+                i--;
+                continue;
             }
-            res.add(s);
 
-            if (s.predicate.getRound() == res.getLast().predicate.getRound() &&
-                    s.predicate.getTime() + 5 > res.getLast().predicate.getTime()) {
-                if (s.match < res.getLast().match) {
-                    res.removeLast();
-                    res.addLast(s);
+            final EntryMatch em2 = similarSnapshots.get(i + 1);
+            if (em1.predicate.getRound() == em2.predicate.getRound() &&
+                    em1.predicate.getTime() + 5 > em2.predicate.getTime()) {
+                if (em1.match < em2.match) {
+                    similarSnapshots.remove(i + 1);
+                } else {
+                    similarSnapshots.remove(i);
                 }
+                i--;
             }
         }
-
-        return res;
     }
 
     public void addEntry(TurnSnapshot ts) {
