@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
- */
-
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
@@ -16,9 +12,7 @@ import java.util.List;
  * Date: 18.06.11
  */
 public class EnemyTimeSinceDirChangeVE implements AttributeValueExtractor {
-
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return enemy.getTime() - enemy.getLastDirChangeTime();
     }
-
 }

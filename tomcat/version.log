@@ -1,9 +1,5 @@
-v 3.18.178 internal rating: 72,16 (rating version: 2)
-
-* always use of my lateral speed attr in visit logs added
-* removing visit logs with less than 2 attributes
-* time since my dir change attr added to hits and visits log
-* gun data analise optimized
+v. 3.19,183
+ * revert to v. 3.17.169
 
 v. 3.17.169, internal rating: 71,45 (rating version: 1)
  * another stupid bag fix: movement data is not updated by bulletHitBullet events

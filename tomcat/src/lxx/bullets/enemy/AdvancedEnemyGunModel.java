@@ -31,12 +31,15 @@ import static java.lang.StrictMath.signum;
 public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private static final int FIRE_DETECTION_LATENCY = 2;
+
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
     private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
+
     private final Set<LXXBullet> processedBullets = new HashSet<LXXBullet>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
+
     private final Office office;
 
     public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog, Office office) {
@@ -98,8 +101,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
                 AttributesManager.distBetween, 75D,
-                AttributesManager.myDistToForwardWall, 50D,
-                AttributesManager.myTimeSinceLastDirChange, 25D);
+                AttributesManager.myDistToForwardWall, 50D);
         private double efficiency = 1;
         private Attribute[] attrs;
 
@@ -169,6 +171,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     private class LogSet {
 
         private List<Log> hitLogsSet = new ArrayList<Log>();
+
         private List<Log> visitLogsSet = new ArrayList<Log>();
 
         public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
@@ -299,23 +302,22 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private List<Log> createVisitLogs() {
         final Attribute[] possibleAttributes = {
+                AttributesManager.myLateralSpeed,
                 AttributesManager.myAcceleration,
                 AttributesManager.distBetween,
                 AttributesManager.myDistToForwardWall,
-                AttributesManager.myTimeSinceLastDirChange,
         };
 
         final List<Log> logs = new ArrayList<Log>();
         for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
             final List<Attribute> attrs = new LinkedList<Attribute>();
-            attrs.add(AttributesManager.myLateralSpeed);
             for (int bit = 0; bit < possibleAttributes.length; bit++) {
                 if ((i & (1 << bit)) != 0) {
                     attrs.add(possibleAttributes[bit]);
                 }
             }
 
-            if (attrs.size() < 2) {
+            if (attrs.size() < 1) {
                 continue;
             }
 
@@ -329,7 +331,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.myAcceleration,
                 AttributesManager.distBetween,
                 AttributesManager.myDistToForwardWall,
-                AttributesManager.myTimeSinceLastDirChange,
         };
 
         final List<Log> logs = new ArrayList<Log>();

@@ -50,7 +50,6 @@ public class AttributesManager {
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
     public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse wall", 0, 1700, new MyDistanceToReverseWallVE());
     public static final Attribute myTravelTime = new Attribute("My travel time", 0, 255, new MyTravelTimeVE());
-    public static final Attribute myTimeSinceLastDirChange = new Attribute("My time since last direction change", 0, 2000, new MyTimeSinceDirChange());
 
     public static final Attribute[] attributes = {
             distBetween,
@@ -85,7 +84,6 @@ public class AttributesManager {
             myDistToForwardWall,
             myDistToReverseWall,
             myTravelTime,
-            myTimeSinceLastDirChange,
     };
 
     private final Office office;

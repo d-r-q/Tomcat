@@ -6,16 +6,15 @@ package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
-import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.Interval;
 import lxx.utils.LXXUtils;
+import lxx.utils.ps_tree.EntryMatch;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 
 import java.io.Serializable;
 import java.util.*;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
 /**
@@ -39,55 +38,39 @@ public class SingleSourceDataView implements DataView {
     }
 
     public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
+        final List<EntryMatch<Serializable>> similarEntries = dataSource.getSortedSimilarEntries(ts, getLimits(ts));
+        filterOutByTime(similarEntries, ts);
         final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
 
-        List<PSTreeEntry<Serializable>> similarEntries = dataSource.getSimilarEntries(getLimits(ts));
-        if (similarEntries.size() == 0) {
-            return dataSet;
-        }
-
-        similarEntries = filterOutByTime(similarEntries, ts);
-
-        for (PSTreeEntry e : similarEntries) {
+        for (EntryMatch e : similarEntries) {
             dataSet.add(e.predicate);
         }
 
         return dataSet;
     }
 
-    private LinkedList<PSTreeEntry<Serializable>> filterOutByTime(List<PSTreeEntry<Serializable>> similarSnapshots, TurnSnapshot ts) {
-        final LinkedList<PSTreeEntry<Serializable>> res = new LinkedList<PSTreeEntry<Serializable>>();
+    private void filterOutByTime(List<EntryMatch<Serializable>> similarSnapshots, TurnSnapshot ts) {
         Collections.sort(similarSnapshots, new ByTimeComparator());
 
-        final int[] indexes = new int[attributes.length];
-        final double[] factors = new double[AttributesManager.attributesCount()];
-        for (int i = 0; i < indexes.length; i++) {
-            indexes[i] = attributes[i].getId();
-            factors[attributes[i].getId()] = 1D / attributes[i].getActualRange();
-        }
-
-
-        res.add(similarSnapshots.get(0));
-        for (int i = 1; i < similarSnapshots.size(); i++) {
-            final PSTreeEntry<Serializable> em1 = res.getLast();
-            final PSTreeEntry<Serializable> em2 = similarSnapshots.get(i);
-            if (ts.getRound() - em2.predicate.getRound() > roundsLimit) {
-                break;
+        for (int i = 0; i < similarSnapshots.size() - 1; i++) {
+            final EntryMatch em1 = similarSnapshots.get(i);
+            if (ts.getRound() - em1.predicate.getRound() > roundsLimit) {
+                similarSnapshots.remove(i);
+                i--;
+                continue;
             }
 
+            final EntryMatch em2 = similarSnapshots.get(i + 1);
             if (em1.predicate.getRound() == em2.predicate.getRound() &&
-                    abs(em1.predicate.getTime() - em2.predicate.getTime()) < 5) {
-                if (LXXUtils.factoredEuqDistance(indexes, em1.predicate.toArray(), ts.toArray(), factors) >
-                        LXXUtils.factoredEuqDistance(indexes, em2.predicate.toArray(), ts.toArray(), factors)) {
-                    res.removeLast();
-                    res.add(em2);
+                    em1.predicate.getTime() + 5 > em2.predicate.getTime()) {
+                if (em1.match < em2.match) {
+                    similarSnapshots.remove(i + 1);
+                } else {
+                    similarSnapshots.remove(i);
                 }
-            } else {
-                res.add(em2);
+                i--;
             }
         }
-
-        return res;
     }
 
     public void addEntry(TurnSnapshot ts) {

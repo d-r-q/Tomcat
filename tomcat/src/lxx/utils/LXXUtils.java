@@ -14,7 +14,6 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +23,6 @@ public class LXXUtils {
 
     private static final double HALF_PI = Math.PI / 2;
     private static final double DOUBLE_PI = Math.PI * 2;
-
-    private static final double[][] robotWidthInRadians = new double[170][360];
-
-    static {
-        for (double[] arr : robotWidthInRadians) {
-            Arrays.fill(arr, -1);
-        }
-    }
 
     public static double angle(double baseX, double baseY, double x, double y) {
         double theta = QuickMath.asin((y - baseY) / LXXPoint.distance(x, y, baseX, baseY)) - HALF_PI;
@@ -65,17 +56,6 @@ public class LXXUtils {
         return res;
     }
 
-    public static double factoredEuqDistance(int[] indexes, double[] a, double[] b, double[] factors) {
-        double res = 0;
-
-        final int len = indexes.length;
-        for (int i = 0; i < len; i++) {
-            final double diff = a[indexes[i]] - b[indexes[i]];
-            res += (diff * diff) * factors[indexes[i]];
-        }
-
-        return Math.sqrt(res);
-    }
 
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
@@ -154,14 +134,7 @@ public class LXXUtils {
     }
 
     public static double getRobotWidthInRadians(APoint center, APoint robotPos) {
-        final int dist = (int) round(center.aDistance(robotPos) / 10);
-        final int alpha = (int) Math.toDegrees(center.angleTo(robotPos));
-        double robotWidth = robotWidthInRadians[dist][alpha];
-        if (robotWidth == -1) {
-            robotWidth = getWidthInRadians(center, toPoints(getBoundingRectangleAt(robotPos)));
-            robotWidthInRadians[dist][alpha] = robotWidth;
-        }
-        return robotWidth;
+        return getWidthInRadians(center, toPoints(getBoundingRectangleAt(robotPos)));
     }
 
     public static double getWidthInRadians(APoint center, APoint... points) {
@@ -181,6 +154,8 @@ public class LXXUtils {
 
     // from robowiki
     public static double getMaxEscapeAngle(APoint center, LXXRobotState state, double bulletSpeed) {
+        final double FIREPOWER = 2;
+        final double ROBOT_WIDTH = 16, ROBOT_HEIGHT = 16;
         // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
         final double eAbsBearing = center.angleTo(state);
         final double rX = center.getX();
@@ -261,6 +236,49 @@ public class LXXUtils {
         }
 
         return map;
+    }
+
+    public static int getTurnTime(double speed, double turnRadians) {
+        double turnedDistance = 0;
+        int time = 0;
+        while (turnedDistance < turnRadians) {
+            turnedDistance += Rules.getTurnRateRadians(speed);
+            speed = min(speed + 1, Rules.MAX_VELOCITY);
+            time++;
+        }
+
+        return time;
+    }
+
+    public static double getDistanceOnAcceleration(double speed, int time) {
+        double distance = 0;
+
+        for (int i = 0; i < time; i++) {
+            speed = min(speed + 1, 8);
+            distance += speed;
+        }
+
+        return distance;
+    }
+
+    public static double getTurnDistance(double speed, double turnRadians) {
+        LXXPoint pnt = new LXXPoint();
+        speed = LXXUtils.limit(0, speed, Rules.MAX_VELOCITY);
+        for (double heading = 0; heading < turnRadians; heading += Rules.getTurnRateRadians(speed)) {
+            pnt = pnt.project(heading, speed);
+        }
+
+        return pnt.getY();
+    }
+
+    public static double getMaxTurnDistance(double speed, double turnRadians) {
+        LXXPoint pnt = new LXXPoint();
+        for (double heading = 0; heading < turnRadians; heading += Rules.getTurnRateRadians(speed)) {
+            speed = LXXUtils.limit(0, speed + 1, Rules.MAX_VELOCITY);
+            pnt = pnt.project(heading, speed);
+        }
+
+        return pnt.getY();
     }
 
     public static double getStopDistance(double speed) {
