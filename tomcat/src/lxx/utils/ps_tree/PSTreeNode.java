@@ -19,6 +19,7 @@ import static java.lang.Math.*;
  */
 public class PSTreeNode<T extends Serializable> {
 
+    private static final LinkedList<PSTreeEntry> EMPTY_LIST = new LinkedList<PSTreeEntry>();
     private final List<PSTreeNode<T>> children = new ArrayList<PSTreeNode<T>>();
 
     private final int loadFactor;
@@ -239,10 +240,9 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public void getEntries(Map<Attribute, Interval> limits, List<PSTreeEntry<T>> res) {
+    public LinkedList<PSTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
         if (children.size() == 0) {
-            res.addAll(entries);
-            return;
+            return entries;
         }
 
         int fromIdx = Integer.MAX_VALUE;
@@ -256,26 +256,52 @@ public class PSTreeNode<T extends Serializable> {
         }
 
         if (fromIdx == Integer.MAX_VALUE) {
-            return;
+            return EMPTY_LIST;
         }
 
         int medin = (fromIdx + toIdx) / 2;
-        children.get(medin).getEntries(limits, res);
+        LinkedList res = children.get(medin).getEntries(limits);
 
         for (int delta = 1; delta <= limit.getLength(); delta++) {
             boolean isUpdate = false;
             if (medin - delta >= fromIdx) {
-                children.get(medin - delta).getEntries(limits, res);
+                res = merge(res, children.get(medin - delta).getEntries(limits), new Cmp1());
                 isUpdate = true;
             }
             if (medin + delta <= toIdx) {
-                children.get(medin + delta).getEntries(limits, res);
+                children.get(medin + delta).getEntries(limits);
                 isUpdate = true;
             }
 
             if (!isUpdate) {
                 break;
             }
+        }
+    }
+
+    private LinkedList merge(LinkedList lst1, LinkedList lst2, Comparator cmp) {
+        LinkedList res = new LinkedList();
+
+        while (lst1.size() > 0 || lst2.size() > 0) {
+            if (lst1.size() == 0) {
+                res.add(lst2.removeFirst());
+            }
+            if (lst2.size() == 0) {
+                res.add(lst1.removeFirst());
+            }
+            if (cmp.compare(lst1.getFirst(), lst2.getFirst()) < 0) {
+                res.addLast(lst1.removeFirst());
+            }
+        }
+
+        return res;
+    }
+
+    private static class Cmp1 implements Comparator<PSTreeEntry> {
+
+        @Override
+        public int compare(PSTreeEntry o1, PSTreeEntry o2) {
+            return 0;  //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 }
