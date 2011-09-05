@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static java.lang.Math.*;
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -19,7 +20,7 @@ import static java.lang.Math.*;
  */
 public class PSTreeNode<T extends Serializable> {
 
-    private static final LinkedList<PSTreeEntry> EMPTY_LIST = new LinkedList<PSTreeEntry>();
+    private static final ArrayList EMPTY_LIST = new ArrayList();
     private final List<PSTreeNode<T>> children = new ArrayList<PSTreeNode<T>>();
 
     private final int loadFactor;
@@ -240,7 +241,7 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public LinkedList<PSTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
+    public ArrayList<PSTreeEntry<T>> getEntries(Map<Attribute, Interval> limits) {
         if (children.size() == 0) {
             return entries;
         }
@@ -260,16 +261,16 @@ public class PSTreeNode<T extends Serializable> {
         }
 
         int medin = (fromIdx + toIdx) / 2;
-        LinkedList res = children.get(medin).getEntries(limits);
+        ArrayList<PSTreeEntry<T>> res = children.get(medin).getEntries(limits);
 
         for (int delta = 1; delta <= limit.getLength(); delta++) {
             boolean isUpdate = false;
             if (medin - delta >= fromIdx) {
-                res = merge(res, children.get(medin - delta).getEntries(limits), new Cmp1());
+                res = merge1(res, children.get(medin - delta).getEntries(limits));
                 isUpdate = true;
             }
             if (medin + delta <= toIdx) {
-                children.get(medin + delta).getEntries(limits);
+                res = merge1(res, children.get(medin + delta).getEntries(limits));
                 isUpdate = true;
             }
 
@@ -277,31 +278,121 @@ public class PSTreeNode<T extends Serializable> {
                 break;
             }
         }
+
+        return res;
     }
 
-    private LinkedList merge(LinkedList lst1, LinkedList lst2, Comparator cmp) {
-        LinkedList res = new LinkedList();
+    public ArrayList<EntryMatch<T>> getEntries(Map<Attribute, Interval> limits, TurnSnapshot predicate, double dist) {
+        if (children.size() == 0) {
+            ArrayList<EntryMatch<T>> res = new ArrayList<EntryMatch<T>>();
+            for (PSTreeEntry<T> e : entries) {
+                final double diff = abs(predicate.getAttrValue(attributes[attributeIdx]) - e.predicate.getAttrValue(attributes[attributeIdx]));
+                res.add(new EntryMatch<T>(e.result, dist + (diff * diff), e.predicate));
+            }
+            return res;
+        }
 
-        while (lst1.size() > 0 || lst2.size() > 0) {
-            if (lst1.size() == 0) {
-                res.add(lst2.removeFirst());
+        int fromIdx = Integer.MAX_VALUE;
+        int toIdx = Integer.MIN_VALUE;
+        Interval limit = limits.get(attributes[attributeIdx + 1]);
+        for (int i = 0; i < children.size(); i++) {
+            if (children.get(i).range.intersects(limit)) {
+                fromIdx = min(fromIdx, i);
+                toIdx = max(toIdx, i);
             }
-            if (lst2.size() == 0) {
-                res.add(lst1.removeFirst());
+        }
+
+        if (fromIdx == Integer.MAX_VALUE) {
+            return EMPTY_LIST;
+        }
+
+        int medin = (fromIdx + toIdx) / 2;
+        final double diff = attributeIdx >= 0 ? abs(predicate.getAttrValue(attributes[attributeIdx]) - mediana) : 0;
+        ArrayList<EntryMatch<T>> res = children.get(medin).getEntries(limits, predicate, dist + (diff * diff));
+
+        for (int delta = 1; delta <= limit.getLength(); delta++) {
+            boolean isUpdate = false;
+            if (medin - delta >= fromIdx) {
+                res = merge2(res, children.get(medin - delta).getEntries(limits, predicate, dist + (diff * diff)));
+                isUpdate = true;
             }
-            if (cmp.compare(lst1.getFirst(), lst2.getFirst()) < 0) {
-                res.addLast(lst1.removeFirst());
+            if (medin + delta <= toIdx) {
+                res = merge2(res, children.get(medin + delta).getEntries(limits, predicate, dist + (diff * diff)));
+                isUpdate = true;
+            }
+
+            if (!isUpdate) {
+                break;
             }
         }
 
         return res;
     }
 
-    private static class Cmp1 implements Comparator<PSTreeEntry> {
+    private ArrayList<PSTreeEntry<T>> merge1(ArrayList<PSTreeEntry<T>> lst1, ArrayList<PSTreeEntry<T>> lst2) {
+        final int lst1Size = lst1.size();
+        final int lst2Size = lst2.size();
+        ArrayList<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(lst1Size + lst2Size);
 
-        @Override
-        public int compare(PSTreeEntry o1, PSTreeEntry o2) {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (idx1 < lst1Size || idx2 < lst2Size) {
+            if (idx1 == lst1Size) {
+                res.add(lst2.get(idx2++));
+            } else if (idx2 == lst2Size) {
+                res.add(lst1.get(idx1++));
+            } else {
+                int cmp;
+                final TurnSnapshot p1 = lst1.get(idx1).predicate;
+                final TurnSnapshot p2 = lst2.get(idx2).predicate;
+                if (p1.round != p2.round) {
+                    cmp = p2.round - p1.round;
+                } else {
+                    cmp = (int) (p2.time - p1.time);
+                }
+                if (cmp < 0) {
+                    res.add(lst1.get(idx1++));
+                } else {
+                    res.add(lst2.get(idx2++));
+                }
+            }
         }
+
+        return res;
+    }
+
+    private ArrayList<EntryMatch<T>> merge2(ArrayList<EntryMatch<T>> lst1, ArrayList<EntryMatch<T>> lst2) {
+        final int lst1Size = lst1.size();
+        final int lst2Size = lst2.size();
+        ArrayList<EntryMatch<T>> res = new ArrayList<EntryMatch<T>>(lst1Size + lst2Size);
+
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (idx1 < lst1Size || idx2 < lst2Size) {
+            if (idx1 == lst1Size) {
+                res.add(lst2.get(idx2++));
+            } else if (idx2 == lst2Size) {
+                res.add(lst1.get(idx1++));
+            } else {
+                int cmp;
+                final TurnSnapshot p1 = lst1.get(idx1).predicate;
+                final TurnSnapshot p2 = lst2.get(idx2).predicate;
+                if (p1.round != p2.round) {
+                    cmp = p2.round - p1.round;
+                } else {
+                    cmp = (int) (p2.time - p1.time);
+                }
+
+                if (cmp < 0) {
+                    res.add(lst1.get(idx1++));
+                } else {
+                    res.add(lst2.get(idx2++));
+                }
+            }
+        }
+
+        return res;
     }
 }

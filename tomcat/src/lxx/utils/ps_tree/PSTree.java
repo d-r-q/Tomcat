@@ -55,4 +55,8 @@ public class PSTree<T extends Serializable> {
         return root.getEntries(limits);
     }
 
+    public List<EntryMatch<T>> getSimilarEntries(Map<Attribute, Interval> limits, TurnSnapshot ts) {
+        return root.getEntries(limits, ts, 0);
+    }
+
 }

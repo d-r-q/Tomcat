@@ -20,8 +20,8 @@ import static java.lang.StrictMath.round;
 public class TurnSnapshot implements Serializable {
 
     private final double[] attributeValues;
-    private final long time;
-    private final int round;
+    public final long time;
+    public final int round;
     private final String targetName;
 
     private TurnSnapshot prev;

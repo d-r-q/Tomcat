@@ -38,7 +38,7 @@ public class SingleSourceDataView implements DataView {
     }
 
     public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
-        List<EntryMatch<Serializable>> similarEntries = dataSource.getSimilarEntries(ts, getLimits(ts));
+        List<EntryMatch<Serializable>> similarEntries = dataSource.getSimilarEntries(getLimits(ts), ts);
         similarEntries = filterOutByTime(similarEntries, ts);
         final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
 
