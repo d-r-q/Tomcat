@@ -244,7 +244,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             for (Log log : logSet) {
                 final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner(), 1);
                 double logEfficiency = calculateEfficiency(bullet, ebpd);
-                log.efficiency = log.efficiency * 0.75 + logEfficiency * 0.25;
+                log.efficiency = log.efficiency * 0.9 + logEfficiency;
                 if (bestVisitLog == null || log.efficiency > bestVisitLog.efficiency) {
                     bestVisitLog = log;
                 }
