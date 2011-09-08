@@ -310,6 +310,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
             final double currentBO = bullet.getRealBearingOffsetRadians();
             final IntervalDouble robotIntervalRadians = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
+            final IntervalDouble extendedRobotIntervalRadians = new IntervalDouble(currentBO - robotHalfSizeRadians * 2, currentBO + robotHalfSizeRadians * 2);
 
             double totalDanger = 0;
             double realDanger = 0;
@@ -322,6 +323,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 totalDanger += pastBo.danger;
                 if (robotIntervalRadians.contains(pastBo.bearingOffset)) {
                     realDanger += pastBo.danger;
+                } else if (extendedRobotIntervalRadians.contains(pastBo.bearingOffset)) {
+                    realDanger += pastBo.danger / 2;
                 }
             }
 
