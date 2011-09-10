@@ -15,7 +15,7 @@ public class IntervalDouble {
     }
 
     public double getLength() {
-        return b - a + 1;
+        return b - a;
     }
 
     public String toString() {

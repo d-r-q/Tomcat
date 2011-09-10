@@ -73,11 +73,15 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     }
 
     public void bulletHit(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
+    }
+
+    public void bulletMiss(LXXBullet bullet) {
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, false);
     }
 
     private LogSet getLogSet(String enemyName) {
@@ -87,9 +91,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             logSets.put(enemyName, logSet);
         }
         return logSet;
-    }
-
-    public void bulletMiss(LXXBullet bullet) {
     }
 
     private class Log {
@@ -106,7 +107,12 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         private final AvgValue midAvgHitRate = new AvgValue(11);
         private final AvgValue longAvgHitRate = new AvgValue(100);
 
+        private final AvgValue shortAvgMissRate = new AvgValue(3);
+        private final AvgValue midAvgMissRate = new AvgValue(11);
+        private final AvgValue longAvgMissRate = new AvgValue(100);
+
         private Attribute[] attrs;
+        public int usage = 0;
 
         private Log(Attribute[] attrs) {
             this.attrs = attrs;
@@ -206,6 +212,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             for (Log log : bestLogs) {
                 bearingOffsets.addAll(log.getBearingOffsets(ts, t.getFirePower()));
+                log.usage++;
             }
 
             if (bearingOffsets.size() == 0) {
@@ -221,20 +228,26 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 boolean isFirst = (idx % 2) == 1 && hitLog == bestLogs[idx - 1];
                 switch (type) {
                     case 0:
-                        if ((bestLogs[idx] == null || bestLogs[idx].shortAvgHitRate.getCurrentValue()
-                                < hitLog.shortAvgHitRate.getCurrentValue()) && !isFirst) {
+                        if (bestLogs[idx] == null ||
+                                (bestLogs[idx].shortAvgHitRate.getCurrentValue() - bestLogs[idx].shortAvgMissRate.getCurrentValue() <
+                                hitLog.shortAvgHitRate.getCurrentValue() - hitLog.shortAvgMissRate.getCurrentValue())
+                                && !isFirst) {
                             bestLogs[idx] = hitLog;
                         }
                         break;
                     case 1:
-                        if ((bestLogs[idx] == null || bestLogs[idx].midAvgHitRate.getCurrentValue()
-                                < hitLog.midAvgHitRate.getCurrentValue()) && !isFirst) {
+                        if (bestLogs[idx] == null ||
+                                (bestLogs[idx].midAvgHitRate.getCurrentValue() - bestLogs[idx].midAvgMissRate.getCurrentValue() <
+                                hitLog.midAvgHitRate.getCurrentValue() - hitLog.midAvgMissRate.getCurrentValue())
+                                && !isFirst) {
                             bestLogs[idx] = hitLog;
                         }
                         break;
                     case 2:
-                        if ((bestLogs[idx] == null || bestLogs[idx].longAvgHitRate.getCurrentValue()
-                                < hitLog.longAvgHitRate.getCurrentValue()) && !isFirst) {
+                        if (bestLogs[idx] == null ||
+                                (bestLogs[idx].longAvgHitRate.getCurrentValue() - bestLogs[idx].longAvgMissRate.getCurrentValue() <
+                                hitLog.longAvgHitRate.getCurrentValue() - hitLog.longAvgMissRate.getCurrentValue())
+                                && !isFirst) {
                             bestLogs[idx] = hitLog;
                         }
                         break;
@@ -265,27 +278,35 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             }
         }
 
-        public void learn(LXXBullet bullet, TurnSnapshot predicate) {
-            recalculateLogSetEfficiency(bullet, predicate, visitLogsSet);
-            recalculateLogSetEfficiency(bullet, predicate, hitLogsSet);
+        public void learn(LXXBullet bullet, TurnSnapshot predicate, boolean isHit) {
+            recalculateLogSetEfficiency(bullet, predicate, visitLogsSet, isHit);
+            recalculateLogSetEfficiency(bullet, predicate, hitLogsSet, isHit);
 
-            final double direction = bullet.getTargetLateralDirection();
-            final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-            final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
-            entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-            for (Log log : hitLogsSet) {
-                log.log.addEntry(entry);
+            if (isHit) {
+                final double direction = bullet.getTargetLateralDirection();
+                final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+                final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
+                entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+                for (Log log : hitLogsSet) {
+                    log.log.addEntry(entry);
+                }
             }
         }
 
-        private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet) {
+        private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet, boolean isHit) {
             Log bestVisitLog = null;
             for (Log log : logSet) {
                 final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner());
-                double logEfficiency = calculateEfficiency(bullet, ebpd);
-                log.shortAvgHitRate.addValue(logEfficiency);
-                log.midAvgHitRate.addValue(logEfficiency);
-                log.longAvgHitRate.addValue(logEfficiency);
+                double logEfficiency = calculateEfficiency(bullet, ebpd, isHit);
+                if (isHit) {
+                    log.shortAvgHitRate.addValue(logEfficiency);
+                    log.midAvgHitRate.addValue(logEfficiency);
+                    log.longAvgHitRate.addValue(logEfficiency);
+                } else {
+                    log.shortAvgMissRate.addValue(logEfficiency);
+                    log.midAvgMissRate.addValue(logEfficiency);
+                    log.longAvgMissRate.addValue(logEfficiency);
+                }
                 log.efficiency = log.efficiency * 0.9 + logEfficiency;
                 if (bestVisitLog == null || log.efficiency > bestVisitLog.efficiency) {
                     bestVisitLog = log;
@@ -299,32 +320,37 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 }
             }
 
-            Collections.sort(logSet, new Comparator<Log>() {
+            /*Collections.sort(logSet, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
                     return (int) signum(o2.efficiency - o1.efficiency);
                 }
-            });
+            });*/
         }
 
-        private double calculateEfficiency(LXXBullet bullet, EnemyBulletPredictionData ebpd) {
-            final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
-            final double currentBO = bullet.getRealBearingOffsetRadians();
-            final IntervalDouble robotIntervalRadians = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
-            final IntervalDouble extendedRobotIntervalRadians = new IntervalDouble(currentBO - robotHalfSizeRadians * 2, currentBO + robotHalfSizeRadians * 2);
+        private double calculateEfficiency(LXXBullet bullet, EnemyBulletPredictionData ebpd, boolean isHit) {
+            final IntervalDouble effectiveInterval;
+            if (isHit) {
+                final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
+                final double currentBO = bullet.getRealBearingOffsetRadians();
+                effectiveInterval = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
+            } else {
+                final IntervalDouble hitInterval = bullet.getWave().getHitInterval();
+                effectiveInterval = new IntervalDouble(hitInterval.center() - hitInterval.getLength() * 0.4,
+                        hitInterval.center() + hitInterval.getLength() * 0.4);
+            }
 
             double totalDanger = 0;
             double realDanger = 0;
             int currentRound = bullet.getOwner().getRound();
             for (PastBearingOffset pastBo : ebpd.getPredictedBearingOffsets()) {
-                if (pastBo.source.getRound() == currentRound && pastBo.source.getTime() >= bullet.getWave().getLaunchTime()) {
+                // todo: it's dirty hack! rewrite it!
+                if (pastBo.source.getRound() == currentRound && pastBo.source.getTime() >= bullet.getWave().getLaunchTime() - 3) {
                     continue;
                 }
 
                 totalDanger += pastBo.danger;
-                if (robotIntervalRadians.contains(pastBo.bearingOffset)) {
+                if (effectiveInterval.contains(pastBo.bearingOffset)) {
                     realDanger += pastBo.danger;
-                } else if (extendedRobotIntervalRadians.contains(pastBo.bearingOffset)) {
-                    realDanger += pastBo.danger / 2;
                 }
             }
 
