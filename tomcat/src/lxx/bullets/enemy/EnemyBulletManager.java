@@ -206,6 +206,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         if (timeToFire == 1 || timeToFire == 2) {
             futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target);
         } else if (timeToFire > 2) {
+            // todo: set real prediction data first time
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
         }
         final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));

@@ -167,7 +167,7 @@ public class BattleField {
     }
 
     private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
-        return 160;
+        return 190;
     }
 
     public boolean contains(APoint point) {
