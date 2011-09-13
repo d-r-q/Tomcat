@@ -96,7 +96,7 @@ public class LXXBullet {
         return Utils.normalRelativeAngle(bullet.getHeadingRadians() - noBearingOffset());
     }
 
-    public double getBearingOffsetRadians(LXXPoint pnt) {
+    public double getBearingOffsetRadians(APoint pnt) {
         return Utils.normalRelativeAngle(getFirePosition().angleTo(pnt) - noBearingOffset());
     }
 

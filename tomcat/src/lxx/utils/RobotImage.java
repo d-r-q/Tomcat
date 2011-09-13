@@ -35,6 +35,15 @@ public final class RobotImage implements LXXRobotState {
         this.energy = energy;
     }
 
+    public RobotImage(LXXRobotState state) {
+        this.position = state;
+        this.velocity = state.getVelocity();
+        this.heading = state.getHeadingRadians();
+        this.battleField = state.getBattleField();
+        this.turnRateRadians = state.getTurnRateRadians();
+        this.energy = state.getEnergy();
+    }
+
     public void apply(MovementDecision movementDecision) {
         heading = Utils.normalAbsoluteAngle(heading + movementDecision.getTurnRateRadians());
         final double acceleration;
