@@ -1,4 +1,8 @@
+v. 3.23
+ * bug in get robot width radians fixed
+
 v. 3.22, internal rating: 81,04; 49,90; 65,47 (v.2.0)
+ * use enemy miss data in log selection algorithm
 
 v. 3.21, internal rating 74,59 (rating version: 2)
  * change log selection algorithm
