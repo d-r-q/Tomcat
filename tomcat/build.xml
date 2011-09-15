@@ -35,13 +35,6 @@
     </target>
 
     <target name="archive" depends="clean, compile">
-        <tstamp>
-            <format property="TODAY" pattern="dd.MM.yyyy"/>
-        </tstamp>
-
-        <tstamp>
-            <format property="NOW" pattern="HH:mm:ss"/>
-        </tstamp>
 
         <copy todir="${bin.dir}">
             <fileset dir="src"/>
@@ -53,12 +46,14 @@
             robot.author.name=Alexey Zhidkov
             robot.classname=lxx.${robot.name}
             robot.name=${robot.name}
+            robot.description=Positive killer
+            robot.webpage=http://www.robowiki.net/wiki/Tomcat
         </echo>
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal
         </echo>
 
-        <jar destfile="lxx.${robot.name}_${robot.version}.jar" compress="true">
+        <jar destfile="${builds.dir}\lxx.${robot.name}_${robot.version}.jar" compress="true">
             <fileset dir="${bin.dir}"/>
         </jar>
 
@@ -66,63 +61,6 @@
             <fileset file="lxx.${robot.name}_${robot.version}.jar"/>
         </copy>
 
-        <copy todir="${builds.dir}\">
-            <fileset file="lxx.${robot.name}_${robot.version}.jar"/>
-        </copy>
-
-        <delete file="lxx.${robot.name}_${robot.version}.jar"/>
-
-        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
-            robot.java.source.included=true
-            robot.version=${robot.version}TCc
-            robot.author.name=Alexey Zhidkov
-            robot.classname=lxx.${robot.name}
-            robot.name=${robot.name}
-        </echo>
-
-        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=TCc
-        </echo>
-
-        <jar destfile="lxx.${robot.name}_${robot.version}TCc.jar" compress="true">
-            <fileset dir="${bin.dir}"/>
-        </jar>
-
-        <copy todir="${robocode.dir}\robots\">
-            <fileset file="lxx.${robot.name}_${robot.version}TCc.jar"/>
-        </copy>
-
-        <copy todir="${builds.dir}\">
-            <fileset file="lxx.${robot.name}_${robot.version}TCc.jar"/>
-        </copy>
-
-        <delete file="lxx.${robot.name}_${robot.version}TCc.jar"/>
-
-        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
-            robot.java.source.included=true
-            robot.version=${robot.version}MCc
-            robot.author.name=Alexey Zhidkov
-            robot.classname=lxx.${robot.name}
-            robot.name=${robot.name}
-        </echo>
-
-        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=MCc
-        </echo>
-
-        <jar destfile="lxx.${robot.name}_${robot.version}MCc.jar" compress="true">
-            <fileset dir="${bin.dir}"/>
-        </jar>
-
-        <copy todir="${robocode.dir}\robots\">
-            <fileset file="lxx.${robot.name}_${robot.version}MCc.jar"/>
-        </copy>
-
-        <copy todir="${builds.dir}\">
-            <fileset file="lxx.${robot.name}_${robot.version}MCc.jar"/>
-        </copy>
-
-        <delete file="lxx.${robot.name}_${robot.version}MCc.jar"/>
-
-        <delete dir="${bin.dir}"/>
     </target>
 
 </project>
