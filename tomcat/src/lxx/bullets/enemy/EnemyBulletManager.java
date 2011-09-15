@@ -18,10 +18,7 @@ import lxx.office.PropertiesManager;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
-import lxx.utils.APoint;
-import lxx.utils.AimingPredictionData;
-import lxx.utils.LXXPoint;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import lxx.utils.wave.WaveCallback;
 import lxx.utils.wave.WaveManager;
@@ -37,7 +34,19 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), -1);
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(
+            getEmptyPDBos(), 1);
+
+    private static List<PastBearingOffset> getEmptyPDBos() {
+        final List<PastBearingOffset> res = new ArrayList<PastBearingOffset>();
+
+        for (double i = -LXXConstants.RADIANS_60; i <= LXXConstants.RADIANS_60; i += LXXConstants.RADIANS_5) {
+            res.add(new PastBearingOffset(null, i, 0.2));
+        }
+
+        return res;
+    }
+
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
 

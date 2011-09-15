@@ -54,8 +54,8 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
 
     public boolean isRammingNow(Target target) {
         final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        return movementMetaProfile.canRam() && LXXUtils.anglesDiff(target.angleTo(robot), target.getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_30 &&
-                target.getSpeed() > 0;
+        return movementMetaProfile.canRam() && ((LXXUtils.anglesDiff(target.angleTo(robot), target.getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_30 &&
+                target.getSpeed() > 0) || (robot.aDistance(target) < 50));
     }
 
     public void bulletHit(LXXBullet bullet) {
