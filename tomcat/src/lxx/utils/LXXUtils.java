@@ -145,7 +145,7 @@ public class LXXUtils {
             minAngle = min(minAngle, angle);
             maxAngle = max(maxAngle, angle);
         }
-        return maxAngle - minAngle;
+        return abs(Utils.normalRelativeAngle(maxAngle - minAngle));
     }
 
     public static double getMaxEscapeAngle(double bulletSpeed) {
