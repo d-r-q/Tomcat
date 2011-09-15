@@ -1,4 +1,21 @@
-v. 3.24
+v. 3.24, internal rating: 81.61
+ * add uniform 0.2 danger to future bullets with fire delay more than 2 ticks
+ * increase min attack angle to 70 degrees
+ * decrease attack angle base to 30 degrees
+ * danger calculation changed to "not discrete"
+ * opponent attack angle to danger function added
+ * smooth walls only in orbit direction
+ * distance to wall threshold decresead by 22 "pixel"
+ * wall sitck buffer removed
+ * wall stick decreased to 120 "pixel"
+ * if wall smooth needed, then always smooth angle at least on 4 degrees
+ * multiply danger of prediction same as prev prediction on 0.9
+ * increase robot effective widths to 75% for full danger and 255% for half danger
+ * skip bullet with travel time less than 2 tick if there another bullets
+ * add breaking if robot going directly to opponent
+ * distance to enemy removed from danger formula
+ * use clear distance to center in danger formula
+ * ramming detection fixed
 
 v. 3.23
  * bug in get robot width radians fixed
