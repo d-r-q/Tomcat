@@ -1,3 +1,7 @@
+v. 3.25, internal rating: 81.25 (v3.0)
+ * add ram avoiding (to allow turn)
+ * attack angle boundaries fixed (was little attack angle for escape and big for come near)
+
 v. 3.24, internal rating: 81.61
  * add uniform 0.2 danger to future bullets with fire delay more than 2 ticks
  * increase min attack angle to 70 degrees
