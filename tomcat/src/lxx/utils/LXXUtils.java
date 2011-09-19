@@ -120,8 +120,12 @@ public class LXXUtils {
     }
 
     public static Rectangle2D getBoundingRectangleAt(APoint point) {
-        return new Rectangle.Double(point.getX() - LXXConstants.ROBOT_SIDE_HALF_SIZE, point.getY() - LXXConstants.ROBOT_SIDE_HALF_SIZE,
-                LXXConstants.ROBOT_SIDE_SIZE, LXXConstants.ROBOT_SIDE_SIZE);
+        return getBoundingRectangleAt(point, LXXConstants.ROBOT_SIDE_HALF_SIZE);
+    }
+
+    public static Rectangle2D getBoundingRectangleAt(APoint point, final int sideHalfSize) {
+        return new Rectangle.Double(point.getX() - sideHalfSize, point.getY() - sideHalfSize,
+                sideHalfSize * 2, sideHalfSize * 2);
     }
 
     public static double bearingOffset(APoint source, APoint dest1, APoint dest2) {

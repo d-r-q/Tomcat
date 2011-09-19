@@ -225,21 +225,14 @@ public class WaveSurfingMovement implements Movement, Painter {
                                                  LXXRobotState robot, LXXRobotState opponent, double desiredSpeed, List<LXXBullet> bulletsOnAir) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection, bulletsOnAir);
         desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-        /*double smoothedHeadingCW = battleField.smoothWalls(robot, desiredHeading, true);
-        double smoothedHeadingCCW = battleField.smoothWalls(robot, desiredHeading, false);
-        if (LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCW) <
-                LXXUtils.anglesDiff(desiredHeading, smoothedHeadingCCW)) {
-            desiredHeading = smoothedHeadingCW;
-        } else {
-            desiredHeading = smoothedHeadingCCW;
-        }*/
 
         double direction = robot.getAbsoluteHeadingRadians();
         if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {
             direction = Utils.normalAbsoluteAngle(direction + LXXConstants.RADIANS_180);
         }
         if (opponent != null &&
-                (LXXUtils.anglesDiff(direction, robot.angleTo(opponent)) < LXXUtils.getRobotWidthInRadians(robot, opponent) * 1.1)) {
+                ((LXXUtils.anglesDiff(direction, robot.angleTo(opponent)) < LXXUtils.getRobotWidthInRadians(robot, opponent) * 1.1) ||
+                        LXXUtils.getBoundingRectangleAt(robot.project(direction, desiredSpeed), LXXConstants.ROBOT_SIDE_SIZE / 2 - 2).intersects(LXXUtils.getBoundingRectangleAt(opponent)))) {
             desiredSpeed = 0;
         }
 
