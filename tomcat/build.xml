@@ -58,7 +58,7 @@
         </jar>
 
         <copy todir="${robocode.dir}\robots\">
-            <fileset file="lxx.${robot.name}_${robot.version}.jar"/>
+            <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
         </copy>
 
     </target>
