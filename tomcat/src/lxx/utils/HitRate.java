@@ -50,4 +50,8 @@ public class HitRate {
     public int getFireCount() {
         return hitCount + missCount;
     }
+
+    public int getHitCount() {
+        return hitCount;
+    }
 }

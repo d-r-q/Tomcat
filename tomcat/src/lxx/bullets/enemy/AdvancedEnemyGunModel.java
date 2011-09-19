@@ -37,11 +37,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
     private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
-
     private final Set<LXXBullet> processedBullets = new HashSet<LXXBullet>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
-
     private final Office office;
 
     public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog, Office office) {
@@ -200,7 +198,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             final Log[] bestLogs = new Log[6];
             final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
-            allLogs.addAll(visitLogsSet);
+            if (office.getStatisticsManager().getEnemyHitRate().getHitCount() > 7) {
+                allLogs.addAll(visitLogsSet);
+            }
             for (Log hitLog : allLogs) {
                 updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
                 updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
@@ -223,39 +223,36 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected));
         }
 
-        private void updateBestLog(Log[] bestLogs, Log hitLog, int idx, int type) {
-            try {
-                boolean isFirst = (idx % 2) == 1 && hitLog == bestLogs[idx - 1];
-                switch (type) {
-                    case 0:
-                        if (bestLogs[idx] == null ||
-                                (bestLogs[idx].shortAvgHitRate.getCurrentValue() - bestLogs[idx].shortAvgMissRate.getCurrentValue() <
-                                hitLog.shortAvgHitRate.getCurrentValue() - hitLog.shortAvgMissRate.getCurrentValue())
-                                && !isFirst) {
-                            bestLogs[idx] = hitLog;
-                        }
-                        break;
-                    case 1:
-                        if (bestLogs[idx] == null ||
-                                (bestLogs[idx].midAvgHitRate.getCurrentValue() - bestLogs[idx].midAvgMissRate.getCurrentValue() <
-                                hitLog.midAvgHitRate.getCurrentValue() - hitLog.midAvgMissRate.getCurrentValue())
-                                && !isFirst) {
-                            bestLogs[idx] = hitLog;
-                        }
-                        break;
-                    case 2:
-                        if (bestLogs[idx] == null ||
-                                (bestLogs[idx].longAvgHitRate.getCurrentValue() - bestLogs[idx].longAvgMissRate.getCurrentValue() <
-                                hitLog.longAvgHitRate.getCurrentValue() - hitLog.longAvgMissRate.getCurrentValue())
-                                && !isFirst) {
-                            bestLogs[idx] = hitLog;
-                        }
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported type: " + type);
-                }
-            } catch (NullPointerException e) {
-                e.printStackTrace();
+        private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {
+            // todo(zhidkov): refactor this!
+            boolean isFirst = (idx % 2) == 1 && log == bestLogs[idx - 1];
+            if (isFirst) {
+                return;
+            }
+            switch (type) {
+                case 0:
+                    if (bestLogs[idx] == null ||
+                            (bestLogs[idx].shortAvgHitRate.getCurrentValue() - bestLogs[idx].shortAvgMissRate.getCurrentValue() <
+                                    log.shortAvgHitRate.getCurrentValue() - log.shortAvgMissRate.getCurrentValue())) {
+                        bestLogs[idx] = log;
+                    }
+                    break;
+                case 1:
+                    if (bestLogs[idx] == null ||
+                            (bestLogs[idx].midAvgHitRate.getCurrentValue() - bestLogs[idx].midAvgMissRate.getCurrentValue() <
+                                    log.midAvgHitRate.getCurrentValue() - log.midAvgMissRate.getCurrentValue())) {
+                        bestLogs[idx] = log;
+                    }
+                    break;
+                case 2:
+                    if (bestLogs[idx] == null ||
+                            (bestLogs[idx].longAvgHitRate.getCurrentValue() - bestLogs[idx].longAvgMissRate.getCurrentValue() <
+                                    log.longAvgHitRate.getCurrentValue() - log.longAvgMissRate.getCurrentValue())) {
+                        bestLogs[idx] = log;
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported type: " + type);
             }
         }
 
@@ -380,22 +377,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.myDistToForwardWall,
         };
 
-        final List<Log> logs = new ArrayList<Log>();
-        for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
-            final List<Attribute> attrs = new LinkedList<Attribute>();
-            for (int bit = 0; bit < possibleAttributes.length; bit++) {
-                if ((i & (1 << bit)) != 0) {
-                    attrs.add(possibleAttributes[bit]);
-                }
-            }
-
-            if (attrs.size() < 1) {
-                continue;
-            }
-
-            logs.add(new Log(attrs.toArray(new Attribute[attrs.size()])));
-        }
-        return logs;
+        return createLogs(possibleAttributes, new Attribute[0], 1, Integer.MAX_VALUE);
     }
 
     private List<Log> createHitLogs() {
@@ -404,18 +386,22 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 AttributesManager.distBetween,
                 AttributesManager.myDistToForwardWall,
         };
+        return createLogs(possibleAttributes, new Attribute[]{AttributesManager.myLateralSpeed}, 1, Integer.MAX_VALUE);
+    }
 
+    private List<Log> createLogs(Attribute[] possibleAttributes, Attribute[] requiredAttributes,
+                                 int minElements, int maxElements) {
         final List<Log> logs = new ArrayList<Log>();
-        for (int i = 0; i < pow(possibleAttributes.length, 2); i++) {
+        for (int i = 0; i < pow(2, possibleAttributes.length); i++) {
             final List<Attribute> attrs = new LinkedList<Attribute>();
-            attrs.add(AttributesManager.myLateralSpeed);
+            attrs.addAll(Arrays.asList(requiredAttributes));
             for (int bit = 0; bit < possibleAttributes.length; bit++) {
                 if ((i & (1 << bit)) != 0) {
                     attrs.add(possibleAttributes[bit]);
                 }
             }
 
-            if (attrs.size() < 1) {
+            if (attrs.size() < minElements || attrs.size() > maxElements) {
                 continue;
             }
             logs.add(new Log(attrs.toArray(new Attribute[attrs.size()])));
