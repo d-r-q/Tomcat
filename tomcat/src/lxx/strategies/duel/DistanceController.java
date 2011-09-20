@@ -27,7 +27,7 @@ import static java.lang.Math.max;
  */
 public class DistanceController {
 
-    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_10;
+    private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
     private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
     private static final double SIMPLE_DISTANCE = 450;
@@ -58,15 +58,14 @@ public class DistanceController {
                                                 double desiredDistance, double timeToTravel, List<LXXBullet> bulletsOnAir) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
-        final double k = 1;//min(1, timeToTravel / (distanceBetween / getBulletSpeed(bulletsOnAir)));
-        final double maxAttackAngle = LXXConstants.RADIANS_100 + (MAX_ATTACK_DELTA_WITHOUT_BULLETS * k);
-        final double minAttackAngle = LXXConstants.RADIANS_80 - (MIN_ATTACK_DELTA_WITHOUT_BULLETS * k);
         final double distanceDiff = distanceBetween - desiredDistance;
         final double attackAngleKoeff = distanceDiff / desiredDistance;
         final Target duelOpponent = targetManager.getDuelOpponent();
         final double antiRamAngle = (duelOpponent != null && distanceBetween < ANTI_RAM_DISTANCE && tomcatEyes.isRammingNow(duelOpponent))
                 ? LXXConstants.RADIANS_50 * (ANTI_RAM_DISTANCE - distanceBetween) / ANTI_RAM_DISTANCE
                 : 0;
+        final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_WITHOUT_BULLETS;
+        final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_WITHOUT_BULLETS - antiRamAngle / 2;
         final double attackAngle = LXXConstants.RADIANS_90 + ((LXXConstants.RADIANS_30 + antiRamAngle) * attackAngleKoeff);
 
         return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +

@@ -7,7 +7,7 @@
 <project name="Tomcat" basedir="."
          default="archive">
     <property file="excluded\build.properties"/>
-    <property name="robot.version" value="3.25"/>
+    <property name="robot.version" value="3.25t3"/>
 
     <path id="src.files">
         <pathelement location="src"/>
@@ -51,14 +51,14 @@
         <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
             robot.java.source.included=true
             robot.version=${robot.version}
-            robot.author.name=Alexey Zhidkov
+            robot.author.name=Alexey jdev Zhidkov
             robot.classname=lxx.${robot.name}
             robot.name=${robot.name}
             robot.description=Positive killer. Build time: ${TODAY} ${NOW}
-            robot.webpage=http://www.robowiki.net/wiki/Tomcat
+            robot.webpage=http://www.robowiki.net/wiki/${robot.name}
         </echo>
 
-        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.Tomcat.mode=normal
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.${robot.name}.mode=normal
         </echo>
 
         <jar destfile="${builds.dir}\lxx.${robot.name}_${robot.version}.jar" compress="true">
