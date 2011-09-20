@@ -313,7 +313,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             this.distanceToCenter = distanceToWall;
             this.enemyAttackAngle = enemyAttackAngle;
 
-            this.danger = dangerOnFirstWave.bulletsDanger * 60 +
+            this.danger = dangerOnFirstWave.bulletsDanger * 120 +
                     (dangerOnSecondWave != null ? dangerOnSecondWave.bulletsDanger : 0) * 10 +
                     distanceToCenter / 800 * 3 +
                     enemyAttackAngle * 2;
