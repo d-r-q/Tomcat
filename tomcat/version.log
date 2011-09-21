@@ -1,3 +1,8 @@
+v. 3.26
+ * antiram tweaks
+ * first wave danger weight increased by 50%
+ * logs generation fixed
+
 v. 3.25, internal rating: 81.25 (v3.0)
  * add ram avoiding (to allow turn)
  * attack angle boundaries fixed (was little attack angle for escape and big for come near)
