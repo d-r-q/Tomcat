@@ -35,12 +35,12 @@ import static java.lang.Math.*;
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
     private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(
-            getEmptyPDBos(), 1);
+            getEmptyPDBos(), 1, 0);
 
     private static List<PastBearingOffset> getEmptyPDBos() {
         final List<PastBearingOffset> res = new ArrayList<PastBearingOffset>();
 
-        for (double i = -LXXConstants.RADIANS_60; i <= LXXConstants.RADIANS_60; i += LXXConstants.RADIANS_5) {
+        for (double i = -LXXConstants.RADIANS_120; i <= LXXConstants.RADIANS_120; i += LXXConstants.RADIANS_1) {
             res.add(new PastBearingOffset(null, i, 0.2));
         }
 

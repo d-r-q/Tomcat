@@ -91,9 +91,25 @@ public class WaveSurfingMovement implements Movement, Painter {
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
         //return true;
         return prevPrediction == null ||
-                !prevPrediction.bullet.equals(bullets.get(0)) ||
+                isBulletsUpdated(bullets) ||
                 (duelOpponent != null && signum(duelOpponent.getAcceleration()) != prevPrediction.enemyAccelSign) ||
                 (duelOpponent != null && duelOpponent.aDistance(robot) < prevPrediction.distanceBetween - 25);
+    }
+
+    private boolean isBulletsUpdated(List<LXXBullet> newBullets) {
+        if (((EnemyBulletPredictionData) prevPrediction.bullets.get(0).getAimPredictionData()).getPredictionTime() !=
+                ((EnemyBulletPredictionData) newBullets.get(0).getAimPredictionData()).getPredictionTime()) {
+            return true;
+        }
+        if (prevPrediction.bullets.size() != newBullets.size()) {
+            return true;
+        }
+        if (prevPrediction.bullets.size() > 1 && newBullets.size() > 1 &&
+                ((EnemyBulletPredictionData) prevPrediction.bullets.get(1).getAimPredictionData()).getPredictionTime() !=
+                        ((EnemyBulletPredictionData) newBullets.get(1).getAimPredictionData()).getPredictionTime()) {
+            return true;
+        }
+        return false;
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -122,7 +138,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     private MovementDirectionPrediction predictMovementInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection) {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
-        prediction.bullet = lxxBullets.get(0);
+        prediction.bullets = lxxBullets;
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
@@ -162,7 +178,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), pnt);
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
 
-        double minDist = Integer.MAX_VALUE;
         double bulletsDanger = 0;
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
@@ -172,7 +187,6 @@ public class WaveSurfingMovement implements Movement, Painter {
             } else if (dist < robotWidthInRadians * 2.55) {
                 bulletsDanger += (1 - (dist / (robotWidthInRadians * 2.55))) * bo.danger;
             }
-            minDist = min(minDist, dist);
         }
 
         return new PointDangerOnWave(LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsDanger);
@@ -290,7 +304,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         private double distToMinDangerPoint;
         private OrbitDirection orbitDirection;
         public LXXPoint enemyPos;
-        public LXXBullet bullet;
+        public List<LXXBullet> bullets;
         public List<WSPoint> points;
         public double enemyAccelSign;
         public double distanceBetween;

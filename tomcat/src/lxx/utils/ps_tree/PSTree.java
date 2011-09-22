@@ -11,9 +11,9 @@ import lxx.utils.Interval;
 import lxx.utils.LXXUtils;
 
 import java.io.Serializable;
-import java.util.*;
-
-import static java.lang.Math.signum;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: jdev
@@ -21,10 +21,7 @@ import static java.lang.Math.signum;
  */
 public class PSTree<T extends Serializable> {
 
-    private final List<PSTreeEntry<T>> allEntries = new ArrayList<PSTreeEntry<T>>();
     private final PSTreeNode<T> root;
-
-    private int entryCount;
 
     public PSTree(Attribute[] splitAttributes, int loadFactor, double maxIntervalLength) {
         root = new PSTreeNode<T>(loadFactor, splitAttributes[0].getRoundedRange(), -1, splitAttributes, maxIntervalLength);
@@ -32,23 +29,10 @@ public class PSTree<T extends Serializable> {
 
     public void addEntry(PSTreeEntry<T> PSTreeEntry) {
         root.addEntry(PSTreeEntry);
-        allEntries.add(PSTreeEntry);
-        entryCount++;
     }
 
     public List<PSTreeEntry<T>> getEntries(TurnSnapshot bs, int limit) {
         return root.getEntries(bs, limit);
-    }
-
-    public List<EntryMatch<T>> getSimilarEntries(TurnSnapshot predicate, int limit) {
-        final List<EntryMatch<T>> matches = new LinkedList<EntryMatch<T>>();
-
-        int idx = 0;
-        for (PSTreeEntry<T> e : getEntries(predicate, limit)) {
-            matches.add(new EntryMatch<T>(e.result, idx++, e.predicate));
-        }
-
-        return matches;
     }
 
     public List<PSTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {
@@ -70,11 +54,6 @@ public class PSTree<T extends Serializable> {
             entries.add(new EntryMatch<T>(entry.result,
                     LXXUtils.factoredManhettanDistance(indexes, ts.toArray(), entry.predicate.toArray(), weights), entry.predicate));
         }
-        Collections.sort(entries, new Comparator<EntryMatch>() {
-            public int compare(EntryMatch o1, EntryMatch o2) {
-                return (int) signum(o1.match - o2.match);
-            }
-        });
 
         return entries;
     }

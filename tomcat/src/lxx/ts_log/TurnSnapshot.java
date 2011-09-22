@@ -19,19 +19,25 @@ import static java.lang.StrictMath.round;
  */
 public class TurnSnapshot implements Serializable {
 
+    private static final int FIFTEEN_BITS = 0x7FFF;
     private final double[] attributeValues;
     private final long time;
     private final int round;
     private final String targetName;
 
-    private TurnSnapshot prev;
+    // access optimisation
     public TurnSnapshot next;
+    public final int roundTime;
 
     public TurnSnapshot(double[] attributeValues, long time, int round, String targetName) {
         this.attributeValues = attributeValues;
         this.time = time;
         this.round = round;
         this.targetName = targetName;
+        if (round > FIFTEEN_BITS || time > FIFTEEN_BITS) {
+            throw new IllegalArgumentException("Too large round-time: " + round + " - " + time);
+        }
+        this.roundTime = (int) (((round & FIFTEEN_BITS) << 15) | (time & FIFTEEN_BITS));
     }
 
     public int getRoundedAttrValue(Attribute a) {
@@ -50,23 +56,8 @@ public class TurnSnapshot implements Serializable {
         return round;
     }
 
-    public TurnSnapshot getPrev() {
-        return prev;
-    }
-
     public double[] toArray() {
         return attributeValues;
-    }
-
-    public void setPrev(TurnSnapshot prev) {
-        if (time - 1 != prev.time) {
-            throw new RuntimeException("Snapshot skipped");
-        }
-        this.prev = prev;
-    }
-
-    public TurnSnapshot getNext() {
-        return next;
     }
 
     public void setNext(TurnSnapshot next) {
@@ -106,10 +97,6 @@ public class TurnSnapshot implements Serializable {
 
     public double getMyAbsoluteHeadingRadians() {
         return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.getId()]);
-    }
-
-    public double getEnemyVelocity() {
-        return attributeValues[AttributesManager.enemyVelocity.getId()];
     }
 
     public double getEnemyAbsoluteHeading() {

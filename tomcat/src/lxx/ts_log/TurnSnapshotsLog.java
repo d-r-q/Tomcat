@@ -5,11 +5,10 @@
 package lxx.ts_log;
 
 import lxx.office.Office;
-import lxx.ts_log.TurnSnapshot;
-import lxx.ts_log.attributes.Attribute;
-import lxx.ts_log.attributes.AttributesManager;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
+import lxx.ts_log.attributes.Attribute;
+import lxx.ts_log.attributes.AttributesManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +67,6 @@ public class TurnSnapshotsLog implements TargetManagerListener {
             final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round, targetName);
             if (log.size() > 0 && log.get(log.size() - 1) != null) {
                 log.get(log.size() - 1).setNext(turnSnapshot);
-                turnSnapshot.setPrev(log.get(log.size() - 1));
             }
             log.add(turnSnapshot);
         }
@@ -101,7 +99,6 @@ public class TurnSnapshotsLog implements TargetManagerListener {
 
         if (log.size() > 0 && log.get(log.size() - 1) != null) {
             log.get(log.size() - 1).setNext(turnSnapshot);
-            turnSnapshot.setPrev(log.get(log.size() - 1));
         }
         log.add(turnSnapshot);
     }

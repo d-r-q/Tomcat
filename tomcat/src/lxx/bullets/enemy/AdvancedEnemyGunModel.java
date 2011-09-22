@@ -120,17 +120,14 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
             final List<PastBearingOffset> bearingOffsets = getBearingOffsets(ts, t.getFirePower());
 
-            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected));
+            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected), 0);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower) {
             final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
             Collections.sort(entries, new Comparator<PSTreeEntry>() {
                 public int compare(PSTreeEntry o1, PSTreeEntry o2) {
-                    if (o1.predicate.getRound() == o2.predicate.getRound()) {
-                        return (int) (o2.predicate.getTime() - o1.predicate.getTime());
-                    }
-                    return o2.predicate.getRound() - o1.predicate.getRound();
+                    return o2.predicate.roundTime - o1.predicate.roundTime;
                 }
             });
 
@@ -218,7 +215,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 fillWithSimpleBOs(ts, t, bearingOffsets, enemyGunType);
             }
 
-            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected));
+            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected), t.getTime());
         }
 
         private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {

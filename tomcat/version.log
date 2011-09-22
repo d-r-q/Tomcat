@@ -1,3 +1,10 @@
+v. 3.27
+ * turn snapshots by time comparing optimised
+ * reselect orbit direction on bullet prediction data updated
+ * increase future danger interval to +\- 120 degrees with step 1 degree
+ * unused sort data by distance removed
+ * linear all entries storing removed from PSTree
+
 v. 3.26
  * antiram tweaks
  * first wave danger weight increased by 50%
