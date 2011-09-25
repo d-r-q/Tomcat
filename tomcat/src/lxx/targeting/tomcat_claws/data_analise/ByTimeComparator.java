@@ -4,7 +4,7 @@
 
 package lxx.targeting.tomcat_claws.data_analise;
 
-import lxx.utils.ps_tree.EntryMatch;
+import lxx.utils.sp_tree.SPTreeEntry;
 
 import java.util.Comparator;
 
@@ -12,8 +12,8 @@ import java.util.Comparator;
  * User: jdev
  * Date: 18.06.11
  */
-public class ByTimeComparator implements Comparator<EntryMatch> {
-    public int compare(EntryMatch o1, EntryMatch o2) {
-        return (o1.predicate.roundTime - o2.predicate.roundTime);
+public class ByTimeComparator implements Comparator<SPTreeEntry> {
+    public int compare(SPTreeEntry o1, SPTreeEntry o2) {
+        return (o1.location.roundTime - o2.location.roundTime);
     }
 }

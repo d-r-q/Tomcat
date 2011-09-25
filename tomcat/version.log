@@ -1,3 +1,10 @@
+TO OPTIMISE:
+1) wave hash code
+2) bullet hash code
+3) get wave danger
+4) get width in radians
+5) get last snapshots
+
 v. 3.27
  * turn snapshots by time comparing optimised
  * reselect orbit direction on bullet prediction data updated

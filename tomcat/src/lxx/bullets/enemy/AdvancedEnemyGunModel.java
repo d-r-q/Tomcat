@@ -19,15 +19,15 @@ import lxx.utils.AvgValue;
 import lxx.utils.Interval;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXUtils;
-import lxx.utils.ps_tree.PSTree;
-import lxx.utils.ps_tree.PSTreeEntry;
+import lxx.utils.sp_tree.SPTree;
+import lxx.utils.sp_tree.SPTreeDataEntry;
+import lxx.utils.sp_tree.SPTreeEntry;
 import robocode.Rules;
 
 import java.util.*;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.signum;
 
 public class AdvancedEnemyGunModel implements BulletManagerListener {
@@ -36,7 +36,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
-    private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
+    private final Map<LXXBullet, TurnSnapshot> entriesByBullets = new HashMap<LXXBullet, TurnSnapshot>();
     private final Set<LXXBullet> processedBullets = new HashSet<LXXBullet>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
@@ -52,34 +52,32 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
-        entriesByBullets.put(bullet, entry);
+        entriesByBullets.put(bullet, turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
     }
 
     public void bulletPassing(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
         if (processedBullets.contains(bullet)) {
             return;
         }
+        final TurnSnapshot entry = entriesByBullets.get(bullet);
 
         final double direction = bullet.getTargetLateralDirection();
         double undirectedGuessFactor = bullet.getBearingOffsetRadians(bullet.getTarget().getPosition()) / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-        getLogSet(bullet.getOwner().getName()).learn(entry);
+        getLogSet(bullet.getOwner().getName()).learn(entry, new UndirectedGuessFactor(undirectedGuessFactor, direction));
 
         processedBullets.add(bullet);
     }
 
     public void bulletHit(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet), true);
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet), true);
     }
 
     public void bulletMiss(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, false);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet), false);
     }
 
     private LogSet getLogSet(String enemyName) {
@@ -93,12 +91,12 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
     private class Log {
 
-        private PSTree<UndirectedGuessFactor> log;
+        private SPTree<SPTreeDataEntry<UndirectedGuessFactor>> log;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
-                AttributesManager.myLateralSpeed, 2D,
+                AttributesManager.myLateralSpeed, 3D,
                 AttributesManager.myAcceleration, 0D,
-                AttributesManager.distBetween, 75D,
-                AttributesManager.myDistToForwardWall, 50D);
+                AttributesManager.distBetween, 200D,
+                AttributesManager.myDistToForwardWall, 200D);
         private double efficiency = 1;
 
         private final AvgValue shortAvgHitRate = new AvgValue(3);
@@ -114,22 +112,22 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
         private Log(Attribute[] attrs) {
             this.attrs = attrs;
-            this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
+            this.log = new SPTree<SPTreeDataEntry<UndirectedGuessFactor>>(this.attrs);
         }
 
-        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
+        public EnemyBulletPredictionData getPredictionData(final TurnSnapshot ts, LXXRobot t) {
             final List<PastBearingOffset> bearingOffsets = getBearingOffsets(ts, t.getFirePower());
 
             return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected), 0);
         }
 
-        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower) {
-            final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
-            Collections.sort(entries, new Comparator<PSTreeEntry>() {
-                public int compare(PSTreeEntry o1, PSTreeEntry o2) {
-                    return o2.predicate.roundTime - o1.predicate.roundTime;
-                }
-            });
+        private List<PastBearingOffset> getBearingOffsets(final TurnSnapshot predicate, double firePower) {
+            final Collection<SPTreeDataEntry<UndirectedGuessFactor>> entries = log.rangeSearch(predicate, getLimits(predicate),
+                    new Comparator<SPTreeEntry>() {
+                        public int compare(SPTreeEntry o1, SPTreeEntry o2) {
+                            return o2.location.roundTime - o1.location.roundTime;
+                        }
+                    });
 
             final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                     predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
@@ -139,15 +137,18 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             if (entries.size() > 0) {
-                for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(3, entries.size()))) {
+                for (SPTreeDataEntry<UndirectedGuessFactor> entry : entries) {
+                    if (bearingOffsets.size() > 3) {
+                        break;
+                    }
                     try {
-                        if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate,
-                                    entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick,
+                        if (entry.data.lateralDirection != 0 && lateralDirection != 0) {
+                            bearingOffsets.add(new PastBearingOffset(entry.location,
+                                    entry.data.guessFactor * entry.data.lateralDirection * lateralDirection * maxEscapeAngleQuick,
                                     1));
                         } else {
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * 1 * maxEscapeAngleQuick, 1));
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * -1 * maxEscapeAngleQuick, 1));
+                            bearingOffsets.add(new PastBearingOffset(entry.location, entry.data.guessFactor * 1 * maxEscapeAngleQuick, 1));
+                            bearingOffsets.add(new PastBearingOffset(entry.location, entry.data.guessFactor * -1 * maxEscapeAngleQuick, 1));
                         }
                     } catch (NullPointerException npe) {
                         npe.printStackTrace();
@@ -159,15 +160,15 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         }
 
         private Map<Attribute, Interval> getLimits(TurnSnapshot center) {
-            final Map<Attribute, Interval> res = new HashMap<Attribute, Interval>();
+            final Map<Attribute, Interval> limits = new HashMap<Attribute, Interval>();
             for (Attribute attr : attrs) {
                 double delta = halfSideLength.get(attr);
-                res.put(attr,
+                limits.put(attr,
                         new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
                                 (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta))));
             }
 
-            return res;
+            return limits;
         }
 
     }
@@ -184,9 +185,11 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
         private List<Log> hitLogsSet = new ArrayList<Log>();
         private List<Log> visitLogsSet = new ArrayList<Log>();
 
-        public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
+        public void learn(TurnSnapshot location, UndirectedGuessFactor data) {
             for (Log log : visitLogsSet) {
-                log.log.addEntry(entry);
+                final SPTreeDataEntry<UndirectedGuessFactor> entry = new SPTreeDataEntry<UndirectedGuessFactor>(location);
+                entry.data = data;
+                log.log.add(entry);
             }
         }
 
@@ -195,7 +198,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             final Log[] bestLogs = new Log[6];
             final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
-            allLogs.addAll(visitLogsSet);
+            //allLogs.addAll(visitLogsSet);
             for (Log hitLog : allLogs) {
                 updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
                 updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
@@ -277,10 +280,11 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
                 final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-                final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
-                entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+                final UndirectedGuessFactor data = new UndirectedGuessFactor(undirectedGuessFactor, direction);
                 for (Log log : hitLogsSet) {
-                    log.log.addEntry(entry);
+                    final SPTreeDataEntry<UndirectedGuessFactor> entry = new SPTreeDataEntry<UndirectedGuessFactor>(predicate);
+                    entry.data = data;
+                    log.log.add(entry);
                 }
             }
         }

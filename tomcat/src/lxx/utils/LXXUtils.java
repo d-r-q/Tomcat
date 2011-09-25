@@ -56,7 +56,6 @@ public class LXXUtils {
         return res;
     }
 
-
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
         // - 3 * firepower = speed - 20

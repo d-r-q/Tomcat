@@ -32,9 +32,9 @@ public class TurnSnapshotsLog implements TargetManagerListener {
     }
 
     public List<TurnSnapshot> getLastSnapshots(Target t, int... indexes) {
-        List<TurnSnapshot> res = new ArrayList<TurnSnapshot>();
+        final List<TurnSnapshot> res = new ArrayList<TurnSnapshot>();
 
-        List<TurnSnapshot> log = this.logs.get(t);
+        final List<TurnSnapshot> log = this.logs.get(t);
         if (log == null) {
             System.out.println("[WARN]: logs for " + t.getName() + " not found");
             return null;

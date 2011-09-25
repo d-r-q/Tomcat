@@ -71,24 +71,20 @@ public class TurnSnapshot implements Serializable {
         return Arrays.toString(attributeValues);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         TurnSnapshot that = (TurnSnapshot) o;
 
-        if (round != that.round) return false;
-        if (time != that.time) return false;
-        if (!targetName.equals(that.targetName)) return false;
+        return roundTime == that.roundTime;
 
-        return true;
     }
 
+    @Override
     public int hashCode() {
-        int result = (int) (time ^ (time >>> 32));
-        result = 31 * result + round;
-        result = 31 * result + targetName.hashCode();
-        return result;
+        return roundTime;
     }
 
     public double getMySpeed() {

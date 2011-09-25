@@ -49,12 +49,11 @@ public class TomcatClaws implements Gun {
         robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
 
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
-            bearingOffsetDangers = new HashMap<Double, Double>();
             futurePoses = null;
             return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos));
         }
 
-        if (bearingOffsetDangers.size() == 0) {
+        if (futurePoses == null) {
             bestBearingOffset = getBearingOffset(t, dataView.getDataSet(log.getLastSnapshot(t)), Rules.getBulletSpeed(firePower));
         }
 
