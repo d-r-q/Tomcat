@@ -50,6 +50,9 @@ public class SingleSourceDataView implements DataView {
     private List<SPTreeEntry> filterOutByTime(Collection<SPTreeEntry> entries, TurnSnapshot ts) {
         List<SPTreeEntry> similarSnapshots = new ArrayList<SPTreeEntry>(entries);
         for (int i = 0; i < similarSnapshots.size() - 1; i++) {
+            if (similarSnapshots.size() == 1) {
+                break;
+            }
             final SPTreeEntry em1 = similarSnapshots.get(i);
             if (ts.getRound() - em1.location.getRound() > roundsLimit) {
                 similarSnapshots.remove(i);

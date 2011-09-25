@@ -198,7 +198,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
             final Log[] bestLogs = new Log[6];
             final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
-            //allLogs.addAll(visitLogsSet);
+            allLogs.addAll(visitLogsSet);
             for (Log hitLog : allLogs) {
                 updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
                 updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
