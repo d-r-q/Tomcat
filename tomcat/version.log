@@ -1,6 +1,7 @@
 v. 3.29
  * bug with not use visit logs fixed
  * avoid of filtering out all entries in targeting added
+ * limits fixed
 
 v. 3.28
  * minor optimisations

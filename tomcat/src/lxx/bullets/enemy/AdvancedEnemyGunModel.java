@@ -93,10 +93,10 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
 
         private SPTree<SPTreeDataEntry<UndirectedGuessFactor>> log;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
-                AttributesManager.myLateralSpeed, 3D,
+                AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
-                AttributesManager.distBetween, 200D,
-                AttributesManager.myDistToForwardWall, 200D);
+                AttributesManager.distBetween, 75D,
+                AttributesManager.myDistToForwardWall, 50D);
         private double efficiency = 1;
 
         private final AvgValue shortAvgHitRate = new AvgValue(3);
