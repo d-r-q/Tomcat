@@ -97,7 +97,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
     public void bulletPassing(LXXBullet bullet) {
     }
 
-    private class Log {
+    class Log {
 
         private PSTree<UndirectedGuessFactor> log;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
@@ -211,9 +211,17 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 updateBestLog(bestLogs, hitLog, SECOND_LONG_IDX, 2);
             }
 
-            for (Log log : bestLogs) {
-                bearingOffsets.addAll(log.getBearingOffsets(ts, t.getFirePower()));
-                log.usage++;
+            final Map<Log, List<PastBearingOffset>> allLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
+            for (Log log : allLogs) {
+                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower());
+                allLogsBearingOffsets.put(log, logBOs);
+                // todo(zhidkov): rewrite it
+                for (Log bestLog : bestLogs) {
+                    if (log.equals(bestLog)) {
+                        bearingOffsets.addAll(logBOs);
+                        log.usage++;
+                    }
+                }
             }
 
             if (bearingOffsets.size() == 0) {
@@ -221,7 +229,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 fillWithSimpleBOs(ts, t, bearingOffsets, enemyGunType);
             }
 
-            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected), t.getTime());
+            return new AEGMPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected),
+                    t.getTime(), allLogsBearingOffsets);
         }
 
         private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {
@@ -294,8 +303,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet, boolean isHit) {
             Log bestVisitLog = null;
             for (Log log : logSet) {
-                final EnemyBulletPredictionData ebpd = log.getPredictionData(predicate, bullet.getOwner());
-                double logEfficiency = calculateEfficiency(bullet, ebpd, isHit);
+                final AEGMPredictionData ebpd = (AEGMPredictionData) log.getPredictionData(predicate, bullet.getOwner());
+                double logEfficiency = calculateEfficiency(bullet, ebpd.getBearingOffset(log), isHit);
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
                     log.midAvgHitRate.addValue(logEfficiency);
@@ -317,15 +326,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                     log.efficiency = log.efficiency / efficiency;
                 }
             }
-
-            /*Collections.sort(logSet, new Comparator<Log>() {
-                public int compare(Log o1, Log o2) {
-                    return (int) signum(o2.efficiency - o1.efficiency);
-                }
-            });*/
         }
 
-        private double calculateEfficiency(LXXBullet bullet, EnemyBulletPredictionData ebpd, boolean isHit) {
+        private double calculateEfficiency(LXXBullet bullet, List<PastBearingOffset> bearingOffsets, boolean isHit) {
             final IntervalDouble effectiveInterval;
             if (isHit) {
                 final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
@@ -340,7 +343,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             double totalDanger = 0;
             double realDanger = 0;
             int currentRound = bullet.getOwner().getRound();
-            for (PastBearingOffset pastBo : ebpd.getPredictedBearingOffsets()) {
+            for (PastBearingOffset pastBo : bearingOffsets) {
                 // todo: it's dirty hack! rewrite it!
                 if (pastBo.source.getRound() == currentRound && pastBo.source.getTime() >= bullet.getWave().getLaunchTime() - 3) {
                     continue;
