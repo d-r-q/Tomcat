@@ -1,5 +1,5 @@
 v. 3.30
- * revert to v3.30
+ * revert to v3.27
  * fill visit logs in wave broken events
  * calculate all logs bearing offsets on prediction time
  * getRobotWidthRadians optimised
