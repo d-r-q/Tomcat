@@ -21,6 +21,7 @@ import static java.lang.Math.*;
 
 public class LXXUtils {
 
+    private static final double ROBOT_SQUARE_DIAGONAL = LXXConstants.ROBOT_SIDE_SIZE * sqrt(2);
     private static final double HALF_PI = Math.PI / 2;
     private static final double DOUBLE_PI = Math.PI * 2;
 
@@ -131,24 +132,16 @@ public class LXXUtils {
         return Utils.normalRelativeAngle(source.angleTo(dest2) - source.angleTo(dest1));
     }
 
-    public static APoint[] toPoints(Rectangle2D rect) {
-        return new APoint[]{new LXXPoint(rect.getX(), rect.getY()), new LXXPoint(rect.getX(), rect.getY() + rect.getHeight()),
-                new LXXPoint(rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight()), new LXXPoint(rect.getX() + rect.getWidth(), rect.getY())};
-    }
-
     public static double getRobotWidthInRadians(APoint center, APoint robotPos) {
-        return getWidthInRadians(center, toPoints(getBoundingRectangleAt(robotPos)));
+        return getRobotWidthInRadians(center.angleTo(robotPos), center.aDistance(robotPos));
     }
 
-    public static double getWidthInRadians(APoint center, APoint... points) {
-        double minAngle = Integer.MAX_VALUE;
-        double maxAngle = Integer.MIN_VALUE;
-        for (APoint pnt : points) {
-            double angle = center.angleTo(pnt);
-            minAngle = min(minAngle, angle);
-            maxAngle = max(maxAngle, angle);
+    public static double getRobotWidthInRadians(double angle, double distance) {
+        final double alpha = abs(LXXConstants.RADIANS_45 - (angle % LXXConstants.RADIANS_90));
+        if (distance < ROBOT_SQUARE_DIAGONAL) {
+            distance = ROBOT_SQUARE_DIAGONAL;
         }
-        return abs(Utils.normalRelativeAngle(maxAngle - minAngle));
+        return QuickMath.asin(QuickMath.cos(alpha) * ROBOT_SQUARE_DIAGONAL / distance);
     }
 
     public static double getMaxEscapeAngle(double bulletSpeed) {
@@ -291,5 +284,9 @@ public class LXXUtils {
             distance += speed;
         }
         return distance;
+    }
+
+    public static double bearingOffset(double baseAngle, double alpha) {
+        return Utils.normalRelativeAngle(alpha - baseAngle);
     }
 }

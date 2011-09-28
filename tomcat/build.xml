@@ -7,7 +7,7 @@
 <project name="Tomcat" basedir="."
          default="archive">
     <property file="excluded\build.properties"/>
-    <property name="robot.version" value="3.29"/>
+    <property name="robot.version" value="3.30"/>
 
     <path id="src.files">
         <pathelement location="src"/>
@@ -68,8 +68,6 @@
         <copy todir="${robocode.dir}\robots\">
             <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
         </copy>
-
-        <delete dir="${bin.dir}"/>
 
     </target>
 
