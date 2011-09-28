@@ -21,6 +21,8 @@ import lxx.utils.IntervalDouble;
 import lxx.utils.LXXUtils;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
+import lxx.utils.wave.Wave;
+import lxx.utils.wave.WaveCallback;
 import robocode.Rules;
 
 import java.util.*;
@@ -30,14 +32,14 @@ import static java.lang.Math.round;
 import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.signum;
 
-public class AdvancedEnemyGunModel implements BulletManagerListener {
+public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallback {
 
     private static final int FIRE_DETECTION_LATENCY = 2;
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
     private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
-    private final Set<LXXBullet> processedBullets = new HashSet<LXXBullet>();
+    private final Map<Wave, LXXBullet> bulletsByWaves = new HashMap<Wave, LXXBullet>();
 
     private final TurnSnapshotsLog turnSnapshotsLog;
     private final Office office;
@@ -54,20 +56,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
     public void bulletFired(LXXBullet bullet) {
         final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
         entriesByBullets.put(bullet, entry);
-    }
-
-    public void bulletPassing(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
-        if (processedBullets.contains(bullet)) {
-            return;
-        }
-
-        final double direction = bullet.getTargetLateralDirection();
-        double undirectedGuessFactor = bullet.getBearingOffsetRadians(bullet.getTarget().getPosition()) / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-        getLogSet(bullet.getOwner().getName()).learn(entry);
-
-        processedBullets.add(bullet);
+        final Wave wave = bullet.getWave();
+        office.getWaveManager().addCallback(this, wave);
+        bulletsByWaves.put(wave, bullet);
     }
 
     public void bulletHit(LXXBullet bullet) {
@@ -89,6 +80,21 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
             logSets.put(enemyName, logSet);
         }
         return logSet;
+    }
+
+    public void waveBroken(Wave w) {
+        final LXXBullet bullet = bulletsByWaves.remove(w);
+        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
+        final double direction = bullet.getTargetLateralDirection();
+        double undirectedGuessFactor = w.getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+        entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+        getLogSet(bullet.getOwner().getName()).learn(entry);
+    }
+
+    public void wavePassing(Wave w) {
+    }
+
+    public void bulletPassing(LXXBullet bullet) {
     }
 
     private class Log {
@@ -326,7 +332,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener {
                 final double currentBO = bullet.getRealBearingOffsetRadians();
                 effectiveInterval = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
             } else {
-                final IntervalDouble hitInterval = bullet.getWave().getHitInterval();
+                final IntervalDouble hitInterval = bullet.getWave().getHitBearingOffsetInterval();
                 effectiveInterval = new IntervalDouble(hitInterval.center() - hitInterval.getLength() * 0.4,
                         hitInterval.center() + hitInterval.getLength() * 0.4);
             }

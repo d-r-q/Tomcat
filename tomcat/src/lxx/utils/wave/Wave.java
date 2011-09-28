@@ -28,7 +28,7 @@ public class Wave {
     private final long launchTime;
     private final double speed;
 
-    private IntervalDouble hitInterval;
+    private IntervalDouble hitBearingOffsetInterval;
 
     public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime) {
         this.sourceState = source;
@@ -53,11 +53,11 @@ public class Wave {
             final double bo = LXXUtils.bearingOffset(sourceState, targetState, targetState.getRobot());
             final double targetWidth = LXXUtils.getRobotWidthInRadians(sourceState, targetState.getRobot());
             final IntervalDouble currentInterval = new IntervalDouble(bo - targetWidth / 2, bo + targetWidth / 2);
-            if (hitInterval == null) {
-                hitInterval = currentInterval;
+            if (hitBearingOffsetInterval == null) {
+                hitBearingOffsetInterval = currentInterval;
             } else {
-                hitInterval.a = min(hitInterval.a, currentInterval.a);
-                hitInterval.b = max(hitInterval.b, currentInterval.b);
+                hitBearingOffsetInterval.a = min(hitBearingOffsetInterval.a, currentInterval.a);
+                hitBearingOffsetInterval.b = max(hitBearingOffsetInterval.b, currentInterval.b);
             }
         }
         return contains;
@@ -87,8 +87,8 @@ public class Wave {
         return speed;
     }
 
-    public IntervalDouble getHitInterval() {
-        return hitInterval;
+    public IntervalDouble getHitBearingOffsetInterval() {
+        return hitBearingOffsetInterval;
     }
 
     public boolean equals(Object o) {

@@ -43,6 +43,21 @@ public class LXXUtils {
         return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
+    public static double factoredManhettanDistance(int[] indexes, double[] a, double[] b, double[] factors) {
+        double res = 0;
+
+        final int len = indexes.length;
+        for (int i = 0; i < len; i++) {
+            res += ((b[indexes[i]] > a[indexes[i]])
+                    ? b[indexes[i]] - a[indexes[i]]
+                    : a[indexes[i]] - b[indexes[i]])
+                    * factors[indexes[i]];
+        }
+
+        return res;
+    }
+
+
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
         // - 3 * firepower = speed - 20
@@ -267,5 +282,9 @@ public class LXXUtils {
             distance += speed;
         }
         return distance;
+    }
+
+    public static double bearingOffset(double baseAngle, double alpha) {
+        return Utils.normalRelativeAngle(alpha - baseAngle);
     }
 }
