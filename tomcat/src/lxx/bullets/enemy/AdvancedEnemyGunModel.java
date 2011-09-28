@@ -303,7 +303,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet, boolean isHit) {
             Log bestVisitLog = null;
             for (Log log : logSet) {
-                final AEGMPredictionData ebpd = (AEGMPredictionData) log.getPredictionData(predicate, bullet.getOwner());
+                final AEGMPredictionData ebpd = (AEGMPredictionData) bullet.getAimPredictionData();
                 double logEfficiency = calculateEfficiency(bullet, ebpd.getBearingOffset(log), isHit);
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);

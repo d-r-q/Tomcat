@@ -139,13 +139,10 @@ public class LXXUtils {
 
     public static double getRobotWidthInRadians(double angle, double distance) {
         final double alpha = abs(LXXConstants.RADIANS_45 - (angle % LXXConstants.RADIANS_90));
-        try {
-            return QuickMath.asin(QuickMath.cos(alpha) * ROBOT_SQUARE_DIAGONAL / distance);
-        } catch (Exception e) {
-            System.out.println(angle + " : " + distance);
-            e.printStackTrace();
-            return 0;
+        if (distance < ROBOT_SQUARE_DIAGONAL) {
+            distance = ROBOT_SQUARE_DIAGONAL;
         }
+        return QuickMath.asin(QuickMath.cos(alpha) * ROBOT_SQUARE_DIAGONAL / distance);
     }
 
     public static double getMaxEscapeAngle(double bulletSpeed) {
