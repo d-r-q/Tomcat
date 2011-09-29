@@ -13,6 +13,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -328,7 +329,13 @@ public class Target implements LXXRobot, Serializable {
     }
 
     public long getLastDirChangeTime() {
+        ensureValid();
         return info.lastDirChangeTime;
+    }
+
+    public double getLast10TicksDist() {
+        ensureValid();
+        return info.getLast10TicksDist();
     }
 
     public LXXRobotState getPrevState() {
@@ -483,6 +490,8 @@ public class Target implements LXXRobot, Serializable {
 
     public class TargetInfo {
 
+        private final LinkedList<LXXPoint> last10Positions = new LinkedList<LXXPoint>();
+
         private long lastStopTime;
         private long lastTravelTime;
 
@@ -515,6 +524,19 @@ public class Target implements LXXRobot, Serializable {
             } else {
                 lastTravelTime = curState.time;
             }
+
+            last10Positions.add(new LXXPoint(prevState));
+            if (last10Positions.size() > 10) {
+                last10Positions.removeFirst();
+            }
+
+        }
+
+        public double getLast10TicksDist() {
+            if (last10Positions.size() == 0) {
+                return 0;
+            }
+            return last10Positions.getFirst().aDistance(last10Positions.getLast());
         }
     }
 

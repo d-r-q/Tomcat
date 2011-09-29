@@ -50,4 +50,7 @@ public interface LXXRobot extends APoint {
     double getFirePower();
 
     int getRound();
+
+    double getLast10TicksDist();
+
 }

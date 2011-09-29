@@ -12,6 +12,7 @@ import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
 import lxx.ts_log.attributes.attribute_extractors.enemy.*;
 import lxx.ts_log.attributes.attribute_extractors.my.*;
+import robocode.Rules;
 
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class AttributesManager {
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
     public static final Attribute myDistToReverseWall = new Attribute("My distance to reverse wall", 0, 1700, new MyDistanceToReverseWallVE());
     public static final Attribute myTravelTime = new Attribute("My travel time", 0, 255, new MyTravelTimeVE());
+    public static final Attribute myDistLast10Ticks = new Attribute("My dist last 10 ticks", 0, Rules.MAX_VELOCITY * 10 + 1, new MyDistanceLast10Ticks());
 
     public static final Attribute[] attributes = {
             distBetween,
@@ -84,6 +86,7 @@ public class AttributesManager {
             myDistToForwardWall,
             myDistToReverseWall,
             myTravelTime,
+            myDistLast10Ticks,
     };
 
     private final Office office;

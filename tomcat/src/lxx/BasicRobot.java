@@ -12,6 +12,7 @@ import robocode.util.Utils;
 
 import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import static java.lang.Math.abs;
@@ -29,6 +30,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     private final Set<RobotListener> listeners = new LinkedHashSet<RobotListener>();
     private final LXXPoint position = new LXXPoint();
+    private final LinkedList<LXXPoint> last10Positions = new LinkedList<LXXPoint>();
 
     private int initialOthers;
     public BattleField battleField;
@@ -189,6 +191,10 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
         position.x = e.getStatus().getX();
         position.y = e.getStatus().getY();
+        last10Positions.add(new LXXPoint(position));
+        if (last10Positions.size() > 10) {
+            last10Positions.removeFirst();
+        }
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
             lastDirection = (int) signum(e.getStatus().getVelocity());
@@ -272,4 +278,10 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return getRoundNum();
     }
 
+    public double getLast10TicksDist() {
+        if (last10Positions.size() == 0) {
+            return 0;
+        }
+        return last10Positions.getFirst().aDistance(last10Positions.getLast());
+    }
 }

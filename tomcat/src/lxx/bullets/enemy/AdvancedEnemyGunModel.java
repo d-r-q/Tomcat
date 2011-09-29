@@ -104,7 +104,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
                 AttributesManager.distBetween, 75D,
-                AttributesManager.myDistToForwardWall, 50D);
+                AttributesManager.myDistToForwardWall, 50D,
+                AttributesManager.myDistLast10Ticks, 20D);
         private double efficiency = 1;
 
         private final AvgValue shortAvgHitRate = new AvgValue(3);
@@ -389,6 +390,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 AttributesManager.myAcceleration,
                 AttributesManager.distBetween,
                 AttributesManager.myDistToForwardWall,
+                AttributesManager.myDistLast10Ticks,
         };
         return createLogs(possibleAttributes, new Attribute[]{AttributesManager.myLateralSpeed}, 1, Integer.MAX_VALUE);
     }
