@@ -1,3 +1,6 @@
+v. 3.31
+ * my distance last 10 ticks attribute added to hit logs
+
 v. 3.30
  * revert to v3.27
  * fill visit logs in wave broken events
