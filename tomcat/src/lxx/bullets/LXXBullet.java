@@ -22,11 +22,11 @@ import static java.lang.Math.signum;
  */
 public class LXXBullet {
 
-    private final AimingPredictionData aimPredictionData;
     private final Wave wave;
 
     private Bullet bullet;
     private LXXBulletState state;
+    private AimingPredictionData aimPredictionData;
 
     public LXXBullet(Bullet bullet, Wave w, AimingPredictionData aimPredictionData) {
         this.bullet = bullet;
@@ -54,6 +54,10 @@ public class LXXBullet {
 
     public AimingPredictionData getAimPredictionData() {
         return aimPredictionData;
+    }
+
+    public void setAimPredictionData(AimingPredictionData aimPredictionData) {
+        this.aimPredictionData = aimPredictionData;
     }
 
     public LXXRobot getOwner() {
@@ -134,5 +138,9 @@ public class LXXBullet {
 
     public double getFlightTime(APoint robot) {
         return (getFirePosition().aDistance(robot) - getTravelledDistance()) / getSpeed();
+    }
+
+    public long getFireTime() {
+        return wave.getLaunchTime();
     }
 }

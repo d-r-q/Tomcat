@@ -4,6 +4,7 @@
 
 package lxx.ts_log;
 
+import lxx.LXXRobot;
 import lxx.office.Office;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 public class TurnSnapshotsLog implements TargetManagerListener {
 
-    private final Map<Target, List<TurnSnapshot>> logs = new HashMap<Target, List<TurnSnapshot>>();
+    private final Map<LXXRobot, List<TurnSnapshot>> logs = new HashMap<LXXRobot, List<TurnSnapshot>>();
 
     private final Office office;
     private final AttributesManager factory;
@@ -31,12 +32,12 @@ public class TurnSnapshotsLog implements TargetManagerListener {
         this.factory = office.getAttributesManager();
     }
 
-    public List<TurnSnapshot> getLastSnapshots(Target t, int... indexes) {
+    public List<TurnSnapshot> getLastSnapshots(LXXRobot robot, int... indexes) {
         final List<TurnSnapshot> res = new ArrayList<TurnSnapshot>();
 
-        final List<TurnSnapshot> log = this.logs.get(t);
+        final List<TurnSnapshot> log = this.logs.get(robot);
         if (log == null) {
-            System.out.println("[WARN]: logs for " + t.getName() + " not found");
+            System.out.println("[WARN]: logs for " + robot.getName() + " not found");
             return null;
         }
         for (int index : indexes) {
@@ -51,8 +52,8 @@ public class TurnSnapshotsLog implements TargetManagerListener {
         return res;
     }
 
-    public TurnSnapshot getLastSnapshot(Target target, int timeDelta) {
-        return getLastSnapshots(target, timeDelta).get(0);
+    public TurnSnapshot getLastSnapshot(LXXRobot robot, int timeDelta) {
+        return getLastSnapshots(robot, timeDelta).get(0);
     }
 
     private void interpolate(List<TurnSnapshot> log, TurnSnapshot turnSnapshot1, TurnSnapshot turnSnapshot2, String targetName) {

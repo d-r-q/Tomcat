@@ -4,6 +4,7 @@
 
 package lxx.bullets.enemy;
 
+import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.RobotListener;
 import lxx.Tomcat;
@@ -18,6 +19,7 @@ import lxx.office.PropertiesManager;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
+import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import lxx.utils.wave.WaveCallback;
@@ -56,6 +58,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private final WaveManager waveManager;
     private final Tomcat robot;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
     private AimingPredictionData futureBulletAimingPredictionData;
 
@@ -64,6 +67,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
+        turnSnapshotsLog = office.getTurnSnapshotsLog();
     }
 
     public void targetUpdated(Target target) {
@@ -82,7 +86,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState,
                     bulletSpeed, this);
 
-            final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave, enemyFireAnglePredictor.getPredictionData(target));
+            final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave, enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)));
 
             predictedBullets.put(wave, lxxBullet);
 
@@ -101,7 +105,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public void waveBroken(Wave w) {
         final LXXBullet lxxBullet = getLXXBullet(w);
-        if (lxxBullet.getState() == LXXBulletState.ON_AIR) {
+        if (lxxBullet != null && lxxBullet.getState() == LXXBulletState.ON_AIR) {
             lxxBullet.setState(LXXBulletState.MISSED);
             for (BulletManagerListener listener : listeners) {
                 listener.bulletMiss(lxxBullet);
@@ -109,6 +113,15 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
 
         predictedBullets.remove(w);
+        updateBulletsOnAir();
+    }
+
+    private void updateBulletsOnAir() {
+        for (LXXBullet bullet : predictedBullets.values()) {
+            final LXXRobot owner = bullet.getOwner();
+            bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
+                    turnSnapshotsLog.getLastSnapshot(owner, (int)(robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)))));
+        }
     }
 
     public void onBulletHitBullet(BulletHitBulletEvent e) {
@@ -126,6 +139,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         for (BulletManagerListener listener : listeners) {
             listener.bulletIntercepted(lxxBullet);
         }
+
+        predictedBullets.remove(w);
+        updateBulletsOnAir();
     }
 
     public void onHitByBullet(HitByBulletEvent e) {
@@ -142,6 +158,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         for (BulletManagerListener listener : listeners) {
             listener.bulletHit(lxxBullet);
         }
+
+        predictedBullets.remove(w);
+        updateBulletsOnAir();
     }
 
     private Wave getWave(Bullet b) {
@@ -213,7 +232,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     public LXXBullet createFutureBullet(Target target) {
         double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
         if (timeToFire == 1 || timeToFire == 2) {
-            futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target);
+            futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY));
         } else if (timeToFire > 2) {
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
         }

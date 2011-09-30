@@ -34,7 +34,7 @@ import static java.lang.StrictMath.signum;
 
 public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallback {
 
-    private static final int FIRE_DETECTION_LATENCY = 2;
+    public static final int FIRE_DETECTION_LATENCY = 2;
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
@@ -49,8 +49,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         this.office = office;
     }
 
-    public EnemyBulletPredictionData getPredictionData(Target t) {
-        return getLogSet(t.getName()).getPredictionData(turnSnapshotsLog.getLastSnapshot(t, FIRE_DETECTION_LATENCY), t);
+    public EnemyBulletPredictionData getPredictionData(LXXRobot t, final TurnSnapshot turnSnapshot) {
+        return getLogSet(t.getName()).getPredictionData(turnSnapshot, t);
     }
 
     public void bulletFired(LXXBullet bullet) {
@@ -197,7 +197,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
         }
 
-        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, Target t) {
+        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
             final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
 
             final Log[] bestLogs = new Log[6];
@@ -267,7 +267,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
         }
 
-        private void fillWithSimpleBOs(TurnSnapshot ts, Target t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
+        private void fillWithSimpleBOs(TurnSnapshot ts, LXXRobot t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
             final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(ts), LXXUtils.getMyPos(ts),
                     ts.getMySpeed(), ts.getMyAbsoluteHeadingRadians());
             final double lateralDirection = Math.signum(lateralVelocity);
