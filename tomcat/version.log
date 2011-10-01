@@ -1,3 +1,6 @@
+v. 3.32
+ * update prediction for bullets on air after bullet intercepted, hitted and missed events
+
 v. 3.31
  * my distance last 10 ticks attribute added to hit logs
 
