@@ -146,7 +146,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             if (entries.size() > 0) {
-                for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(3, entries.size()))) {
+                for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(5, entries.size()))) {
                     try {
                         if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
                             bearingOffsets.add(new PastBearingOffset(entry.predicate,
