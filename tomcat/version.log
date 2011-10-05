@@ -1,3 +1,6 @@
+v. 3.33
+ * Use 5 bullet per log instead of 3 in movement
+
 v. 3.32
  * update prediction for bullets on air after bullet intercepted, hitted and missed events
 
