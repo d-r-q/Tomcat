@@ -23,17 +23,15 @@ public class TurnSnapshot implements Serializable {
     private final double[] attributeValues;
     private final long time;
     private final int round;
-    private final String targetName;
 
     // access optimisation
     public TurnSnapshot next;
     public final int roundTime;
 
-    public TurnSnapshot(double[] attributeValues, long time, int round, String targetName) {
+    public TurnSnapshot(double[] attributeValues, long time, int round) {
         this.attributeValues = attributeValues;
         this.time = time;
         this.round = round;
-        this.targetName = targetName;
         if (round > FIFTEEN_BITS || time > FIFTEEN_BITS) {
             throw new IllegalArgumentException("Too large round-time: " + round + " - " + time);
         }

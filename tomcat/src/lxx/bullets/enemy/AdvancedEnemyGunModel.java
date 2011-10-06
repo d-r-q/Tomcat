@@ -345,11 +345,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             double realDanger = 0;
             int currentRound = bullet.getOwner().getRound();
             for (PastBearingOffset pastBo : bearingOffsets) {
-                // todo: it's dirty hack! rewrite it!
-                if (pastBo.source.getRound() == currentRound && pastBo.source.getTime() >= bullet.getWave().getLaunchTime() - 3) {
-                    continue;
-                }
-
                 totalDanger += pastBo.danger;
                 if (effectiveInterval.contains(pastBo.bearingOffset)) {
                     realDanger += pastBo.danger;
