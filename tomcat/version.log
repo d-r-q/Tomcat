@@ -1,3 +1,6 @@
+v. 3.34
+ * use kNN search for data analysis in gun
+
 v. 3.33
  * Use 5 bullet per log instead of 3 in movement
 
