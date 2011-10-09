@@ -1,3 +1,9 @@
+v. 3.36
+ * revert to v. 3.34
+
+v. 3.35
+ * add data view to gun with high time importance and attributes: speed, acceleration, lateral dir, bearing
+
 v. 3.34
  * use kNN search for data analysis in gun
 
