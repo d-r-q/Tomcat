@@ -14,7 +14,9 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.*;
@@ -289,4 +291,46 @@ public class LXXUtils {
     public static double bearingOffset(double baseAngle, double alpha) {
         return Utils.normalRelativeAngle(alpha - baseAngle);
     }
+
+    // we solve this problem in coordinate system with center in farest pnt and y direction equals to segment angle
+    // in this cs following set of equations taking place:
+    // / x = 0 - equation of segment
+    // \ (x - cx)^2 + (y - cy)^2 = r^2 - equation of circle
+    // then y = +/- sqrt(r^2 - cx^2) + cy;
+    // because x = 0, y - it's distance from farest pnt to intersection pnt
+    // so intersection point it's projection from farest point in direction on segment on y distance
+    public static APoint[] intersection(APoint pnt1, APoint pnt2, APoint center, double r) {
+        final APoint farest;
+        final APoint closest;
+        if (center.aDistance(pnt1) > center.aDistance(pnt2)) {
+            farest = pnt1;
+            closest = pnt2;
+        } else {
+            farest = pnt2;
+            closest = pnt1;
+        }
+        final double segmentAlpha = farest.angleTo(closest);
+        final double segmentDist = farest.aDistance(closest);
+        // calculate circle center in new cs
+        final APoint newCircleCenter = new LXXPoint().project(abs(Utils.normalRelativeAngle(farest.angleTo(center) - segmentAlpha)), farest.aDistance(center));
+
+        if (r < newCircleCenter.getX()) {
+            // no intersection
+            return new LXXPoint[0];
+        }
+
+        final double y1 = sqrt(r * r - newCircleCenter.getX() * newCircleCenter.getX()) + newCircleCenter.getY();
+        final double y2 = -sqrt(r * r - newCircleCenter.getX() * newCircleCenter.getX()) + newCircleCenter.getY();
+
+        final List<APoint> res = new ArrayList<APoint>();
+        if (y2 > 0 && y2 < segmentDist) {
+            res.add(farest.project(segmentAlpha, y2));
+        }
+        if (y1 > 0 && y1 < segmentDist) {
+            res.add(farest.project(segmentAlpha, y1));
+        }
+
+        return res.toArray(new APoint[res.size()]);
+    }
+
 }
