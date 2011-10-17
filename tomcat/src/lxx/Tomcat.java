@@ -86,9 +86,13 @@ public class Tomcat extends BasicRobot {
         try {
             Strategy currentStrategy = strategySelector.selectStrategy();
             turnDecision = currentStrategy.makeDecision();
-            handleGun();
+            if (turnDecision.getGunTurnRate() != null) {
+                handleGun();
+            }
             move();
-            turnRadar();
+            if (turnDecision.getRadarTurnRate() != null) {
+                turnRadar();
+            }
         } catch (Throwable t) {
             System.out.println("Round time: " + getTime());
             t.printStackTrace();

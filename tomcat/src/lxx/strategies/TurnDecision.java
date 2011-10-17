@@ -15,15 +15,15 @@ public class TurnDecision {
 
     private final MovementDecision movementDecision;
 
-    private final double gunTurnRate;
+    private final Double gunTurnRate;
     private final double firePower;
     private final Target target;
     private final AimingPredictionData aimAimPredictionData;
 
-    private final double radarTurnRate;
+    private final Double radarTurnRate;
 
-    public TurnDecision(MovementDecision movementDecision, double gunTurnRate,
-                        double firePower, double radarTurnRate, Target target,
+    public TurnDecision(MovementDecision movementDecision, Double gunTurnRate,
+                        double firePower, Double radarTurnRate, Target target,
                         AimingPredictionData aimAimPredictionData) {
         this.movementDecision = movementDecision;
         this.gunTurnRate = gunTurnRate;
@@ -37,7 +37,7 @@ public class TurnDecision {
         return movementDecision;
     }
 
-    public double getGunTurnRate() {
+    public Double getGunTurnRate() {
         return gunTurnRate;
     }
 
@@ -45,7 +45,7 @@ public class TurnDecision {
         return firePower;
     }
 
-    public double getRadarTurnRate() {
+    public Double getRadarTurnRate() {
         return radarTurnRate;
     }
 

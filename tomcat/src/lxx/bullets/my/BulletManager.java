@@ -38,7 +38,10 @@ public class BulletManager implements RobotListener {
     }
 
     private void onBulletHitBullet(BulletHitBulletEvent e) {
-        LXXBullet b = getBullet(e.getBullet());
+        final LXXBullet b = getBullet(e.getBullet());
+        if (b == null) {
+            return;
+        }
         removeBullet(b);
     }
 
@@ -47,7 +50,10 @@ public class BulletManager implements RobotListener {
     }
 
     private void onBulletHit(BulletHitEvent event) {
-        LXXBullet b = getBullet(event.getBullet());
+        final LXXBullet b = getBullet(event.getBullet());
+        if (b == null) {
+            return;
+        }
         if (b.getTarget().getName().equals(event.getName())) {
             for (BulletManagerListener listener : listeners) {
                 listener.bulletHit(b);
