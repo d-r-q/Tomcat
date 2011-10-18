@@ -46,6 +46,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.distBetween,
+            AttributesManager.enemyTurnRate
     };
     private static final DataView distanceDataView = new SingleSourceDataView(distanceDVAttrs, new double[]{0.5, 0.5});
 
@@ -56,6 +57,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.enemyTimeSinceLastDirChange,
+            AttributesManager.enemyTurnRate
     };
     private static final DataView timeSinceDirChangeDataView = new SingleSourceDataView(timeSinceDirChangeDVAttrs, new double[]{0.5, 0.5});
 

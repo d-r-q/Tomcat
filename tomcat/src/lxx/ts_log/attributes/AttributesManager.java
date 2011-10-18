@@ -107,7 +107,7 @@ public class AttributesManager {
             final double av = a.getExtractor().getAttributeValue(t, robot, myBullets, office);
             if (av < a.getMinValue() || av > a.getMaxValue()) {
                 a.getExtractor().getAttributeValue(t, robot, myBullets, office);
-                throw new RuntimeException(a + " = " + av);
+                System.out.println("[WARN]: " + a + " = " + av);
             }
             if (a.getActualMin() > av) {
                 a.setActualMin(av);
