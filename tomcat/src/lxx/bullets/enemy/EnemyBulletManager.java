@@ -12,6 +12,7 @@ import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
 import lxx.bullets.PastBearingOffset;
+import lxx.bullets.my.BulletManager;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.office.Office;
@@ -59,6 +60,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final WaveManager waveManager;
     private final Tomcat robot;
     private final TurnSnapshotsLog turnSnapshotsLog;
+    private final BulletManager bulletManager;
 
     private AimingPredictionData futureBulletAimingPredictionData;
 
@@ -67,6 +69,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         addListener(enemyFireAnglePredictor);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
+        this.bulletManager = office.getBulletManager();
         turnSnapshotsLog = office.getTurnSnapshotsLog();
     }
 
@@ -120,7 +123,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         for (LXXBullet bullet : predictedBullets.values()) {
             final LXXRobot owner = bullet.getOwner();
             bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
-                    turnSnapshotsLog.getLastSnapshot(owner, (int)(robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)))));
+                    turnSnapshotsLog.getLastSnapshot(owner, (int) (robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)))));
         }
     }
 

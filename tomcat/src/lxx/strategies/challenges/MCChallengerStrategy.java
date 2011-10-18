@@ -15,6 +15,7 @@ import lxx.targeting.TargetManager;
 public class MCChallengerStrategy implements Strategy {
 
     private final TargetManager targetManager;
+    private final Tomcat robot;
     private final EnemyBulletManager enemyBulletManager;
     private final Movement movement;
 
@@ -23,10 +24,9 @@ public class MCChallengerStrategy implements Strategy {
                                 TargetManager targetManager,
                                 EnemyBulletManager enemyBulletManager) {
         this.movement = movement;
-
+        this.robot = robot;
         this.targetManager = targetManager;
         this.enemyBulletManager = enemyBulletManager;
-        robot.addListener(new RaikoGun(robot));
     }
 
     @Override
@@ -34,6 +34,7 @@ public class MCChallengerStrategy implements Strategy {
         final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.getBulletsOnAir(1).size() > 0;
         if ("MCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode")) &&
                 match) {
+            robot.addListener(new RaikoGun(robot));
             return true;
         }
         return false;
