@@ -35,6 +35,9 @@ public class BulletManager implements RobotListener {
 
     private void addBullet(LXXBullet bullet) {
         bullets.add(bullet);
+        for (BulletManagerListener listener : listeners) {
+            listener.bulletFired(bullet);
+        }
     }
 
     private void onBulletHitBullet(BulletHitBulletEvent e) {
@@ -78,7 +81,7 @@ public class BulletManager implements RobotListener {
         removeBullet(b);
     }
 
-    private LXXBullet getBullet(Bullet b) {
+    public LXXBullet getBullet(Bullet b) {
         for (LXXBullet bullet : bullets) {
             final Wave w = bullet.getWave();
             if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.1 &&

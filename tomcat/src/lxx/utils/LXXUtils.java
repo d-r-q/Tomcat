@@ -14,10 +14,8 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.*;
 
@@ -299,7 +297,7 @@ public class LXXUtils {
     // then y = +/- sqrt(r^2 - cx^2) + cy;
     // because x = 0, y - it's distance from farest pnt to intersection pnt
     // so intersection point it's projection from farest point in direction on segment on y distance
-    public static APoint[] intersection(APoint pnt1, APoint pnt2, APoint center, double r) {
+    public static APoint[] intersection(APoint pnt1, APoint pnt2, final APoint center, double r) {
         final APoint farest;
         final APoint closest;
         if (center.aDistance(pnt1) > center.aDistance(pnt2)) {
@@ -329,6 +327,11 @@ public class LXXUtils {
         if (y1 > 0 && y1 < segmentDist) {
             res.add(farest.project(segmentAlpha, y1));
         }
+        Collections.sort(res, new Comparator<APoint>() {
+            public int compare(APoint o1, APoint o2) {
+                return (int) signum(center.aDistance(o2) - center.aDistance(o2));
+            }
+        });
 
         return res.toArray(new APoint[res.size()]);
     }

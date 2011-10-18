@@ -41,6 +41,7 @@ public class Tomcat extends BasicRobot {
     private Office office;
     private TurnDecision turnDecision;
     private StrategySelector strategySelector;
+    private Bullet bullet;
 
     public void run() {
         if (getBattleFieldWidth() > 1200 || getBattleFieldHeight() > 1200) {
@@ -75,6 +76,13 @@ public class Tomcat extends BasicRobot {
 
     private void notifyListeners() {
         if (isAlive) {
+            if (bullet != null && turnDecision.getTarget() != null) {
+                final Wave bulletWave = office.getWaveManager().launchWave(getState(), turnDecision.getTarget().getState(), Rules.getBulletSpeed(turnDecision.getFirePower()), null);
+                final LXXBullet lxxBullet = new LXXBullet(bullet, bulletWave, turnDecision.getAimAimPredictionData());
+
+                notifyListeners(new FireEvent(lxxBullet));
+                bullet = null;
+            }
             notifyListeners(new TickEvent(getTime()));
             if (isPaintEnabled) {
                 notifyListeners(new LXXPaintEvent(getLXXGraphics()));
@@ -129,14 +137,7 @@ public class Tomcat extends BasicRobot {
     }
 
     private void fire() {
-
-        final Bullet bullet = setFireBullet(turnDecision.getFirePower());
-        if (bullet != null && turnDecision.getTarget() != null) {
-            final Wave bulletWave = office.getWaveManager().launchWaveOnNextTick(getState(), turnDecision.getTarget().getState(), Rules.getBulletSpeed(turnDecision.getFirePower()));
-            final LXXBullet lxxBullet = new LXXBullet(bullet, bulletWave, turnDecision.getAimAimPredictionData());
-
-            notifyListeners(new FireEvent(lxxBullet));
-        }
+        bullet = setFireBullet(turnDecision.getFirePower());
     }
 
     private void aimGun() {

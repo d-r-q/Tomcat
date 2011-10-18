@@ -36,7 +36,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     public BattleField battleField;
 
     private LXXRobotState prevState;
-    private LXXRobotState currentState;
+    protected LXXRobotState currentState;
 
     private long lastStopTime;
     private long lastTravelTime;
