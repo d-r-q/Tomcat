@@ -8,6 +8,7 @@ import lxx.LXXRobotState;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
+import lxx.bullets.enemy.BulletShadow;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.enemy.EnemyBulletPredictionData;
 import lxx.office.Office;
@@ -181,6 +182,18 @@ public class WaveSurfingMovement implements Movement, Painter {
         double bulletsDanger = 0;
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
+            boolean isShadowed = false;
+            for (BulletShadow shadow : bullet.getBulletShadows()) {
+                if (shadow.contains(bo.bearingOffset)) {
+                    isShadowed = true;
+                    break;
+                }
+            }
+
+            if (isShadowed) {
+                continue;
+            }
+
             final double dist = abs(bearingOffset - bo.bearingOffset);
             if (dist < robotWidthInRadians * 0.75) {
                 bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.75))) * bo.danger;

@@ -6,6 +6,7 @@ package lxx.bullets;
 
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
+import lxx.bullets.enemy.BulletShadow;
 import lxx.utils.APoint;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXPoint;
@@ -13,6 +14,10 @@ import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.lang.Math.signum;
 
@@ -27,6 +32,7 @@ public class LXXBullet {
     private Bullet bullet;
     private LXXBulletState state;
     private AimingPredictionData aimPredictionData;
+    private Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
 
     public LXXBullet(Bullet bullet, Wave w, AimingPredictionData aimPredictionData) {
         this.bullet = bullet;
@@ -142,5 +148,21 @@ public class LXXBullet {
 
     public long getFireTime() {
         return wave.getLaunchTime();
+    }
+
+    public void addBulletShadow(LXXBullet bullet, BulletShadow shadow) {
+        bulletShadows.put(bullet, shadow);
+    }
+
+    public BulletShadow getBulletShadow(LXXBullet bullet) {
+        return bulletShadows.get(bullet);
+    }
+
+    public Collection<BulletShadow> getBulletShadows() {
+        return bulletShadows.values();
+    }
+
+    public void removeBulletShadow(LXXBullet bullet) {
+        bulletShadows.remove(bullet);
     }
 }
