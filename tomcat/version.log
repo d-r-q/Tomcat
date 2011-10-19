@@ -1,3 +1,6 @@
+v. 3.39a
+ * bug fix with not removing shadows of intercepted bullets
+
 v. 3.39
  * bullet shadows implemented
 
