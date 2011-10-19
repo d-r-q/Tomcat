@@ -7,6 +7,7 @@ package lxx.bullets.my;
 import lxx.RobotListener;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
+import lxx.bullets.LXXBulletState;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
@@ -46,6 +47,10 @@ public class BulletManager implements RobotListener {
             return;
         }
         removeBullet(b);
+        b.setState(LXXBulletState.INTERCEPTED);
+        for (BulletManagerListener lst : listeners) {
+            lst.bulletIntercepted(b);
+        }
     }
 
     private void removeBullet(LXXBullet b) {
@@ -68,6 +73,7 @@ public class BulletManager implements RobotListener {
                 }
             }
         }
+        b.setState(LXXBulletState.HITTED);
         removeBullet(b);
     }
 
@@ -77,6 +83,7 @@ public class BulletManager implements RobotListener {
             for (BulletManagerListener lst : listeners) {
                 lst.bulletMiss(b);
             }
+            b.setState(LXXBulletState.MISSED);
         }
         removeBullet(b);
     }
