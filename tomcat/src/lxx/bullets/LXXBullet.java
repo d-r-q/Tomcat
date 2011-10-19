@@ -15,6 +15,7 @@ import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -149,7 +150,19 @@ public class LXXBullet {
         return wave.getLaunchTime();
     }
 
-    public Map<LXXBullet, BulletShadow> getBulletShadows() {
-        return bulletShadows;
+    public void addBulletShadow(LXXBullet bullet, BulletShadow shadow) {
+        bulletShadows.put(bullet, shadow);
+    }
+
+    public BulletShadow getBulletShadow(LXXBullet bullet) {
+        return bulletShadows.get(bullet);
+    }
+
+    public Collection<BulletShadow> getBulletShadows() {
+        return bulletShadows.values();
+    }
+
+    public void removeBulletShadow(LXXBullet bullet) {
+        bulletShadows.remove(bullet);
     }
 }

@@ -236,6 +236,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 paintEnabled = !paintEnabled;
             }
         } else if (event instanceof TickEvent) {
+            recalculateBulletShadows();
             checkBulletShadows();
         }
     }
@@ -255,7 +256,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 final APoint myBulletNextPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist + myBullet.getSpeed());
                 robot.getLXXGraphics().fillCircle(myBulletCurPos, 3);
 
-                final BulletShadow bulletShadow = enemyBullet.getBulletShadows().get(myBullet);
+                final BulletShadow bulletShadow = enemyBullet.getBulletShadow(myBullet);
                 if (bulletShadow != null && ebFirePos.aDistance(mbFirePos) > myBulletCurDist) {
                     if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletCurDist &&
                             ebFirePos.aDistance(myBulletNextPos) < enemyBulletNextDist) {
@@ -298,11 +299,11 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 }
 
                 g.setColor(new Color(0, 255, 0, 150));
-                for (IntervalDouble bulletShadow : bullet.getBulletShadows().values()) {
+                for (IntervalDouble bulletShadow : bullet.getBulletShadows()) {
                     final double alpha1 = bullet.noBearingOffset() + bulletShadow.a;
                     final double alpha2 = bullet.noBearingOffset() + bulletShadow.b;
                     final double curDist = bullet.getTravelledDistance();
-                    final double step = bulletShadow.getLength() / 20;
+                    final double step = max(bulletShadow.getLength() / 20, 0.001);
                     for (double alpha = alpha1; alpha <= alpha2; alpha += step) {
                         g.drawLine(bullet.getFirePosition(), alpha, curDist - 7, 20);
                     }
@@ -360,8 +361,14 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                             drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
                         } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletNextDist &&
                                 ebFirePos.aDistance(myBulletNextPos) < enemyBulletNextDist) {
-                            final APoint intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
-                            addShadow(myBullet, enemyBullet, ebFirePos, myBulletCurPos, intPoint2);
+                            APoint intPoint2 = null;
+                            try {
+                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
+                            } catch (ArrayIndexOutOfBoundsException e) {
+                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
+                                e.printStackTrace();
+                            }
+                            addShadow(myBullet, enemyBullet, ebFirePos, myBulletNextPos, intPoint2);
                             robot.getLXXGraphics().setColor(new Color(0, 0, 255, 150));
                             drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
                         } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletCurDist &&
@@ -388,7 +395,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private void addShadow(LXXBullet myBullet, LXXBullet enemyBullet, APoint ebFirePos, APoint pnt1, APoint pnt2) {
         final double bo1 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt1);
         final double bo2 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt2);
-        enemyBullet.getBulletShadows().put(myBullet, new BulletShadow(min(bo1, bo2), max(bo1, bo2)));
+        enemyBullet.addBulletShadow(myBullet, new BulletShadow(min(bo1, bo2), max(bo1, bo2)));
     }
 
     public void bulletFired(LXXBullet bullet) {
@@ -397,8 +404,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public void bulletIntercepted(LXXBullet bullet) {
         for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
-            if (!enemyBullet.getBulletShadows().get(bullet).isPassed) {
-                enemyBullet.getBulletShadows().remove(bullet);
+            if (!enemyBullet.getBulletShadow(bullet).isPassed) {
+                enemyBullet.removeBulletShadow(bullet);
             }
         }
     }
