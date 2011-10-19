@@ -102,6 +102,10 @@ public class WaveSurfingMovement implements Movement, Painter {
                 ((EnemyBulletPredictionData) newBullets.get(0).getAimPredictionData()).getPredictionTime()) {
             return true;
         }
+        if (prevPrediction.bulletShadowsCount !=
+                newBullets.get(0).getBulletShadows().size()) {
+            return true;
+        }
         if (prevPrediction.bullets.size() != newBullets.size()) {
             return true;
         }
@@ -140,6 +144,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
         prediction.bullets = lxxBullets;
+        prediction.bulletShadowsCount = lxxBullets.get(0).getBulletShadows().size();
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
@@ -321,6 +326,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         public List<WSPoint> points;
         public double enemyAccelSign;
         public double distanceBetween;
+        public int bulletShadowsCount;
     }
 
     private class PointDanger implements Comparable<PointDanger> {
