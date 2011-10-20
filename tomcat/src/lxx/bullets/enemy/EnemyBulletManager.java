@@ -404,7 +404,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public void bulletIntercepted(LXXBullet bullet) {
         for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
-            if (!enemyBullet.getBulletShadow(bullet).isPassed) {
+            if (enemyBullet.getBulletShadow(bullet) != null &&
+                    !enemyBullet.getBulletShadow(bullet).isPassed) {
                 enemyBullet.removeBulletShadow(bullet);
             }
         }

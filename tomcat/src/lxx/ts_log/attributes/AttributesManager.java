@@ -12,6 +12,7 @@ import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
 import lxx.ts_log.attributes.attribute_extractors.enemy.*;
 import lxx.ts_log.attributes.attribute_extractors.my.*;
+import lxx.utils.LXXUtils;
 import robocode.Rules;
 
 import java.util.List;
@@ -104,10 +105,10 @@ public class AttributesManager {
             if (a.getId() >= attributes.length) {
                 throw new RuntimeException("Something wrong!");
             }
-            final double av = a.getExtractor().getAttributeValue(t, robot, myBullets, office);
+            double av = a.getExtractor().getAttributeValue(t, robot, myBullets, office);
             if (av < a.getMinValue() || av > a.getMaxValue()) {
-                a.getExtractor().getAttributeValue(t, robot, myBullets, office);
                 System.out.println("[WARN]: " + a + " = " + av);
+                av = LXXUtils.limit(a, av);
             }
             if (a.getActualMin() > av) {
                 a.setActualMin(av);

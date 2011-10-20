@@ -56,9 +56,6 @@ public class Attribute {
     }
 
     public void setActualMin(double actualMin) {
-        if (actualMin < minValue) {
-            throw new RuntimeException(this + ": " + actualMin + "/" + minValue);
-        }
         this.actualMin = actualMin;
     }
 
@@ -67,9 +64,6 @@ public class Attribute {
     }
 
     public void setActualMax(double actualMax) {
-        if (actualMax > maxValue) {
-            throw new RuntimeException(this + ": " + actualMax + "/" + maxValue);
-        }
         this.actualMax = actualMax;
     }
 

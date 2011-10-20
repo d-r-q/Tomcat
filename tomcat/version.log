@@ -1,3 +1,7 @@
+v. 3.39c
+ * npe in removing intercepted bullets shadows removed
+ * do not throw exceptions, when attribute value exceeds attributes limits
+
 v. 3.39b
  * reselect orbit direction, when bullet shadows changed
 
