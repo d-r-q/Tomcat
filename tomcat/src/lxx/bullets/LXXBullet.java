@@ -42,6 +42,10 @@ public class LXXBullet {
         state = LXXBulletState.ON_AIR;
     }
 
+    public LXXBullet(Bullet bullet, Wave w) {
+        this(bullet, w, null);
+    }
+
     public Bullet getBullet() {
         return bullet;
     }

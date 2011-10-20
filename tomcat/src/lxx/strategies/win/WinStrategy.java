@@ -51,7 +51,7 @@ public class WinStrategy implements Strategy, Painter {
                 new MovementDecision(0, getTurnRemaining()),
                 Utils.normalRelativeAngle(-robot.getGunHeadingRadians()), 0.1,
                 Utils.normalRelativeAngle(-robot.getRadarHeadingRadians()),
-                null, null);
+                targetManager.getAnyDuelOpponent(), null);
     }
 
     public double getTurnRemaining() {

@@ -8,7 +8,6 @@ import lxx.LXXRobotState;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
-import lxx.bullets.enemy.BulletShadow;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.bullets.enemy.EnemyBulletPredictionData;
 import lxx.office.Office;
@@ -102,10 +101,6 @@ public class WaveSurfingMovement implements Movement, Painter {
                 ((EnemyBulletPredictionData) newBullets.get(0).getAimPredictionData()).getPredictionTime()) {
             return true;
         }
-        if (prevPrediction.bulletShadowsCount !=
-                newBullets.get(0).getBulletShadows().size()) {
-            return true;
-        }
         if (prevPrediction.bullets.size() != newBullets.size()) {
             return true;
         }
@@ -144,7 +139,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
         prediction.bullets = lxxBullets;
-        prediction.bulletShadowsCount = lxxBullets.get(0).getBulletShadows().size();
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
@@ -187,18 +181,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         double bulletsDanger = 0;
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
-            boolean isShadowed = false;
-            for (BulletShadow shadow : bullet.getBulletShadows()) {
-                if (shadow.contains(bo.bearingOffset)) {
-                    isShadowed = true;
-                    break;
-                }
-            }
-
-            if (isShadowed) {
-                continue;
-            }
-
             final double dist = abs(bearingOffset - bo.bearingOffset);
             if (dist < robotWidthInRadians * 0.75) {
                 bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.75))) * bo.danger;
@@ -326,7 +308,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         public List<WSPoint> points;
         public double enemyAccelSign;
         public double distanceBetween;
-        public int bulletShadowsCount;
     }
 
     private class PointDanger implements Comparable<PointDanger> {

@@ -11,17 +11,14 @@ import lxx.bullets.LXXBulletState;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
-import lxx.events.TickEvent;
 import lxx.paint.LXXGraphics;
 import lxx.utils.LXXPoint;
-import lxx.utils.wave.Wave;
 import robocode.*;
+import robocode.util.Utils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -30,6 +27,8 @@ import static java.lang.Math.abs;
 public class BulletManager implements RobotListener {
 
     private static boolean paintEnabled = false;
+
+    private final List<LXXBullet> oldBullets = new ArrayList<LXXBullet>();
 
     private final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -42,10 +41,7 @@ public class BulletManager implements RobotListener {
     }
 
     private void onBulletHitBullet(BulletHitBulletEvent e) {
-        final LXXBullet b = getBullet(e.getBullet());
-        if (b == null) {
-            return;
-        }
+        final LXXBullet b = getLXXBullet(e.getBullet());
         removeBullet(b);
         b.setState(LXXBulletState.INTERCEPTED);
         for (BulletManagerListener lst : listeners) {
@@ -55,13 +51,11 @@ public class BulletManager implements RobotListener {
 
     private void removeBullet(LXXBullet b) {
         bullets.remove(b);
+        oldBullets.add(b);
     }
 
     private void onBulletHit(BulletHitEvent event) {
-        final LXXBullet b = getBullet(event.getBullet());
-        if (b == null) {
-            return;
-        }
+        final LXXBullet b = getLXXBullet(event.getBullet());
         if (b.getTarget().getName().equals(event.getName())) {
             for (BulletManagerListener listener : listeners) {
                 listener.bulletHit(b);
@@ -78,8 +72,8 @@ public class BulletManager implements RobotListener {
     }
 
     private void onBulletMissed(BulletMissedEvent event) {
-        final LXXBullet b = getBullet(event.getBullet());
-        if (b != null && b.getTarget() != null && b.getTarget().isAlive()) {
+        final LXXBullet b = getLXXBullet(event.getBullet());
+        if (b.getTarget() != null && b.getTarget().isAlive()) {
             for (BulletManagerListener lst : listeners) {
                 lst.bulletMiss(b);
             }
@@ -88,11 +82,11 @@ public class BulletManager implements RobotListener {
         removeBullet(b);
     }
 
-    public LXXBullet getBullet(Bullet b) {
+    public LXXBullet getLXXBullet(Bullet b) {
         for (LXXBullet bullet : bullets) {
-            final Wave w = bullet.getWave();
-            if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.1 &&
-                    abs(w.getTraveledDistance() - w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY()))) < w.getSpeed() + 1) {
+            if (Utils.isNear(b.getHeadingRadians(), bullet.getBullet().getHeadingRadians()) &&
+                    Utils.isNear(b.getPower(), bullet.getBullet().getPower()) &&
+                    new LXXPoint(bullet.getBullet().getX(), bullet.getBullet().getY()).aDistance(new LXXPoint(b.getX(), b.getY())) < 40) {
                 return bullet;
             }
         }
@@ -116,21 +110,8 @@ public class BulletManager implements RobotListener {
         listeners.add(listener);
     }
 
-    private void onTick() {
-        List<LXXBullet> toDelete = new ArrayList<LXXBullet>();
-        for (LXXBullet b1 : bullets) {
-            if (!b1.getBullet().isActive()) {
-                toDelete.add(b1);
-            }
-        }
-
-        bullets.removeAll(toDelete);
-    }
-
     public void onEvent(Event event) {
-        if (event instanceof TickEvent) {
-            onTick();
-        } else if (event instanceof BulletMissedEvent) {
+        if (event instanceof BulletMissedEvent) {
             onBulletMissed((BulletMissedEvent) event);
         } else if (event instanceof BulletHitEvent) {
             onBulletHit((BulletHitEvent) event);
@@ -153,13 +134,7 @@ public class BulletManager implements RobotListener {
     }
 
     public List<LXXBullet> getBullets() {
-        return bullets;
+        return new LinkedList<LXXBullet>(bullets);
     }
 
-    public LXXBullet getLastBullet() {
-        if (bullets.size() == 0) {
-            return null;
-        }
-        return bullets.get(bullets.size() - 1);
-    }
 }

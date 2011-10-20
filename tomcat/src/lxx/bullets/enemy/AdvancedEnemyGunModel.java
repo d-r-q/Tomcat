@@ -10,7 +10,6 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
 import lxx.office.Office;
 import lxx.targeting.GunType;
-import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
@@ -29,7 +28,6 @@ import java.util.*;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
-import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.signum;
 
 public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallback {
@@ -49,12 +47,12 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         this.office = office;
     }
 
-    public EnemyBulletPredictionData getPredictionData(LXXRobot t, final TurnSnapshot turnSnapshot) {
-        return getLogSet(t.getName()).getPredictionData(turnSnapshot, t);
+    public EnemyBulletPredictionData getPredictionData(LXXRobot t, final TurnSnapshot turnSnapshot, Collection<BulletShadow> bulletShadows) {
+        return getLogSet(t.getName()).getPredictionData(turnSnapshot, t, bulletShadows);
     }
 
     public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot((Target) bullet.getOwner(), FIRE_DETECTION_LATENCY));
+        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot(bullet.getOwner(), FIRE_DETECTION_LATENCY));
         entriesByBullets.put(bullet, entry);
         final Wave wave = bullet.getWave();
         office.getWaveManager().addCallback(this, wave);
@@ -124,13 +122,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
         }
 
-        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
-            final List<PastBearingOffset> bearingOffsets = getBearingOffsets(ts, t.getFirePower());
-
-            return new EnemyBulletPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected), 0);
-        }
-
-        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower) {
+        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
             final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
             Collections.sort(entries, new Comparator<PSTreeEntry>() {
                 public int compare(PSTreeEntry o1, PSTreeEntry o2) {
@@ -145,24 +137,61 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
-            if (entries.size() > 0) {
-                for (PSTreeEntry<UndirectedGuessFactor> entry : entries.subList(0, min(5, entries.size()))) {
-                    try {
-                        if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate,
-                                    entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick,
-                                    1));
-                        } else {
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * 1 * maxEscapeAngleQuick, 1));
-                            bearingOffsets.add(new PastBearingOffset(entry.predicate, entry.result.guessFactor * -1 * maxEscapeAngleQuick, 1));
-                        }
-                    } catch (NullPointerException npe) {
-                        npe.printStackTrace();
+            int notShadowedBulletsCount = 0;
+            for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
+                if (notShadowedBulletsCount == 5) {
+                    break;
+                }
+                if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
+
+                    final double bearingOffset = entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick;
+                    final double danger;
+                    if (isShadowed(bearingOffset, bulletShadows)) {
+                        danger = 0.01;
+                    } else {
+                        notShadowedBulletsCount++;
+                        danger = 1;
+                    }
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset, danger));
+                } else {
+                    boolean hasNotShadowed = false;
+                    double danger;
+                    final double bearingOffset1 = entry.result.guessFactor * 1 * maxEscapeAngleQuick;
+                    if (isShadowed(bearingOffset1, bulletShadows)) {
+                        danger = 0.01;
+                    } else {
+                        hasNotShadowed = true;
+                        danger = 1;
+                    }
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset1, danger));
+
+                    final double bearingOffset2 = entry.result.guessFactor * -1 * maxEscapeAngleQuick;
+                    if (isShadowed(bearingOffset2, bulletShadows)) {
+                        danger = 0.01;
+                    } else {
+                        hasNotShadowed = true;
+                        danger = 1;
+
+                    }
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset2, danger));
+
+                    if (hasNotShadowed) {
+                        notShadowedBulletsCount++;
                     }
                 }
             }
 
             return bearingOffsets;
+        }
+
+        private boolean isShadowed(double bearingOffset, Collection<BulletShadow> shadows) {
+            for (BulletShadow shadow : shadows) {
+                if (shadow.contains(bearingOffset)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private Map<Attribute, Interval> getLimits(TurnSnapshot center) {
@@ -197,7 +226,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
         }
 
-        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t) {
+        public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t, Collection<BulletShadow> bulletShadows) {
             final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
 
             final Log[] bestLogs = new Log[6];
@@ -214,7 +243,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
             final Map<Log, List<PastBearingOffset>> allLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
             for (Log log : allLogs) {
-                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower());
+                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows);
                 allLogsBearingOffsets.put(log, logBOs);
                 // todo(zhidkov): rewrite it
                 for (Log bestLog : bestLogs) {

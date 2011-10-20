@@ -172,6 +172,10 @@ public class TargetManager implements RobotListener {
         return aliveTargets.get(0);
     }
 
+    public Target getAnyDuelOpponent() {
+        return targets.values().iterator().next();
+    }
+
     public String getDuelOpponentName() {
         return targets.keySet().iterator().next();
     }

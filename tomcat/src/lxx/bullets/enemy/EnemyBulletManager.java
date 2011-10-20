@@ -94,10 +94,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState,
                     bulletSpeed, this);
 
-            final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave, enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)));
+            final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave);
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet);
+            addBulletShadows(lxxBullet, bulletShadows);
+            lxxBullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
+                    bulletShadows.values()));
 
             predictedBullets.put(wave, lxxBullet);
-            recalculateBulletShadows();
 
             for (BulletManagerListener listener : listeners) {
                 listener.bulletFired(lxxBullet);
@@ -129,7 +132,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         for (LXXBullet bullet : predictedBullets.values()) {
             final LXXRobot owner = bullet.getOwner();
             bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
-                    turnSnapshotsLog.getLastSnapshot(owner, (int) (robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY)))));
+                    turnSnapshotsLog.getLastSnapshot(owner, (int) (robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY))),
+                    bullet.getBulletShadows()));
         }
     }
 
@@ -236,7 +240,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 paintEnabled = !paintEnabled;
             }
         } else if (event instanceof TickEvent) {
-            recalculateBulletShadows();
             checkBulletShadows();
         }
     }
@@ -277,26 +280,26 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public LXXBullet createFutureBullet(Target target) {
-        double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        if (timeToFire == 1 || timeToFire == 2) {
-            futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY));
-        } else if (timeToFire > 2) {
-            futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
-        }
+        final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
         final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
-        return new LXXBullet(bullet, wave, futureBulletAimingPredictionData);
+        final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
+        final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet);
+        addBulletShadows(lxxBullet, bulletShadows);
+        if (timeToFire == 1 || timeToFire == 2) {
+            futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
+        } else if (timeToFire > 2) {
+            futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
+        }
+        lxxBullet.setAimPredictionData(futureBulletAimingPredictionData);
+        return lxxBullet;
     }
 
     public void paint(LXXGraphics g) {
         if (paintEnabled) {
             for (LXXBullet bullet : getBulletsOnAir(0)) {
-                final AimingPredictionData aimPredictionData = bullet.getAimPredictionData();
-                if (aimPredictionData != null) {
-                    aimPredictionData.paint(g, bullet);
-                }
 
                 g.setColor(new Color(0, 255, 0, 150));
                 for (IntervalDouble bulletShadow : bullet.getBulletShadows()) {
@@ -305,8 +308,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                     final double curDist = bullet.getTravelledDistance();
                     final double step = max(bulletShadow.getLength() / 20, 0.001);
                     for (double alpha = alpha1; alpha <= alpha2; alpha += step) {
-                        g.drawLine(bullet.getFirePosition(), alpha, curDist - 7, 20);
+                        g.drawLine(bullet.getFirePosition(), alpha, curDist - 7, 40);
                     }
+                }
+
+                final AimingPredictionData aimPredictionData = bullet.getAimPredictionData();
+                if (aimPredictionData != null) {
+                    aimPredictionData.paint(g, bullet);
                 }
             }
         }
@@ -316,90 +324,84 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         listeners.add(listener);
     }
 
-    private void recalculateBulletShadows() {
+    private Map<LXXBullet, BulletShadow> getBulletShadows(LXXBullet enemyBullet) {
         int timeDelta = 0;
         final List<LXXBullet> myBullets = bulletManager.getBullets();
-        final List<LXXBullet> enemyBullets = getBulletsOnAir(0);
-        boolean hasNotIntersectedBullets;
+        final Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
+        final APoint ebFirePos = enemyBullet.getFirePosition();
         do {
-            hasNotIntersectedBullets = false;
-            robot.getLXXGraphics().setColor(new Color(255, 255, 255, 150));
-            for (LXXBullet enemyBullet : enemyBullets) {
-                final double enemyBulletCurDist = enemyBullet.getTravelledDistance() + enemyBullet.getSpeed() * timeDelta;
-                final APoint ebFirePos = enemyBullet.getFirePosition();
-                final double enemyBulletNextDist = enemyBulletCurDist + enemyBullet.getSpeed();
-                //robot.getLXXGraphics().drawCircle(ebFirePos, enemyBulletCurDist * 2);
-                for (LXXBullet myBullet : myBullets) {
-                    final double myBulletCurDist = myBullet.getTravelledDistance() + myBullet.getSpeed() * timeDelta;
-                    final APoint mbFirePos = myBullet.getFirePosition();
 
-                    final APoint myBulletCurPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist);
-                    final APoint myBulletNextPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist + myBullet.getSpeed());
-                    robot.getLXXGraphics().fillCircle(myBulletCurPos, 3);
+            final double enemyBulletCurDist = enemyBullet.getTravelledDistance() + enemyBullet.getSpeed() * timeDelta;
+            final double enemyBulletNextDist = enemyBulletCurDist + enemyBullet.getSpeed();
 
-                    if (ebFirePos.aDistance(mbFirePos) > myBulletCurDist) {
-                        hasNotIntersectedBullets = true;
-                        if (ebFirePos.aDistance(myBulletCurPos) < enemyBulletNextDist &&
-                                ebFirePos.aDistance(myBulletNextPos) > enemyBulletCurDist) {
-                            addShadow(myBullet, enemyBullet, ebFirePos, myBulletCurPos, myBulletNextPos);
-                            robot.getLXXGraphics().setColor(new Color(255, 0, 0, 150));
-                            drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
-                        } else if (ebFirePos.aDistance(myBulletNextPos) < enemyBulletCurDist &&
-                                ebFirePos.aDistance(myBulletCurPos) > enemyBulletNextDist) {
-                            APoint intPoint1 = null;
-                            APoint intPoint2 = null;
-                            try {
-                                intPoint1 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletCurDist)[0];
-                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
-                            } catch (ArrayIndexOutOfBoundsException e) {
-                                intPoint1 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletCurDist)[0];
-                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
-                                e.printStackTrace();
-                            }
-                            addShadow(myBullet, enemyBullet, ebFirePos, intPoint1, intPoint2);
-                            robot.getLXXGraphics().setColor(new Color(0, 255, 0, 150));
-                            drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
-                        } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletNextDist &&
-                                ebFirePos.aDistance(myBulletNextPos) < enemyBulletNextDist) {
-                            APoint intPoint2 = null;
-                            try {
-                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
-                            } catch (ArrayIndexOutOfBoundsException e) {
-                                intPoint2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
-                                e.printStackTrace();
-                            }
-                            addShadow(myBullet, enemyBullet, ebFirePos, myBulletNextPos, intPoint2);
-                            robot.getLXXGraphics().setColor(new Color(0, 0, 255, 150));
-                            drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
-                        } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletCurDist &&
-                                ebFirePos.aDistance(myBulletNextPos) < enemyBulletCurDist) {
-                            final APoint intPoint1 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletCurDist)[0];
-                            addShadow(myBullet, enemyBullet, ebFirePos, myBulletCurPos, intPoint1);
-                            robot.getLXXGraphics().setColor(new Color(255, 255, 0, 150));
-                            drawDebug(enemyBulletCurDist, ebFirePos, enemyBulletNextDist, myBulletCurPos, myBulletNextPos);
-                        }
-                    }
+            final List<LXXBullet> toRemove = new ArrayList<LXXBullet>();
+
+            for (LXXBullet myBullet : myBullets) {
+                final double myBulletCurDist = myBullet.getTravelledDistance() + myBullet.getSpeed() * timeDelta;
+                final APoint mbFirePos = myBullet.getFirePosition();
+
+                final APoint myBulletCurPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist);
+                if (!robot.getState().getBattleField().contains(myBulletCurPos)) {
+                    toRemove.add(myBullet);
+                    continue;
+                }
+                final APoint myBulletNextPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist + myBullet.getSpeed());
+
+                APoint pnt1 = null;
+                APoint pnt2 = null;
+                if (ebFirePos.aDistance(myBulletCurPos) < enemyBulletNextDist &&
+                        ebFirePos.aDistance(myBulletNextPos) > enemyBulletCurDist) {
+                    pnt1 = myBulletCurPos;
+                    pnt2 = myBulletNextPos;
+                    toRemove.add(myBullet);
+                } else if (ebFirePos.aDistance(myBulletNextPos) < enemyBulletCurDist &&
+                        ebFirePos.aDistance(myBulletCurPos) > enemyBulletNextDist) {
+                    pnt1 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletCurDist)[0];
+                    pnt2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
+                    toRemove.add(myBullet);
+                } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletNextDist &&
+                        ebFirePos.aDistance(myBulletNextPos) < enemyBulletNextDist) {
+                    pnt1 = myBulletNextPos;
+                    pnt2 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletNextDist)[0];
+                    toRemove.add(myBullet);
+                } else if (ebFirePos.aDistance(myBulletCurPos) > enemyBulletCurDist &&
+                        ebFirePos.aDistance(myBulletNextPos) < enemyBulletCurDist) {
+                    pnt1 = LXXUtils.intersection(myBulletCurPos, myBulletNextPos, ebFirePos, enemyBulletCurDist)[0];
+                    pnt2 = myBulletCurPos;
+                    toRemove.add(myBullet);
+                }
+
+                if (pnt1 != null) {
+                    final double bo1 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt1);
+                    final double bo2 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt2);
+                    bulletShadows.put(myBullet, new BulletShadow(min(bo1, bo2), max(bo1, bo2)));
                 }
             }
+            myBullets.removeAll(toRemove);
+            toRemove.clear();
             timeDelta++;
-        } while (hasNotIntersectedBullets);
-    }
+        } while (myBullets.size() > 0);
 
-    private void drawDebug(double enemyBulletCurDist, APoint ebFirePos, double enemyBulletNextDist, APoint myBulletCurPos, APoint myBulletNextPos) {
-        robot.getLXXGraphics().fillCircle(myBulletCurPos, 3);
-        robot.getLXXGraphics().fillCircle(myBulletNextPos, 3);
-        robot.getLXXGraphics().drawCircle(ebFirePos, enemyBulletCurDist * 2);
-        robot.getLXXGraphics().drawCircle(ebFirePos, enemyBulletNextDist * 2);
-    }
-
-    private void addShadow(LXXBullet myBullet, LXXBullet enemyBullet, APoint ebFirePos, APoint pnt1, APoint pnt2) {
-        final double bo1 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt1);
-        final double bo2 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt2);
-        enemyBullet.addBulletShadow(myBullet, new BulletShadow(min(bo1, bo2), max(bo1, bo2)));
+        return bulletShadows;
     }
 
     public void bulletFired(LXXBullet bullet) {
         recalculateBulletShadows();
+        updateBulletsOnAir();
+    }
+
+    private void recalculateBulletShadows() {
+        for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet);
+            getBulletShadows(enemyBullet);
+            addBulletShadows(enemyBullet, bulletShadows);
+        }
+    }
+
+    private void addBulletShadows(LXXBullet enemyBullet, Map<LXXBullet, BulletShadow> bulletShadows) {
+        for (Map.Entry<LXXBullet, BulletShadow> bulletShadow : bulletShadows.entrySet()) {
+            enemyBullet.addBulletShadow(bulletShadow.getKey(), bulletShadow.getValue());
+        }
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
@@ -409,6 +411,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 enemyBullet.removeBulletShadow(bullet);
             }
         }
+        updateBulletsOnAir();
     }
 
     public void bulletHit(LXXBullet bullet) {
