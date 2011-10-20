@@ -154,7 +154,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
 
         predictedBullets.remove(w);
-        updateBulletsOnAir();
     }
 
     public void onHitByBullet(HitByBulletEvent e) {
