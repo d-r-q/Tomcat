@@ -1,3 +1,8 @@
+v. 3.41
+* bug fix in danger calculation function - now distance to center and attack angle really has influence
+* distance to enemy component added to danger function
+* remove danger from future waves, if time to fire more than time to stop or predicted fire time passed
+
 v. 3.40
  * bullet shadows processing reworked - now in WS use all predicted bullets, but at prediction time shadowed bullets add with danger 0.01
  * lxx bullet search in bullet manager fixed
