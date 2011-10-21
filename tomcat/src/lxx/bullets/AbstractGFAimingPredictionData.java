@@ -29,12 +29,20 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     private static final NumberFormat format = new DecimalFormat("###.###");
 
     private final List<BearingOffsetDanger> dangers = new ArrayList<BearingOffsetDanger>();
+
+
+    private final long predictionTime;
     private double step;
 
     private double maxBearingOffset = 0;
     protected double maxDanger;
 
-    public AbstractGFAimingPredictionData() {
+    public AbstractGFAimingPredictionData(long predictionTime) {
+        this.predictionTime = predictionTime;
+    }
+
+    public long getPredictionTime() {
+        return predictionTime;
     }
 
     private void calculateDangers(Map<Double, Double> matches) {

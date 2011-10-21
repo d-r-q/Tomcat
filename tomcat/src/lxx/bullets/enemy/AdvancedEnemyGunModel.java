@@ -260,7 +260,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
 
             return new AEGMPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected),
-                    t.getTime(), allLogsBearingOffsets);
+                    t.getTime(), allLogsBearingOffsets, ts);
         }
 
         private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {

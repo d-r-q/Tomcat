@@ -13,6 +13,8 @@ import lxx.paint.LXXGraphics;
  */
 public interface AimingPredictionData {
 
+    long getPredictionTime();
+
     void paint(LXXGraphics g, LXXBullet bullet);
 
 }

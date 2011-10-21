@@ -121,9 +121,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private void updateBulletsOnAir() {
         for (LXXBullet bullet : predictedBullets.values()) {
             final LXXRobot owner = bullet.getOwner();
-            bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
-                    turnSnapshotsLog.getLastSnapshot(owner, (int) (robot.getTime() - (bullet.getFireTime() - AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY))),
-                    bullet.getBulletShadows()));
+                bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
+                        ((AEGMPredictionData)bullet.getAimPredictionData()).getTs(),
+                        bullet.getBulletShadows()));
         }
     }
 

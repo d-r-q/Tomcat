@@ -1,3 +1,8 @@
+v. 3.41a
+* bug with using incorrect turn snapshot to recalculating prediction data fixed
+* bug with not reselecting orbit direction after bullets on air updated fixed
+* use stop distance + 8 to determine time to stop
+
 v. 3.41
 * bug fix in danger calculation function - now distance to center and attack angle really has influence
 * distance to enemy component added to danger function

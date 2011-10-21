@@ -25,20 +25,11 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
 
     private final List<PastBearingOffset> predictedBearingOffsets;
     private final int enemyWavesCollected;
-    private final long predictionTime;
 
     public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, int enemyWavesCollected, long predictionTime) {
+        super(predictionTime);
         this.predictedBearingOffsets = predictedBearingOffsets;
         this.enemyWavesCollected = enemyWavesCollected;
-        this.predictionTime = predictionTime;
-    }
-
-    public long getPredictionTime() {
-        return predictionTime;
-    }
-
-    public int getEnemyWavesCollected() {
-        return enemyWavesCollected;
     }
 
     @Override

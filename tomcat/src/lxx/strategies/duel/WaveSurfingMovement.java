@@ -44,7 +44,6 @@ public class WaveSurfingMovement implements Movement, Painter {
     private Target duelOpponent;
     private MovementDirectionPrediction prevPrediction;
     private BattleField battleField;
-    private double preferredDistance;
     private MovementDirectionPrediction clockwisePrediction;
     private MovementDirectionPrediction counterClockwisePrediction;
 
@@ -59,7 +58,6 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     public MovementDecision getMovementDecision() {
-        preferredDistance = distanceController.getPreferredDistance();
         duelOpponent = targetManager.getDuelOpponent();
         final List<LXXBullet> lxxBullets = getBullets();
         if (needToReselectOrbitDirection(lxxBullets)) {
@@ -80,7 +78,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
         final APoint surfPoint = getSurfPoint(opponent, lxxBullets.get(0));
         final double desiredSpeed =
-                (distanceToTravel > LXXUtils.getStopDistance(robot.getSpeed()) ||
+                (distanceToTravel > LXXUtils.getStopDistance(robot.getSpeed()) + Rules.MAX_VELOCITY ||
                         (duelOpponent != null && tomcatEyes.isRammingNow(duelOpponent)))
                         ? 8
                         : 0;
@@ -89,7 +87,6 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
-        //return true;
         return prevPrediction == null ||
                 isBulletsUpdated(bullets) ||
                 (duelOpponent != null && signum(duelOpponent.getAcceleration()) != prevPrediction.enemyAccelSign) ||
@@ -97,19 +94,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private boolean isBulletsUpdated(List<LXXBullet> newBullets) {
-        if (((EnemyBulletPredictionData) prevPrediction.bullets.get(0).getAimPredictionData()).getPredictionTime() !=
-                ((EnemyBulletPredictionData) newBullets.get(0).getAimPredictionData()).getPredictionTime()) {
-            return true;
-        }
-        if (prevPrediction.bullets.size() != newBullets.size()) {
-            return true;
-        }
-        if (prevPrediction.bullets.size() > 1 && newBullets.size() > 1 &&
-                ((EnemyBulletPredictionData) prevPrediction.bullets.get(1).getAimPredictionData()).getPredictionTime() !=
-                        ((EnemyBulletPredictionData) newBullets.get(1).getAimPredictionData()).getPredictionTime()) {
-            return true;
-        }
-        return false;
+        return (newBullets.get(0).getAimPredictionData()).getPredictionTime() !=
+                prevPrediction.firstBulletPredictionTime;
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -139,6 +125,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
         prediction.bullets = lxxBullets;
+        prediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionTime();
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
@@ -189,7 +176,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             }
         }
 
-        return new PointDangerOnWave(LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt), bulletsDanger);
+        return new PointDangerOnWave(robotWidthInRadians, bulletsDanger);
     }
 
     private List<LXXBullet> getBullets() {
@@ -308,6 +295,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         public List<WSPoint> points;
         public double enemyAccelSign;
         public double distanceBetween;
+        public long firstBulletPredictionTime;
     }
 
     private class PointDanger {
