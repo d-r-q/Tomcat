@@ -41,18 +41,7 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener, BulletManagerListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(
-            getEmptyPDBos(), 1, 0);
-
-    private static List<PastBearingOffset> getEmptyPDBos() {
-        final List<PastBearingOffset> res = new ArrayList<PastBearingOffset>();
-
-        for (double i = -LXXConstants.RADIANS_120; i <= LXXConstants.RADIANS_120; i += LXXConstants.RADIANS_1) {
-            res.add(new PastBearingOffset(null, i, 0.2));
-        }
-
-        return res;
-    }
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 1, 0);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
@@ -67,6 +56,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final BulletManager bulletManager;
 
     private AimingPredictionData futureBulletAimingPredictionData;
+    private double nextFireTime;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyFireAnglePredictor = new AdvancedEnemyGunModel(office.getTurnSnapshotsLog(), office);
@@ -279,6 +269,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public LXXBullet createFutureBullet(Target target) {
+        if (target.getGunHeat() > 0) {
+            nextFireTime = robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate());
+        }
         final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
         final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
@@ -287,7 +280,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
         final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet);
         addBulletShadows(lxxBullet, bulletShadows);
-        if (timeToFire == 1 || timeToFire == 2) {
+        if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
             futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
         } else if (timeToFire > 2) {
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;

@@ -159,18 +159,18 @@ public class WaveSurfingMovement implements Movement, Painter {
         return prediction;
     }
 
-    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, APoint pnt, LXXRobotState duelOpponent) {
+    private PointDanger getPointDanger(List<LXXBullet> lxxBullets, LXXRobotState robot, LXXRobotState duelOpponent) {
         final int bulletsSize = lxxBullets.size();
-        final PointDangerOnWave firstWaveDng = bulletsSize == 0 ? null : getWaveDanger(pnt, lxxBullets.get(0));
-        final PointDangerOnWave secondWaveDng = bulletsSize == 1 ? null : getWaveDanger(pnt, lxxBullets.get(1));
-        final double distToEnemy = duelOpponent != null ? pnt.aDistance(duelOpponent) : 0;
+        final PointDangerOnWave firstWaveDng = bulletsSize == 0 ? null : getWaveDanger(robot, lxxBullets.get(0));
+        final PointDangerOnWave secondWaveDng = bulletsSize == 1 ? null : getWaveDanger(robot, lxxBullets.get(1));
+        final double distToEnemy = duelOpponent != null ? robot.aDistance(duelOpponent) : 0;
         double enemyAttackAngle = duelOpponent == null
                 ? LXXConstants.RADIANS_90
-                : LXXUtils.anglesDiff(duelOpponent.angleTo(robot), robot.getAbsoluteHeadingRadians());
+                : LXXUtils.anglesDiff(duelOpponent.angleTo(robot), robot.getHeadingRadians());
         if (enemyAttackAngle > LXXConstants.RADIANS_90) {
             enemyAttackAngle = abs(enemyAttackAngle - LXXConstants.RADIANS_180);
         }
-        return new PointDanger(firstWaveDng, secondWaveDng, abs(distToEnemy - preferredDistance), battleField.center.aDistance(robot),
+        return new PointDanger(firstWaveDng, secondWaveDng, distToEnemy, battleField.center.aDistance(robot),
                 LXXConstants.RADIANS_90 - enemyAttackAngle);
     }
 
@@ -310,11 +310,11 @@ public class WaveSurfingMovement implements Movement, Painter {
         public double distanceBetween;
     }
 
-    private class PointDanger implements Comparable<PointDanger> {
+    private class PointDanger {
 
         public final PointDangerOnWave dangerOnFirstWave;
         public final PointDangerOnWave dangerOnSecondWave;
-        public final double distToEnemyDiff;
+        public final double distToEnemy;
         public final double distanceToCenter;
         public final double enemyAttackAngle;
         public final double danger;
@@ -323,47 +323,24 @@ public class WaveSurfingMovement implements Movement, Painter {
                             double enemyAttackAngle) {
             this.dangerOnFirstWave = dangerOnFirstWave;
             this.dangerOnSecondWave = dangerOnSecondWave;
-            this.distToEnemyDiff = distToEnemy;
+            this.distToEnemy = distToEnemy;
             this.distanceToCenter = distanceToWall;
             this.enemyAttackAngle = enemyAttackAngle;
 
-            this.danger = dangerOnFirstWave.bulletsDanger * 90 +
+            this.danger = dangerOnFirstWave.bulletsDanger * 120 +
                     (dangerOnSecondWave != null ? dangerOnSecondWave.bulletsDanger : 0) * 10 +
                     distanceToCenter / 800 * 3 +
-                    enemyAttackAngle * 2;
-        }
-
-        public int compareTo(PointDanger o) {
-            int res = 0;
-
-            if (dangerOnFirstWave != null) {
-                res = dangerOnFirstWave.compareTo(o.dangerOnFirstWave);
-            }
-
-            if (res == 0 && dangerOnSecondWave != null) {
-                res = dangerOnSecondWave.compareTo(o.dangerOnSecondWave);
-            }
-
-            double thisDng = abs(distToEnemyDiff) / preferredDistance * 3 +
-                    abs(distanceToCenter - 200) / 400;
-
-            double anotherDng = abs(o.distToEnemyDiff) / preferredDistance * 3 +
-                    abs(o.distanceToCenter - 200) / 400;
-
-            if (res == 0) {
-                res = compareDoubles(thisDng, anotherDng, 0.1);
-            }
-
-            return res;
+                    enemyAttackAngle * 2 +
+                    max(0, (200 - distToEnemy));
         }
 
         @Override
         public String toString() {
-            return String.format("PointDanger (%s #1, %s #2, %3.3f, %3.3f)", dangerOnFirstWave, dangerOnSecondWave, distToEnemyDiff, distanceToCenter);
+            return String.format("PointDanger (%s #1, %s #2, %3.3f, %3.3f)", dangerOnFirstWave, dangerOnSecondWave, distToEnemy, distanceToCenter);
         }
     }
 
-    private static class PointDangerOnWave implements Comparable<PointDangerOnWave> {
+    private static class PointDangerOnWave {
 
         public final double robotWidthInRadians;
         public final double bulletsDanger;
@@ -373,10 +350,6 @@ public class WaveSurfingMovement implements Movement, Painter {
             this.bulletsDanger = bulletsDanger;
         }
 
-        public int compareTo(PointDangerOnWave o) {
-            return compareDoubles(bulletsDanger, o.bulletsDanger, 0.001);
-        }
-
         @Override
         public String toString() {
             return String.format("PointDangerOnWave (%3.3f, %3.3f)",
@@ -384,9 +357,4 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
     }
 
-
-    public static int compareDoubles(double d1, double d2, double threshold) {
-        final double diff = d1 - d2;
-        return abs(diff) < max(abs(d1), abs(d2)) * threshold ? 0 : (int) signum(diff);
-    }
 }

@@ -286,6 +286,15 @@ public class LXXUtils {
         return distance;
     }
 
+    public static double getStopTime(double speed) {
+        int time = 0;
+        while (speed > 0) {
+            speed -= Rules.DECELERATION;
+            time++;
+        }
+        return time;
+    }
+
     public static double bearingOffset(double baseAngle, double alpha) {
         return Utils.normalRelativeAngle(alpha - baseAngle);
     }
