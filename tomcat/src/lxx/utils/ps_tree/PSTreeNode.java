@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -247,36 +247,14 @@ public class PSTreeNode<T extends Serializable> {
             return;
         }
 
-        int fromIdx = Integer.MAX_VALUE;
-        int toIdx = Integer.MIN_VALUE;
-        Interval limit = limits.get(attributes[attributeIdx + 1]);
-        for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).range.intersects(limit)) {
-                fromIdx = min(fromIdx, i);
-                toIdx = max(toIdx, i);
-            }
-        }
-
-        if (fromIdx == Integer.MAX_VALUE) {
-            return;
-        }
-
-        int medin = (fromIdx + toIdx) / 2;
-        children.get(medin).getEntries(limits, res);
-
-        for (int delta = 1; delta <= limit.getLength(); delta++) {
-            boolean isUpdate = false;
-            if (medin - delta >= fromIdx) {
-                children.get(medin - delta).getEntries(limits, res);
-                isUpdate = true;
-            }
-            if (medin + delta <= toIdx) {
-                children.get(medin + delta).getEntries(limits, res);
-                isUpdate = true;
-            }
-
-            if (!isUpdate) {
+        final Interval limit = limits.get(attributes[attributeIdx + 1]);
+        for (final PSTreeNode<T> child : children) {
+            if (child.range.a > child.range.b || child.range.b < limit.a) {
+                continue;
+            } else if (child.range.a > limit.b) {
                 break;
+            } else {
+                child.getEntries(limits, res);
             }
         }
     }
