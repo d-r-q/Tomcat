@@ -155,7 +155,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             listener.bulletIntercepted(lxxBullet);
         }
 
-        for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
+        for (LXXBullet enemyBullet : getAllBulletsOnAir()) {
             final LXXBullet bullet = bulletManager.getLXXBullet(e.getBullet());
             if (enemyBullet.getBulletShadow(bullet) != null &&
                     !enemyBullet.getBulletShadow(bullet).isPassed) {
@@ -222,18 +222,31 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
 
         for (LXXBullet lxxBullet : predictedBullets.values()) {
-            double flightTime = (lxxBullet.getFirePosition().aDistance(lxxBullet.getTarget()) - lxxBullet.getTravelledDistance()) / lxxBullet.getSpeed();
+            final double flightTime = (lxxBullet.getFirePosition().aDistance(lxxBullet.getTarget()) - lxxBullet.getTravelledDistance()) / lxxBullet.getSpeed();
             if (flightTime > flightTimeLimit && lxxBullet.getState() == LXXBulletState.ON_AIR) {
                 bullets.add(lxxBullet);
             }
         }
 
+        // todo(zhidkov): rework this very strange sort
         Collections.sort(bullets, new Comparator<LXXBullet>() {
 
             public int compare(LXXBullet o1, LXXBullet o2) {
                 return (int) signum(o2.getTravelledDistance() - o1.getTravelledDistance());
             }
         });
+
+        return bullets;
+    }
+
+    public List<LXXBullet> getAllBulletsOnAir() {
+        final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
+
+        for (LXXBullet lxxBullet : predictedBullets.values()) {
+            if (lxxBullet.getState() == LXXBulletState.ON_AIR) {
+                bullets.add(lxxBullet);
+            }
+        }
 
         return bullets;
     }
@@ -258,7 +271,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private void checkBulletShadows() {
         final List<LXXBullet> myBullets = bulletManager.getBullets();
-        final List<LXXBullet> enemyBullets = getBulletsOnAir(0);
+        final List<LXXBullet> enemyBullets = getAllBulletsOnAir();
         for (LXXBullet enemyBullet : enemyBullets) {
             final double enemyBulletCurDist = enemyBullet.getTravelledDistance();
             final APoint ebFirePos = enemyBullet.getFirePosition();
@@ -320,7 +333,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public void paint(LXXGraphics g) {
         if (paintEnabled) {
-            for (LXXBullet bullet : getBulletsOnAir(0)) {
+            for (LXXBullet bullet : getAllBulletsOnAir()) {
 
                 g.setColor(new Color(0, 255, 0, 150));
                 for (IntervalDouble bulletShadow : bullet.getBulletShadows()) {
@@ -406,7 +419,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     private void bulletFired(LXXBullet bullet) {
-        for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
+        for (LXXBullet enemyBullet : getAllBulletsOnAir()) {
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet, LXXUtils.asList(bullet));
             final BulletShadow shadow = bulletShadows.get(bullet);
             if (shadow == null) {
