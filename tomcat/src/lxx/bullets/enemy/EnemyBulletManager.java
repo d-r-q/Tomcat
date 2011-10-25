@@ -41,7 +41,7 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener, BulletManagerListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 1, 0);
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
@@ -121,9 +121,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private void updateBulletsOnAir() {
         for (LXXBullet bullet : predictedBullets.values()) {
             final LXXRobot owner = bullet.getOwner();
-                bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
-                        ((AEGMPredictionData)bullet.getAimPredictionData()).getTs(),
-                        bullet.getBulletShadows()));
+            bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
+                    ((AEGMPredictionData) bullet.getAimPredictionData()).getTs(),
+                    bullet.getBulletShadows()));
         }
     }
 

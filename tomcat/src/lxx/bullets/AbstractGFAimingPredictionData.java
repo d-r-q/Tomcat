@@ -31,18 +31,18 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     private final List<BearingOffsetDanger> dangers = new ArrayList<BearingOffsetDanger>();
 
 
-    private final long predictionTime;
+    private final long predictionRoundTime;
     private double step;
 
     private double maxBearingOffset = 0;
     protected double maxDanger;
 
     public AbstractGFAimingPredictionData(long predictionTime) {
-        this.predictionTime = predictionTime;
+        this.predictionRoundTime = predictionTime;
     }
 
-    public long getPredictionTime() {
-        return predictionTime;
+    public long getPredictionRoundTime() {
+        return predictionRoundTime;
     }
 
     private void calculateDangers(Map<Double, Double> matches) {

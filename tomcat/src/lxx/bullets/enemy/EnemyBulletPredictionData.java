@@ -24,12 +24,10 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
     private final List<PastBearingOffset> predictedBearingOffsets;
-    private final int enemyWavesCollected;
 
-    public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, int enemyWavesCollected, long predictionTime) {
-        super(predictionTime);
+    public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, long predictionRoundTime) {
+        super(predictionRoundTime);
         this.predictedBearingOffsets = predictedBearingOffsets;
-        this.enemyWavesCollected = enemyWavesCollected;
     }
 
     @Override

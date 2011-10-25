@@ -14,12 +14,16 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.*;
 
 public class LXXUtils {
+
+    private static final int FIFTEEN_BITS = 0x7FFF;
 
     private static final double ROBOT_SQUARE_DIAGONAL = LXXConstants.ROBOT_SIDE_SIZE * sqrt(2);
     private static final double HALF_PI = Math.PI / 2;
@@ -336,13 +340,15 @@ public class LXXUtils {
         if (y1 > 0 && y1 < segmentDist) {
             res.add(farest.project(segmentAlpha, y1));
         }
-        Collections.sort(res, new Comparator<APoint>() {
-            public int compare(APoint o1, APoint o2) {
-                return (int) signum(center.aDistance(o2) - center.aDistance(o2));
-            }
-        });
 
         return res.toArray(new APoint[res.size()]);
     }
 
+    public static int getRoundTime(long time, int round) {
+        if (round > FIFTEEN_BITS || time > FIFTEEN_BITS) {
+            throw new IllegalArgumentException("Too large round-time: " + round + " - " + time);
+        }
+
+        return (int) (((round & FIFTEEN_BITS) << 15) | (time & FIFTEEN_BITS));
+    }
 }

@@ -6,6 +6,7 @@ package lxx.ts_log;
 
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
+import lxx.utils.LXXUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -19,7 +20,6 @@ import static java.lang.StrictMath.round;
  */
 public class TurnSnapshot implements Serializable {
 
-    private static final int FIFTEEN_BITS = 0x7FFF;
     private final double[] attributeValues;
     private final long time;
     private final int round;
@@ -32,10 +32,7 @@ public class TurnSnapshot implements Serializable {
         this.attributeValues = attributeValues;
         this.time = time;
         this.round = round;
-        if (round > FIFTEEN_BITS || time > FIFTEEN_BITS) {
-            throw new IllegalArgumentException("Too large round-time: " + round + " - " + time);
-        }
-        this.roundTime = (int) (((round & FIFTEEN_BITS) << 15) | (time & FIFTEEN_BITS));
+        this.roundTime = LXXUtils.getRoundTime(time, round);
     }
 
     public int getRoundedAttrValue(Attribute a) {

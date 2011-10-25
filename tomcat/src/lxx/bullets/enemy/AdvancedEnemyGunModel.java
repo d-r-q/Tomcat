@@ -104,7 +104,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 AttributesManager.distBetween, 75D,
                 AttributesManager.myDistToForwardWall, 50D,
                 AttributesManager.myDistLast10Ticks, 20D);
-        private double efficiency = 1;
 
         private final AvgValue shortAvgHitRate = new AvgValue(3);
         private final AvgValue midAvgHitRate = new AvgValue(11);
@@ -122,7 +121,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
         }
 
-        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
+        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows, long roundTimeLimit) {
             final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
             Collections.sort(entries, new Comparator<PSTreeEntry>() {
                 public int compare(PSTreeEntry o1, PSTreeEntry o2) {
@@ -139,6 +138,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             int notShadowedBulletsCount = 0;
             for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
+                if (entry.predicate.roundTime > roundTimeLimit) {
+                    continue;
+                }
                 if (notShadowedBulletsCount == 5) {
                     break;
                 }
@@ -241,17 +243,16 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 updateBestLog(bestLogs, hitLog, SECOND_LONG_IDX, 2);
             }
 
-            final Map<Log, List<PastBearingOffset>> allLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
-            for (Log log : allLogs) {
-                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows);
-                allLogsBearingOffsets.put(log, logBOs);
-                // todo(zhidkov): rewrite it
-                for (Log bestLog : bestLogs) {
-                    if (log.equals(bestLog)) {
-                        bearingOffsets.addAll(logBOs);
-                        log.usage++;
-                    }
+            final Map<Log, List<PastBearingOffset>> bestLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
+            final long roundTime = LXXUtils.getRoundTime(t.getTime(), t.getRound());
+            for (Log log : bestLogs) {
+                if (bestLogsBearingOffsets.containsKey(log)) {
+                    continue;
                 }
+                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, roundTime);
+                bestLogsBearingOffsets.put(log, logBOs);
+                bearingOffsets.addAll(logBOs);
+                log.usage++;
             }
 
             if (bearingOffsets.size() == 0) {
@@ -259,8 +260,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 fillWithSimpleBOs(ts, t, bearingOffsets, enemyGunType);
             }
 
-            return new AEGMPredictionData(bearingOffsets, (int) ts.getAttrValue(AttributesManager.enemyOutgoingWavesCollected),
-                    t.getTime(), allLogsBearingOffsets, ts);
+            return new AEGMPredictionData(bearingOffsets, roundTime, bestLogsBearingOffsets, ts);
         }
 
         private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {
@@ -316,8 +316,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         }
 
         public void learn(LXXBullet bullet, TurnSnapshot predicate, boolean isHit) {
-            recalculateLogSetEfficiency(bullet, predicate, visitLogsSet, isHit);
-            recalculateLogSetEfficiency(bullet, predicate, hitLogsSet, isHit);
+            recalculateLogSetEfficiency(bullet, visitLogsSet, isHit);
+            recalculateLogSetEfficiency(bullet, hitLogsSet, isHit);
 
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
@@ -330,11 +330,14 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
         }
 
-        private void recalculateLogSetEfficiency(LXXBullet bullet, TurnSnapshot predicate, List<Log> logSet, boolean isHit) {
-            Log bestVisitLog = null;
+        private void recalculateLogSetEfficiency(LXXBullet bullet, List<Log> logSet, boolean isHit) {
             for (Log log : logSet) {
                 final AEGMPredictionData ebpd = (AEGMPredictionData) bullet.getAimPredictionData();
-                double logEfficiency = calculateEfficiency(bullet, ebpd.getBearingOffset(log), isHit);
+                List<PastBearingOffset> bearingOffsets = ebpd.getBearingOffsets(log);
+                if (bearingOffsets == null) {
+                    bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), ebpd.getPredictionRoundTime());
+                }
+                double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
                     log.midAvgHitRate.addValue(logEfficiency);
@@ -343,17 +346,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                     log.shortAvgMissRate.addValue(logEfficiency);
                     log.midAvgMissRate.addValue(logEfficiency);
                     log.longAvgMissRate.addValue(logEfficiency);
-                }
-                log.efficiency = log.efficiency * 0.9 + logEfficiency;
-                if (bestVisitLog == null || log.efficiency > bestVisitLog.efficiency) {
-                    bestVisitLog = log;
-                }
-            }
-
-            if (bestVisitLog != null && bestVisitLog.efficiency > 0) {
-                final double efficiency = bestVisitLog.efficiency;
-                for (Log log : logSet) {
-                    log.efficiency = log.efficiency / efficiency;
                 }
             }
         }
@@ -372,7 +364,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
             double totalDanger = 0;
             double realDanger = 0;
-            int currentRound = bullet.getOwner().getRound();
             for (PastBearingOffset pastBo : bearingOffsets) {
                 totalDanger += pastBo.danger;
                 if (effectiveInterval.contains(pastBo.bearingOffset)) {

@@ -40,7 +40,7 @@ public class TCPredictionData extends AbstractGFAimingPredictionData {
         return matches;
     }
 
-    public long getPredictionTime() {
+    public long getPredictionRoundTime() {
         throw new UnsupportedOperationException();
     }
 

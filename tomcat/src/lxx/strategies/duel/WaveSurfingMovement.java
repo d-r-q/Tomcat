@@ -94,7 +94,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private boolean isBulletsUpdated(List<LXXBullet> newBullets) {
-        return (newBullets.get(0).getAimPredictionData()).getPredictionTime() !=
+        return (newBullets.get(0).getAimPredictionData()).getPredictionRoundTime() !=
                 prevPrediction.firstBulletPredictionTime;
     }
 
@@ -125,7 +125,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
         prediction.bullets = lxxBullets;
-        prediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionTime();
+        prediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionRoundTime();
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();

@@ -16,18 +16,18 @@ public class AEGMPredictionData extends EnemyBulletPredictionData {
     private TurnSnapshot ts;
 
     public AEGMPredictionData(List<PastBearingOffset> predictedBearingOffsets,
-                              int enemyWavesCollected, long predictionTime, Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions,
+                              long predictionRoundTime, Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions,
                               TurnSnapshot ts) {
-        super(predictedBearingOffsets, enemyWavesCollected, predictionTime);
+        super(predictedBearingOffsets, predictionRoundTime);
         this.allLogsPredictions = allLogsPredictions;
-        this.ts  = ts;
+        this.ts = ts;
     }
 
     public TurnSnapshot getTs() {
         return ts;
     }
 
-    public List<PastBearingOffset> getBearingOffset(AdvancedEnemyGunModel.Log log) {
+    public List<PastBearingOffset> getBearingOffsets(AdvancedEnemyGunModel.Log log) {
         return allLogsPredictions.get(log);
     }
 
