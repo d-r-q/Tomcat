@@ -14,10 +14,8 @@ import robocode.util.Utils;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.*;
 
@@ -351,4 +349,11 @@ public class LXXUtils {
 
         return (int) (((round & FIFTEEN_BITS) << 15) | (time & FIFTEEN_BITS));
     }
+
+    public static <T> List<T> asList(T... items) {
+        final List res = new ArrayList();
+        res.addAll(Arrays.asList(items));
+        return res;
+    }
+
 }

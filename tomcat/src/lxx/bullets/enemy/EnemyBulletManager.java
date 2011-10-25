@@ -13,6 +13,7 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
 import lxx.bullets.PastBearingOffset;
 import lxx.bullets.my.BulletManager;
+import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
@@ -39,12 +40,18 @@ import static java.lang.Math.*;
  * User: jdev
  * Date: 09.01.2010
  */
-public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener, BulletManagerListener {
+public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
     private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
+    private static final Comparator<LXXBullet> byTravelledDistanceComparator = new Comparator<LXXBullet>() {
+
+        public int compare(LXXBullet o1, LXXBullet o2) {
+            return (int) signum(o2.getTravelledDistance() - o1.getTravelledDistance());
+        }
+    };
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -64,7 +71,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         this.waveManager = office.getWaveManager();
         this.robot = robot;
         this.bulletManager = office.getBulletManager();
-        bulletManager.addListener(this);
         turnSnapshotsLog = office.getTurnSnapshotsLog();
     }
 
@@ -85,7 +91,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                     bulletSpeed, this);
 
             final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave);
-            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet);
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
             addBulletShadows(lxxBullet, bulletShadows);
             lxxBullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
                     bulletShadows.values()));
@@ -120,7 +126,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private void updateBulletsOnAir() {
         for (LXXBullet bullet : predictedBullets.values()) {
-            final LXXRobot owner = bullet.getOwner();
+            updateBullet(bullet);
+        }
+    }
+
+    private void updateBullet(LXXBullet bullet) {
+        final LXXRobot owner = bullet.getOwner();
+        if (bullet.getAimPredictionData().getPredictionRoundTime() < LXXUtils.getRoundTime(robot.getTime(), robot.getRound())) {
             bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
                     ((AEGMPredictionData) bullet.getAimPredictionData()).getTs(),
                     bullet.getBulletShadows()));
@@ -143,7 +155,16 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             listener.bulletIntercepted(lxxBullet);
         }
 
+        for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
+            final LXXBullet bullet = bulletManager.getLXXBullet(e.getBullet());
+            if (enemyBullet.getBulletShadow(bullet) != null &&
+                    !enemyBullet.getBulletShadow(bullet).isPassed) {
+                enemyBullet.removeBulletShadow(bullet);
+            }
+        }
+
         predictedBullets.remove(w);
+        updateBulletsOnAir();
     }
 
     public void onHitByBullet(HitByBulletEvent e) {
@@ -230,6 +251,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             }
         } else if (event instanceof TickEvent) {
             checkBulletShadows();
+        } else if (event instanceof FireEvent) {
+            bulletFired(((FireEvent) event).getBullet());
         }
     }
 
@@ -278,7 +301,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
-        final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet);
+        final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
         addBulletShadows(lxxBullet, bulletShadows);
         if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
             futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
@@ -287,6 +310,12 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
         lxxBullet.setAimPredictionData(futureBulletAimingPredictionData);
         return lxxBullet;
+    }
+
+    private void addBulletShadows(LXXBullet lxxBullet, Map<LXXBullet, BulletShadow> bulletShadows) {
+        for (Map.Entry<LXXBullet, BulletShadow> e : bulletShadows.entrySet()) {
+            lxxBullet.addBulletShadow(e.getKey(), e.getValue());
+        }
     }
 
     public void paint(LXXGraphics g) {
@@ -316,9 +345,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         listeners.add(listener);
     }
 
-    private Map<LXXBullet, BulletShadow> getBulletShadows(LXXBullet enemyBullet) {
+    private Map<LXXBullet, BulletShadow> getBulletShadows(LXXBullet enemyBullet, final List<LXXBullet> myBullets) {
         int timeDelta = 0;
-        final List<LXXBullet> myBullets = bulletManager.getBullets();
         final Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
         final APoint ebFirePos = enemyBullet.getFirePosition();
         do {
@@ -377,42 +405,22 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         return bulletShadows;
     }
 
-    public void bulletFired(LXXBullet bullet) {
-        recalculateBulletShadows();
-        updateBulletsOnAir();
-    }
-
-    private void recalculateBulletShadows() {
+    private void bulletFired(LXXBullet bullet) {
         for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
-            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet);
-            getBulletShadows(enemyBullet);
-            addBulletShadows(enemyBullet, bulletShadows);
-        }
-    }
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet, LXXUtils.asList(bullet));
+            final BulletShadow shadow = bulletShadows.get(bullet);
+            if (shadow == null) {
+                continue;
+            }
+            enemyBullet.addBulletShadow(bullet, shadow);
 
-    private void addBulletShadows(LXXBullet enemyBullet, Map<LXXBullet, BulletShadow> bulletShadows) {
-        for (Map.Entry<LXXBullet, BulletShadow> bulletShadow : bulletShadows.entrySet()) {
-            enemyBullet.addBulletShadow(bulletShadow.getKey(), bulletShadow.getValue());
-        }
-    }
-
-    public void bulletIntercepted(LXXBullet bullet) {
-        for (LXXBullet enemyBullet : getBulletsOnAir(0)) {
-            if (enemyBullet.getBulletShadow(bullet) != null &&
-                    !enemyBullet.getBulletShadow(bullet).isPassed) {
-                enemyBullet.removeBulletShadow(bullet);
+            for (PastBearingOffset bo : ((EnemyBulletPredictionData) enemyBullet.getAimPredictionData()).getPredictedBearingOffsets()) {
+                if (shadow.contains(bo.bearingOffset)) {
+                    updateBullet(enemyBullet);
+                    break;
+                }
             }
         }
-        updateBulletsOnAir();
-    }
-
-    public void bulletHit(LXXBullet bullet) {
-    }
-
-    public void bulletMiss(LXXBullet bullet) {
-    }
-
-    public void bulletPassing(LXXBullet bullet) {
     }
 
 }
