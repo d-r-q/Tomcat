@@ -66,7 +66,7 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
         final double[] location = new double[attributes.length];
 
         for (int i = 0; i < attributes.length; i++) {
-            location[i] = ts.getAttrValue(attributes[i]) / attributes[i].getRange().getLength();
+            location[i] = ts.getAttrValue(attributes[i]) / attributes[i].maxRange.getLength();
         }
 
         return location;

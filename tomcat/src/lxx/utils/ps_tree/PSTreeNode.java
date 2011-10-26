@@ -99,7 +99,7 @@ public class PSTreeNode<T extends Serializable> {
         }
 
         if (entries.size() == loadFactor) {
-            if (interval.getLength() <= attributes[attributeIdx].getActualRange() * maxIntervalLength || interval.getLength() == 1) {
+            if (interval.getLength() == 1) {
                 if (attributeIdx < attributes.length - 1) {
                     divideVer();
                 }

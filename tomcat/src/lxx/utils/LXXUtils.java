@@ -95,7 +95,7 @@ public class LXXUtils {
     }
 
     public static double limit(Attribute a, double value) {
-        return limit(a.getActualMin(), value, a.getActualMax());
+        return limit(a.actualRange.a, value, a.actualRange.b);
     }
 
     public static double lateralVelocity2(APoint center, APoint pos, double velocity, double heading) {

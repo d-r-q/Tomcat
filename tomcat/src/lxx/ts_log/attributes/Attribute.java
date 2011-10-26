@@ -19,28 +19,17 @@ public class Attribute {
     private static int idSequence = 0;
 
     private final String name;
-    private final double minValue;
-    private final double maxValue;
-    private final AttributeValueExtractor extractor;
-    private final int id;
+    public final IntervalDouble maxRange;
+    public final AttributeValueExtractor extractor;
+    public final int id;
 
-    private double actualMin = Integer.MAX_VALUE;
-    private double actualMax = Integer.MIN_VALUE;
+    public final IntervalDouble actualRange = new IntervalDouble(Integer.MAX_VALUE, Integer.MIN_VALUE);
 
     public Attribute(String name, double minValue, double maxValue, AttributeValueExtractor extractor) {
         this.name = name;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
+        this.maxRange = new IntervalDouble(minValue, maxValue);
         this.extractor = extractor;
         this.id = idSequence++;
-    }
-
-    public double getMinValue() {
-        return minValue;
-    }
-
-    public double getMaxValue() {
-        return maxValue;
     }
 
     public AttributeValueExtractor getExtractor() {
@@ -51,36 +40,12 @@ public class Attribute {
         return id;
     }
 
-    public double getActualMin() {
-        return actualMin;
-    }
-
-    public void setActualMin(double actualMin) {
-        this.actualMin = actualMin;
-    }
-
-    public double getActualMax() {
-        return actualMax;
-    }
-
-    public void setActualMax(double actualMax) {
-        this.actualMax = actualMax;
-    }
-
     public String toString() {
         return name;
     }
 
-    public double getActualRange() {
-        return actualMax - actualMin + 1;
-    }
-
-    public IntervalDouble getRange() {
-        return new IntervalDouble(minValue, maxValue);
-    }
-
     public Interval getRoundedRange() {
-        return new Interval((int) round(minValue), (int) round(maxValue));
+        return new Interval((int) round(maxRange.a), (int) round(maxRange.b));
     }
 
     public boolean equals(Object o) {

@@ -36,11 +36,11 @@ public class TurnSnapshot implements Serializable {
     }
 
     public int getRoundedAttrValue(Attribute a) {
-        return (int) round(attributeValues[a.getId()]);
+        return (int) round(attributeValues[a.id]);
     }
 
     public double getAttrValue(Attribute a) {
-        return attributeValues[a.getId()];
+        return attributeValues[a.id];
     }
 
     public long getTime() {
@@ -83,14 +83,14 @@ public class TurnSnapshot implements Serializable {
     }
 
     public double getMySpeed() {
-        return attributeValues[AttributesManager.mySpeed.getId()];
+        return attributeValues[AttributesManager.mySpeed.id];
     }
 
     public double getMyAbsoluteHeadingRadians() {
-        return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.getId()]);
+        return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.id]);
     }
 
     public double getEnemyAbsoluteHeading() {
-        return toRadians(attributeValues[AttributesManager.enemyAbsoluteHeading.getId()]);
+        return toRadians(attributeValues[AttributesManager.enemyAbsoluteHeading.id]);
     }
 }
