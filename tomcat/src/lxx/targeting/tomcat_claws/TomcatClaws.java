@@ -103,7 +103,7 @@ public class TomcatClaws implements Gun {
             maxDanger = max(maxDanger, bearingOffsetDanger);
 
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
-            if (maxDanger == bearingOffsetDanger) {
+            if (maxDanger > 0 && maxDanger == bearingOffsetDanger) {
                 candidates.add(new BearingOffsetDanger(wavePointBearingOffset, bearingOffsetDanger));
             }
         }
