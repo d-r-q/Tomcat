@@ -314,9 +314,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
-        final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
-        addBulletShadows(lxxBullet, bulletShadows);
         if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
+            addBulletShadows(lxxBullet, bulletShadows);
             futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
         } else if (timeToFire > 2) {
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;

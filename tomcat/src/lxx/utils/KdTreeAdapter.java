@@ -8,14 +8,14 @@ import ags.utils.KdTree;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
 
+    private final DistTimeComparator distTimeComparator = new DistTimeComparator();
     private final KdTree<T> delegate;
     private final Attribute[] attributes;
 
@@ -26,10 +26,6 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
 
     public void addEntry(T entry) {
         delegate.addPoint(getLocation(entry.turnSnapshot), entry);
-    }
-
-    public List<KdTree.Entry<T>> getNearestNeighbours(TurnSnapshot ts) {
-        return delegate.nearestNeighbor(getLocation(ts), (int) sqrt(delegate.size()), true);
     }
 
     public List<KdTree.Entry<T>> getNearestNeighboursS(final TurnSnapshot ts, final double[] weights) {
@@ -45,18 +41,11 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
             distInterval.extend(entry.distance);
         }
 
-        Collections.sort(entries, new Comparator<KdTree.Entry<T>>() {
-            public int compare(KdTree.Entry<T> o1, KdTree.Entry<T> o2) {
-                final double timeDist1 = (o1.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
-                final double locDist1 = (o1.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
-
-                final double timeDist2 = (o2.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
-                final double locDist2 = (o2.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
-
-                return (int) signum(sqrt(timeDist1 * timeDist1 + locDist1 * locDist1) -
-                        sqrt(timeDist2 * timeDist2 + locDist2 * locDist2));
-            }
-        });
+        distTimeComparator.timeInterval = timeInterval;
+        distTimeComparator.distInterval = distInterval;
+        distTimeComparator.weights = weights;
+        distTimeComparator.distCache.clear();
+        Collections.sort(entries, distTimeComparator);
 
         for (int i = 0; i < entries.size() - 1; i++) {
             if (abs(entries.get(i).value.turnSnapshot.roundTime -
@@ -92,4 +81,30 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
         }
     }
 
+    private class DistTimeComparator implements Comparator<KdTree.Entry<T>> {
+
+        private IntervalLong timeInterval;
+        private IntervalDouble distInterval;
+        private double[] weights;
+        private Map<KdTree.Entry<T>, Double> distCache = new HashMap<KdTree.Entry<T>, Double>();
+
+        public int compare(KdTree.Entry<T> o1, KdTree.Entry<T> o2) {
+            Double dist1 = distCache.get(o1);
+            if (dist1 == null) {
+                final double timeDist1 = (o1.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
+                final double locDist1 = (o1.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
+                dist1 = sqrt(timeDist1 * timeDist1 + locDist1 * locDist1);
+                distCache.put(o1, dist1);
+            }
+            Double dist2 = distCache.get(o2);
+            if (dist2 == null) {
+                final double timeDist2 = (o2.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
+                final double locDist2 = (o2.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
+                dist2 = sqrt(timeDist2 * timeDist2 + locDist2 * locDist2);
+                distCache.put(o2, dist2);
+            }
+
+            return (dist1 < dist2 ? -1 : (dist1 == dist2 ? 0 : 1));
+        }
+    }
 }

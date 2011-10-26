@@ -167,12 +167,16 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         double bulletsDanger = 0;
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
+        final double hiEffectDist = robotWidthInRadians * 0.75;
+        final double lowEffectDist = robotWidthInRadians * 2.55;
         for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
             final double dist = abs(bearingOffset - bo.bearingOffset);
-            if (dist < robotWidthInRadians * 0.75) {
-                bulletsDanger += (2 - (dist / (robotWidthInRadians * 0.75))) * bo.danger;
-            } else if (dist < robotWidthInRadians * 2.55) {
-                bulletsDanger += (1 - (dist / (robotWidthInRadians * 2.55))) * bo.danger;
+            if (dist < hiEffectDist) {
+                bulletsDanger += (2 - (dist / hiEffectDist)) * bo.danger;
+            } else {
+                if (dist < lowEffectDist) {
+                    bulletsDanger += (1 - (dist / lowEffectDist)) * bo.danger;
+                }
             }
         }
 
