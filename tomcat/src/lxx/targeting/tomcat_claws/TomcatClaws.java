@@ -5,6 +5,7 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
+import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;
@@ -69,21 +70,32 @@ public class TomcatClaws implements Gun {
     private double getBearingOffset(Target t, Collection<TurnSnapshot> starts, double bulletSpeed) {
         futurePoses = getFuturePoses(t, starts, bulletSpeed);
         final List<IntervalDouble> botIntervalsRadians = new ArrayList<IntervalDouble>();
+        final Map<APoint, IntervalDouble> ivalCache = new HashMap<APoint, IntervalDouble>();
         for (APoint pnt : futurePoses) {
-            final double bearingOffset = LXXUtils.bearingOffset(robotPosAtFireTime, t, pnt);
-            final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt) * 0.75;
-            final double bo1 = bearingOffset - botWidth / 2;
-            final double bo2 = bearingOffset + botWidth / 2;
-            botIntervalsRadians.add(new IntervalDouble(min(bo1, bo2), max(bo1, bo2)));
+            IntervalDouble ival = ivalCache.get(pnt);
+            if (ival == null) {
+                final double bearingOffset = LXXUtils.bearingOffset(robotPosAtFireTime, t, pnt);
+                final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, pnt) * 0.75;
+                final double bo1 = bearingOffset - botWidth / 2;
+                final double bo2 = bearingOffset + botWidth / 2;
+                ival = new IntervalDouble(min(bo1, bo2), max(bo1, bo2));
+                ivalCache.put(pnt, ival);
+            }
+            botIntervalsRadians.add(ival);
         }
+        Collections.sort(botIntervalsRadians);
 
-        bearingOffsetDangers = new TreeMap<Double, Double>();
+        bearingOffsetDangers = new LinkedHashMap<Double, Double>();
         double maxDanger = 0;
+        final List<BearingOffsetDanger> candidates = new ArrayList<BearingOffsetDanger>();
         for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
             double bearingOffsetDanger = 0;
             for (IntervalDouble ival : botIntervalsRadians) {
-                if (ival.contains(wavePointBearingOffset)) {
-                    //final double dist = abs(wavePointBearingOffset - ival.center());
+                if (ival.a > wavePointBearingOffset) {
+                    break;
+                } else if (ival.b < wavePointBearingOffset) {
+                    continue;
+                } else {
                     bearingOffsetDanger++;
                 }
             }
@@ -91,20 +103,24 @@ public class TomcatClaws implements Gun {
             maxDanger = max(maxDanger, bearingOffsetDanger);
 
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
+            if (maxDanger == bearingOffsetDanger) {
+                candidates.add(new BearingOffsetDanger(wavePointBearingOffset, bearingOffsetDanger));
+            }
         }
 
         if (maxDanger == 0) {
             return NO_BEARING_OFFSET;
         }
 
-        final List<Double> candidates = new ArrayList<Double>();
-        for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
-            if (bearingOffsetDangers.get(wavePointBearingOffset) == maxDanger) {
-                candidates.add(wavePointBearingOffset);
+        for (Iterator<BearingOffsetDanger> cndIter = candidates.iterator(); cndIter.hasNext(); ) {
+            if (cndIter.next().danger < maxDanger) {
+                cndIter.remove();
+            } else {
+                break;
             }
         }
 
-        return candidates.get((int) (candidates.size() * random()));
+        return candidates.get((int) (candidates.size() * random())).bearingOffset;
     }
 
     private List<APoint> getFuturePoses(Target t, Collection<TurnSnapshot> starts, double bulletSpeed) {

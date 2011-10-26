@@ -4,7 +4,7 @@
 
 package lxx.utils;
 
-public class IntervalDouble {
+public class IntervalDouble implements Comparable<IntervalDouble> {
 
     public double a;
     public double b;
@@ -37,5 +37,9 @@ public class IntervalDouble {
         if (b < x) {
             b = x;
         }
+    }
+
+    public int compareTo(IntervalDouble another) {
+        return a < another.a ? -1 : a == another.a ? 0 : 1;
     }
 }
