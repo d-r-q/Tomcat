@@ -9,6 +9,7 @@ import lxx.utils.Interval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 public class PSTree<T extends Serializable> {
 
     private final PSTreeNode<T> root;
+    private int entriesCount = 0;
 
     public PSTree(Attribute[] splitAttributes, int loadFactor, double maxIntervalLength) {
         root = new PSTreeNode<T>(loadFactor, splitAttributes[0].getRoundedRange(), -1, splitAttributes, maxIntervalLength);
@@ -26,12 +28,13 @@ public class PSTree<T extends Serializable> {
 
     public void addEntry(PSTreeEntry<T> PSTreeEntry) {
         root.addEntry(PSTreeEntry);
+        entriesCount++;
     }
 
-    public List<PSTreeEntry<T>> getSimilarEntries(Map<Attribute, Interval> limits) {
-        final List<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(10000);
-        root.getEntries(limits, res);
-        return res;
+    public PSTreeEntry<T>[] getSimilarEntries(Map<Attribute, Interval> limits) {
+        final PSTreeEntry[] res = new PSTreeEntry[entriesCount];
+        int len = root.getEntries(limits, res, 0);
+        return Arrays.copyOf(res, len);
     }
 
 }

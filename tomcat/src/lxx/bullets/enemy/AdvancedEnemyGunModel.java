@@ -122,12 +122,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows, long roundTimeLimit) {
-            final List<PSTreeEntry<UndirectedGuessFactor>> entries = log.getSimilarEntries(getLimits(predicate));
-            Collections.sort(entries, new Comparator<PSTreeEntry>() {
-                public int compare(PSTreeEntry o1, PSTreeEntry o2) {
-                    return o2.predicate.roundTime - o1.predicate.roundTime;
-                }
-            });
+            final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(getLimits(predicate));
 
             final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
                     predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());

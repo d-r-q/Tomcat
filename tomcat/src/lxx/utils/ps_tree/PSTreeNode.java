@@ -10,6 +10,7 @@ import lxx.utils.Interval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -241,21 +242,44 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public void getEntries(Map<Attribute, Interval> limits, List<PSTreeEntry<T>> res) {
+    public int getEntries(Map<Attribute, Interval> limits, PSTreeEntry<T>[] res, int len) {
         if (children.size() == 0) {
-            res.addAll(entries);
-            return;
+            final PSTreeEntry<T>[] entriesArr = entries.toArray(new PSTreeEntry[entries.size()]);
+            if (len == 0) {
+                System.arraycopy(entriesArr, 0, res, 0, entriesArr.length);
+            } else {
+                final PSTreeEntry<T>[] resCopy = Arrays.copyOf(res, len);
+                int i1 = 0;
+                int i2 = 0;
+                int resIdx = 0;
+                while (i1 < entriesArr.length && i2 < len) {
+                    if (entriesArr[i1].predicate.roundTime >= resCopy[i2].predicate.roundTime) {
+                        res[resIdx++] = entriesArr[i1++];
+                    } else {
+                        res[resIdx++] = resCopy[i2++];
+                    }
+                }
+                if (i1 < entriesArr.length) {
+                    System.arraycopy(entriesArr, i1, res, resIdx, entriesArr.length - i1);
+                } else if (i2 < len) {
+                    System.arraycopy(resCopy, i2, res, resIdx, len - i2);
+                }
+            }
+            return len + entriesArr.length;
         }
 
         final Interval limit = limits.get(attributes[attributeIdx + 1]);
+        int resSize = len;
         for (final PSTreeNode<T> child : children) {
             if (child.range.a > child.range.b || child.range.b < limit.a) {
                 continue;
             } else if (child.range.a > limit.b) {
                 break;
             } else {
-                child.getEntries(limits, res);
+                resSize = child.getEntries(limits, res, resSize);
             }
         }
+
+        return resSize;
     }
 }
