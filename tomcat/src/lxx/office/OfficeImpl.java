@@ -35,19 +35,19 @@ public class OfficeImpl implements Office {
         this.tomcat = tomcat;
         this.tomcatEyes = new TomcatEyes(tomcat);
 
-        attributesManager = new AttributesManager(this, tomcat);
-
         targetManager = new TargetManager(tomcat);
         tomcat.addListener(targetManager);
-
-        turnSnapshotsLog = new TurnSnapshotsLog(this);
-        targetManager.addListener(turnSnapshotsLog);
 
         waveManager = new WaveManager();
         tomcat.addListener(waveManager);
 
         bulletManager = new BulletManager();
         tomcat.addListener(bulletManager);
+
+        attributesManager = new AttributesManager(this, tomcat);
+
+        turnSnapshotsLog = new TurnSnapshotsLog(this);
+        targetManager.addListener(turnSnapshotsLog);
 
         enemyBulletManager = new EnemyBulletManager(this, tomcat);
         tomcat.addListener(enemyBulletManager);

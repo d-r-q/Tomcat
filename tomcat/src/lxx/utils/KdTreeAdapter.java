@@ -104,7 +104,7 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
                 distCache.put(o2, dist2);
             }
 
-            return (dist1 < dist2 ? -1 : (dist1 == dist2 ? 0 : 1));
+            return (dist1 < dist2 ? -1 : (dist1.doubleValue() == dist2.doubleValue() ? 0 : 1));
         }
     }
 }
