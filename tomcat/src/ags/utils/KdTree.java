@@ -276,7 +276,7 @@ public abstract class KdTree<T> {
      * Stores a distance and value to output
      */
     public static class Entry<T> {
-        public final double distance;
+        public double distance;
         public final T value;
 
         private Entry(double distance, T value) {

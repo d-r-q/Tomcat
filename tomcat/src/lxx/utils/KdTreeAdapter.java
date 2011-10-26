@@ -41,22 +41,22 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
             distInterval.extend(entry.distance);
         }
 
-        distTimeComparator.timeInterval = timeInterval;
-        distTimeComparator.distInterval = distInterval;
-        distTimeComparator.weights = weights;
-        distTimeComparator.distCache.clear();
+        for (KdTree.Entry<T> e : entries) {
+            final double timeDist = (e.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
+            final double locDist = (e.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
+            e.distance = sqrt(timeDist * timeDist + locDist * locDist);
+        }
         Collections.sort(entries, distTimeComparator);
 
-        for (int i = 0; i < entries.size() - 1; i++) {
-            if (abs(entries.get(i).value.turnSnapshot.roundTime -
-                    entries.get(i + 1).value.turnSnapshot.roundTime) < 5) {
-                if (entries.get(i).distance < entries.get(i + 1).distance) {
-                    entries.remove(i + 1);
-                } else {
-                    entries.remove(i);
-                }
-                i--;
+        KdTree.Entry<T> prev = null;
+        for (Iterator<KdTree.Entry<T>> iter =entries.iterator(); iter.hasNext();) {
+            final KdTree.Entry<T> cur = iter.next();
+            if (prev != null && abs(prev.value.turnSnapshot.roundTime - cur.value.turnSnapshot.roundTime) < 5) {
+                iter.remove();
+            } else {
+                prev = cur;
             }
+
         }
 
         return entries;
@@ -83,28 +83,8 @@ public class KdTreeAdapter<T extends KdTreeAdapter.KdTreeEntry> {
 
     private class DistTimeComparator implements Comparator<KdTree.Entry<T>> {
 
-        private IntervalLong timeInterval;
-        private IntervalDouble distInterval;
-        private double[] weights;
-        private Map<KdTree.Entry<T>, Double> distCache = new HashMap<KdTree.Entry<T>, Double>();
-
         public int compare(KdTree.Entry<T> o1, KdTree.Entry<T> o2) {
-            Double dist1 = distCache.get(o1);
-            if (dist1 == null) {
-                final double timeDist1 = (o1.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
-                final double locDist1 = (o1.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
-                dist1 = sqrt(timeDist1 * timeDist1 + locDist1 * locDist1);
-                distCache.put(o1, dist1);
-            }
-            Double dist2 = distCache.get(o2);
-            if (dist2 == null) {
-                final double timeDist2 = (o2.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
-                final double locDist2 = (o2.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
-                dist2 = sqrt(timeDist2 * timeDist2 + locDist2 * locDist2);
-                distCache.put(o2, dist2);
-            }
-
-            return (dist1 < dist2 ? -1 : (dist1.doubleValue() == dist2.doubleValue() ? 0 : 1));
+            return Double.compare(o1.distance, o2.distance);
         }
     }
 }
