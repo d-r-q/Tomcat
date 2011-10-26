@@ -185,7 +185,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             bulletsOnAir.add(enemyBulletManager.createFutureBullet(duelOpponent));
         }
         if (bulletsOnAir.size() == 0) {
-            bulletsOnAir = enemyBulletManager.getBulletsOnAir(0);
+            bulletsOnAir = enemyBulletManager.getAllBulletsOnAir();
         }
         return bulletsOnAir;
     }
