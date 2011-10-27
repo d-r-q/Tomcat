@@ -30,6 +30,7 @@ import static java.lang.Math.*;
 
 public class WaveSurfingMovement implements Movement, Painter {
 
+    private static final PointDangerOnWave NO_DANGER = new PointDangerOnWave(0);
     private final Tomcat robot;
     private final TomcatEyes tomcatEyes;
     private final TargetManager targetManager;
@@ -149,14 +150,18 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private PointDangerOnWave getWaveDanger(APoint pnt, LXXBullet bullet) {
+        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
+        final List<PastBearingOffset> predictedBearingOffsets = aimPredictionData.getPredictedBearingOffsets();
+        if (predictedBearingOffsets.size() == 0) {
+            return NO_DANGER;
+        }
         final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), pnt);
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
 
         double bulletsDanger = 0;
-        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         final double hiEffectDist = robotWidthInRadians * 0.75;
         final double lowEffectDist = robotWidthInRadians * 2.55;
-        for (PastBearingOffset bo : aimPredictionData.getPredictedBearingOffsets()) {
+        for (PastBearingOffset bo : predictedBearingOffsets) {
             final double dist = abs(bearingOffset - bo.bearingOffset);
             if (dist < hiEffectDist) {
                 bulletsDanger += (2 - (dist / hiEffectDist)) * bo.danger;
@@ -167,7 +172,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             }
         }
 
-        return new PointDangerOnWave(robotWidthInRadians, bulletsDanger);
+        return new PointDangerOnWave(bulletsDanger);
     }
 
     private List<LXXBullet> getBullets() {
@@ -280,8 +285,8 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     public class MovementDirectionPrediction {
 
-        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(LXXConstants.RADIANS_90, 100),
-                new PointDangerOnWave(LXXConstants.RADIANS_90, 100), 0, 1000, LXXConstants.RADIANS_90);
+        private PointDanger MAX_POINT_DANGER = new PointDanger(new PointDangerOnWave(100),
+                new PointDangerOnWave(100), 0, 1000, LXXConstants.RADIANS_90);
 
         private PointDanger minDanger = MAX_POINT_DANGER;
         private APoint minDangerPoint;
@@ -327,18 +332,15 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     private static class PointDangerOnWave {
 
-        public final double robotWidthInRadians;
         public final double bulletsDanger;
 
-        public PointDangerOnWave(double robotWidthInRadians, double bulletsDanger) {
-            this.robotWidthInRadians = robotWidthInRadians;
+        public PointDangerOnWave(double bulletsDanger) {
             this.bulletsDanger = bulletsDanger;
         }
 
         @Override
         public String toString() {
-            return String.format("PointDangerOnWave (%3.3f, %3.3f)",
-                    Math.toDegrees(robotWidthInRadians), bulletsDanger);
+            return String.format("PointDangerOnWave (%3.3f, %3.3f)", bulletsDanger);
         }
     }
 
