@@ -90,6 +90,13 @@ public class BulletManager implements RobotListener {
                 return bullet;
             }
         }
+        for (LXXBullet bullet : oldBullets) {
+            if (Utils.isNear(b.getHeadingRadians(), bullet.getBullet().getHeadingRadians()) &&
+                    Utils.isNear(b.getPower(), bullet.getBullet().getPower()) &&
+                    new LXXPoint(bullet.getBullet().getX(), bullet.getBullet().getY()).aDistance(new LXXPoint(b.getX(), b.getY())) < 40) {
+                return bullet;
+            }
+        }
 
         return null;
     }
