@@ -39,20 +39,6 @@ public class LXXUtils {
         return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
-    public static double factoredManhettanDistance(int[] indexes, double[] a, double[] b, double[] factors) {
-        double res = 0;
-
-        final int len = indexes.length;
-        for (int i = 0; i < len; i++) {
-            res += ((b[indexes[i]] > a[indexes[i]])
-                    ? b[indexes[i]] - a[indexes[i]]
-                    : a[indexes[i]] - b[indexes[i]])
-                    * factors[indexes[i]];
-        }
-
-        return res;
-    }
-
     public static double getBulletPower(double bulletSpeed) {
         // speed = 20 - 3 * firepower
         // - 3 * firepower = speed - 20
@@ -125,11 +111,11 @@ public class LXXUtils {
     }
 
     public static double bearingOffset(APoint source, APoint dest1, APoint dest2) {
-        return Utils.normalRelativeAngle(source.angleTo(dest2) - source.angleTo(dest1));
+        return Utils.normalRelativeAngle(angle(source, dest2) - angle(source, dest1));
     }
 
     public static double getRobotWidthInRadians(APoint center, APoint robotPos) {
-        return getRobotWidthInRadians(center.angleTo(robotPos), center.aDistance(robotPos));
+        return getRobotWidthInRadians(angle(center, robotPos), center.aDistance(robotPos));
     }
 
     public static double getRobotWidthInRadians(double angle, double distance) {
@@ -348,24 +334,6 @@ public class LXXUtils {
         final List res = new ArrayList();
         res.addAll(Arrays.asList(items));
         return res;
-    }
-
-    public static double appSqrt(double a) {
-        double x = 1;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        x = (x + a / x) / 2;
-        return x;
     }
 
 }
