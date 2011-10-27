@@ -214,8 +214,9 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private int FIRST_LONG_IDX = 4;
         private int SECOND_LONG_IDX = 5;
 
-        private List<Log> hitLogsSet = new ArrayList<Log>();
-        private List<Log> visitLogsSet = new ArrayList<Log>();
+        private final List<Log> hitLogsSet = new ArrayList<Log>();
+        private final List<Log> visitLogsSet = new ArrayList<Log>();
+        private final Log[] bestLogs = new Log[6];
 
         public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
             for (Log log : visitLogsSet) {
@@ -225,18 +226,6 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
         public EnemyBulletPredictionData getPredictionData(TurnSnapshot ts, LXXRobot t, Collection<BulletShadow> bulletShadows) {
             final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
-
-            final Log[] bestLogs = new Log[6];
-            final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
-            allLogs.addAll(visitLogsSet);
-            for (Log hitLog : allLogs) {
-                updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
-                updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
-                updateBestLog(bestLogs, hitLog, FIRST_MID_IDX, 1);
-                updateBestLog(bestLogs, hitLog, SECOND_MID_IDX, 1);
-                updateBestLog(bestLogs, hitLog, FIRST_LONG_IDX, 2);
-                updateBestLog(bestLogs, hitLog, SECOND_LONG_IDX, 2);
-            }
 
             final Map<Log, List<PastBearingOffset>> bestLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
             final long roundTime = LXXUtils.getRoundTime(t.getTime(), t.getRound());
@@ -256,6 +245,19 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             }
 
             return new AEGMPredictionData(bearingOffsets, roundTime, bestLogsBearingOffsets, ts);
+        }
+
+        private void updateBestLogs() {
+            final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
+            allLogs.addAll(visitLogsSet);
+            for (Log hitLog : allLogs) {
+                updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
+                updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
+                updateBestLog(bestLogs, hitLog, FIRST_MID_IDX, 1);
+                updateBestLog(bestLogs, hitLog, SECOND_MID_IDX, 1);
+                updateBestLog(bestLogs, hitLog, FIRST_LONG_IDX, 2);
+                updateBestLog(bestLogs, hitLog, SECOND_LONG_IDX, 2);
+            }
         }
 
         private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {
@@ -313,7 +315,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         public void learn(LXXBullet bullet, TurnSnapshot predicate, boolean isHit) {
             recalculateLogSetEfficiency(bullet, visitLogsSet, isHit);
             recalculateLogSetEfficiency(bullet, hitLogsSet, isHit);
-
+            updateBestLogs();
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
                 final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
@@ -380,6 +382,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
         res.visitLogsSet.addAll(createVisitLogs());
         res.hitLogsSet.addAll(createHitLogs());
+        res.updateBestLogs();
 
         return res;
     }
