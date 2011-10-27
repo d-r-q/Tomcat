@@ -29,16 +29,10 @@ public class LXXUtils {
 
     public static double angle(double baseX, double baseY, double x, double y) {
         double theta = QuickMath.asin((y - baseY) / LXXPoint.distance(x, y, baseX, baseY)) - HALF_PI;
-        if (x >= baseX && y >= baseY) {
-            theta = abs(theta);
-        } else if (x >= baseX && y <= baseY) {
-            theta = abs(theta);
-        } else if (x <= baseX && y <= baseY) {
-            theta = DOUBLE_PI + theta;
-        } else {
-            theta = DOUBLE_PI + theta;
+        if (x >= baseX && theta < 0) {
+            theta = -theta;
         }
-        return Utils.normalAbsoluteAngle(theta);
+        return (theta %= DOUBLE_PI) >= 0 ? theta : (theta + DOUBLE_PI);
     }
 
     public static double angle(APoint p1, APoint p2) {
@@ -354,6 +348,24 @@ public class LXXUtils {
         final List res = new ArrayList();
         res.addAll(Arrays.asList(items));
         return res;
+    }
+
+    public static double appSqrt(double a) {
+        double x = 1;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        x = (x + a / x) / 2;
+        return x;
     }
 
 }
