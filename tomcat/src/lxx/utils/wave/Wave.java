@@ -50,7 +50,7 @@ public class Wave {
         final double height = targetState.getRobot().getHeight();
         final Rectangle targetRect = new Rectangle((int) (targetState.getRobot().getX() - width / 2), (int) (targetState.getRobot().getY() - height / 2),
                 (int) width, (int) height);
-        double angleToTarget = sourceState.angleTo(targetState.getRobot());
+        final double angleToTarget = sourceState.angleTo(targetState.getRobot());
         final LXXPoint bulletPos = (LXXPoint) sourceState.project(angleToTarget, getTraveledDistance());
         final boolean contains = targetRect.contains(bulletPos);
         if (contains) {

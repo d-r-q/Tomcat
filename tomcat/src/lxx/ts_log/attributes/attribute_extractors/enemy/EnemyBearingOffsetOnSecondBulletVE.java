@@ -22,7 +22,22 @@ public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtract
             return 0;
         }
 
-        final LXXBullet firstBullet = myBullets.get(1);
+        LXXBullet firstBullet;
+        int idx = 0;
+        double bulletFlightTime;
+        do {
+            if (idx == myBullets.size()) {
+                return 0;
+            }
+            firstBullet = myBullets.get(idx++);
+            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getFirePosition().aDistance(firstBullet.getCurrentPosition())) /
+                    firstBullet.getSpeed();
+        } while (bulletFlightTime < 1);
+        if (idx == myBullets.size()) {
+            return 0;
+        }
+        firstBullet = myBullets.get(idx);
+
         final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
         double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), targetState, targetState.getSpeed(), targetState.getAbsoluteHeadingRadians()));
         return toDegrees(firstBullet.getBearingOffsetRadians(enemy)) * lateralDirection;
