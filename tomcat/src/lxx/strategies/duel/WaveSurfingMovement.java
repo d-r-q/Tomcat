@@ -78,7 +78,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
         return prevPrediction == null ||
                 isBulletsUpdated(bullets) ||
-                (duelOpponent != null && signum(duelOpponent.getAcceleration()) != prevPrediction.enemyAccelSign);
+                (duelOpponent != null && signum(duelOpponent.getAcceleration()) != prevPrediction.enemyAccelSign) ||
+                (duelOpponent != null && duelOpponent.aDistance(robot) < prevPrediction.distanceBetween - 25);
     }
 
     private boolean isBulletsUpdated(List<LXXBullet> newBullets) {
@@ -235,7 +236,8 @@ public class WaveSurfingMovement implements Movement, Painter {
             direction = Utils.normalAbsoluteAngle(direction + LXXConstants.RADIANS_180);
         }
         if (opponent != null &&
-                ((LXXUtils.anglesDiff(direction, robot.angleTo(opponent)) < LXXUtils.getRobotWidthInRadians(robot, opponent) * 1.1))) {
+                ((LXXUtils.anglesDiff(direction, robot.angleTo(opponent)) < LXXUtils.getRobotWidthInRadians(robot, opponent) * 1.1) ||
+                        LXXUtils.getBoundingRectangleAt(robot.project(direction, desiredSpeed), LXXConstants.ROBOT_SIDE_SIZE / 2 - 2).intersects(LXXUtils.getBoundingRectangleAt(opponent)))) {
             desiredSpeed = 0;
         }
 
