@@ -28,6 +28,8 @@ public class Wave {
     private final long launchTime;
     private final double speed;
 
+    public final double noBearingOffset;
+
     private IntervalDouble hitBearingOffsetInterval;
 
     public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime) {
@@ -36,6 +38,7 @@ public class Wave {
 
         this.launchTime = launchTime;
         this.speed = speed;
+        this.noBearingOffset = sourceState.angleTo(targetState);
     }
 
     public double getTraveledDistance() {
@@ -47,11 +50,12 @@ public class Wave {
         final double height = targetState.getRobot().getHeight();
         final Rectangle targetRect = new Rectangle((int) (targetState.getRobot().getX() - width / 2), (int) (targetState.getRobot().getY() - height / 2),
                 (int) width, (int) height);
-        final LXXPoint bulletPos = (LXXPoint) sourceState.project(sourceState.angleTo(targetState.getRobot()), getTraveledDistance());
+        double angleToTarget = sourceState.angleTo(targetState.getRobot());
+        final LXXPoint bulletPos = (LXXPoint) sourceState.project(angleToTarget, getTraveledDistance());
         final boolean contains = targetRect.contains(bulletPos);
         if (contains) {
-            final double bo = LXXUtils.bearingOffset(sourceState, targetState, targetState.getRobot());
-            final double targetWidth = LXXUtils.getRobotWidthInRadians(sourceState, targetState.getRobot());
+            final double bo = Utils.normalRelativeAngle(angleToTarget - noBearingOffset);
+            final double targetWidth = LXXUtils.getRobotWidthInRadians(angleToTarget, sourceState.aDistance(targetState.getRobot()));
             final IntervalDouble currentInterval = new IntervalDouble(bo - targetWidth / 2, bo + targetWidth / 2);
             if (hitBearingOffsetInterval == null) {
                 hitBearingOffsetInterval = currentInterval;

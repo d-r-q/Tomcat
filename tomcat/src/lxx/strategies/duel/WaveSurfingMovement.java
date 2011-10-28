@@ -155,8 +155,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         if (predictedBearingOffsets.size() == 0) {
             return NO_DANGER;
         }
-        final double bearingOffset = LXXUtils.bearingOffset(bullet.getFirePosition(), bullet.getTargetStateAtFireTime(), pnt);
-        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), pnt);
+        final APoint firePos = bullet.getFirePosition();
+        final double alpha = firePos.angleTo(pnt);
+        final double bearingOffset = Utils.normalRelativeAngle(alpha - bullet.noBearingOffset());
+        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(alpha, firePos.aDistance(pnt));
 
         double bulletsDanger = 0;
         final double hiEffectDist = robotWidthInRadians * 0.75;
@@ -234,9 +236,11 @@ public class WaveSurfingMovement implements Movement, Painter {
         if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {
             direction = Utils.normalAbsoluteAngle(direction + LXXConstants.RADIANS_180);
         }
-        if (opponent != null &&
-                ((LXXUtils.anglesDiff(direction, robot.angleTo(opponent)) < LXXUtils.getRobotWidthInRadians(robot, opponent) * 1.1))) {
-            desiredSpeed = 0;
+        if (opponent != null) {
+            double angleToOpponent = robot.angleTo(opponent);
+            if (((LXXUtils.anglesDiff(direction, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.1))) {
+                desiredSpeed = 0;
+            }
         }
 
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);

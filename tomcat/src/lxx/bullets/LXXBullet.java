@@ -95,7 +95,7 @@ public class LXXBullet {
     }
 
     public double noBearingOffset() {
-        return wave.getSourceStateAtFireTime().angleTo(wave.getTargetPosAtFireTime());
+        return wave.noBearingOffset;
     }
 
     public void setBullet(Bullet bullet) {
@@ -107,11 +107,11 @@ public class LXXBullet {
     }
 
     public double getRealBearingOffsetRadians() {
-        return Utils.normalRelativeAngle(bullet.getHeadingRadians() - noBearingOffset());
+        return Utils.normalRelativeAngle(bullet.getHeadingRadians() - wave.noBearingOffset);
     }
 
-    public double getBearingOffsetRadians(LXXPoint pnt) {
-        return Utils.normalRelativeAngle(getFirePosition().angleTo(pnt) - noBearingOffset());
+    public double getBearingOffsetRadians(APoint pnt) {
+        return Utils.normalRelativeAngle(getFirePosition().angleTo(pnt) - wave.noBearingOffset);
     }
 
     public double getTargetLateralDirection() {

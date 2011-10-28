@@ -228,37 +228,6 @@ public class LXXUtils {
         return time;
     }
 
-    public static double getDistanceOnAcceleration(double speed, int time) {
-        double distance = 0;
-
-        for (int i = 0; i < time; i++) {
-            speed = min(speed + 1, 8);
-            distance += speed;
-        }
-
-        return distance;
-    }
-
-    public static double getTurnDistance(double speed, double turnRadians) {
-        LXXPoint pnt = new LXXPoint();
-        speed = LXXUtils.limit(0, speed, Rules.MAX_VELOCITY);
-        for (double heading = 0; heading < turnRadians; heading += Rules.getTurnRateRadians(speed)) {
-            pnt = pnt.project(heading, speed);
-        }
-
-        return pnt.getY();
-    }
-
-    public static double getMaxTurnDistance(double speed, double turnRadians) {
-        LXXPoint pnt = new LXXPoint();
-        for (double heading = 0; heading < turnRadians; heading += Rules.getTurnRateRadians(speed)) {
-            speed = LXXUtils.limit(0, speed + 1, Rules.MAX_VELOCITY);
-            pnt = pnt.project(heading, speed);
-        }
-
-        return pnt.getY();
-    }
-
     public static double getStopDistance(double speed) {
         double distance = 0;
         while (speed > 0) {

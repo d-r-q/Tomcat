@@ -405,8 +405,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 }
 
                 if (pnt1 != null) {
-                    final double bo1 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt1);
-                    final double bo2 = LXXUtils.bearingOffset(ebFirePos, enemyBullet.getTargetStateAtFireTime(), pnt2);
+                    final double bo1 = enemyBullet.getBearingOffsetRadians(pnt1);
+                    final double bo2 = enemyBullet.getBearingOffsetRadians(pnt2);
                     bulletShadows.put(myBullet, new BulletShadow(min(bo1, bo2), max(bo1, bo2)));
                 }
             }

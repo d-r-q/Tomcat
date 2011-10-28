@@ -18,28 +18,13 @@ import static java.lang.Math.toDegrees;
 
 public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        if (myBullets.size() == 0) {
+        if (myBullets.size() < 2) {
             return 0;
         }
 
-        LXXBullet firstBullet;
-        int idx = 0;
-        double bulletFlightTime;
-        do {
-            if (idx == myBullets.size()) {
-                return 0;
-            }
-            firstBullet = myBullets.get(idx++);
-            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getFirePosition().aDistance(firstBullet.getCurrentPosition())) /
-                    firstBullet.getSpeed();
-        } while (bulletFlightTime < 1);
-        if (idx == myBullets.size()) {
-            return 0;
-        }
-        firstBullet = myBullets.get(idx);
-
+        final LXXBullet firstBullet = myBullets.get(1);
         final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
         double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), targetState, targetState.getSpeed(), targetState.getAbsoluteHeadingRadians()));
-        return toDegrees(LXXUtils.bearingOffset(firstBullet.getFirePosition(), targetState, enemy)) * lateralDirection;
+        return toDegrees(firstBullet.getBearingOffsetRadians(enemy)) * lateralDirection;
     }
 }

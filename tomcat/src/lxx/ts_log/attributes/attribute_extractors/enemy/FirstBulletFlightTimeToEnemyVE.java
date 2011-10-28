@@ -27,7 +27,7 @@ public class FirstBulletFlightTimeToEnemyVE implements AttributeValueExtractor {
                 return 0;
             }
             firstBullet = myBullets.get(idx++);
-            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getFirePosition().aDistance(firstBullet.getCurrentPosition())) /
+            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getTravelledDistance()) /
                     firstBullet.getSpeed();
         } while (bulletFlightTime < 1);
 
