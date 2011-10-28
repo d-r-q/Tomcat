@@ -1,3 +1,6 @@
+v.3 3.41o
+* everything, that has influence optimised. Now Tomcat is fast almost as nano:)
+
 v. 3.41a
 * bug with using incorrect turn snapshot to recalculating prediction data fixed
 * bug with not reselecting orbit direction after bullets on air updated fixed
