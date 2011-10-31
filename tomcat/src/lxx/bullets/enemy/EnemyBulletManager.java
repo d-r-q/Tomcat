@@ -228,11 +228,10 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             }
         }
 
-        // todo(zhidkov): rework this very strange sort
         Collections.sort(bullets, new Comparator<LXXBullet>() {
 
             public int compare(LXXBullet o1, LXXBullet o2) {
-                return (int) signum(o2.getTravelledDistance() - o1.getTravelledDistance());
+                return (int) signum(o1.getFlightTime(robot) - o2.getFlightTime(robot));
             }
         });
 

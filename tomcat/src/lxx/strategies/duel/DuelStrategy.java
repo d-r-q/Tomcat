@@ -39,7 +39,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     public boolean match() {
-        final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.getBulletsOnAir(1).size() > 0;
+        final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.getAllBulletsOnAir().size() > 0;
         if (match) {
             target = targetManager.getDuelOpponent();
         }

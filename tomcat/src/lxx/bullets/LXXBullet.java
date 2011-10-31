@@ -146,12 +146,8 @@ public class LXXBullet {
         return new LXXPoint(bullet.getX(), bullet.getY());
     }
 
-    public double getFlightTime(APoint robot) {
-        return (getFirePosition().aDistance(robot) - getTravelledDistance()) / getSpeed();
-    }
-
-    public long getFireTime() {
-        return wave.getLaunchTime();
+    public double getFlightTime(APoint pnt) {
+        return (getFirePosition().aDistance(pnt) - getTravelledDistance()) / getSpeed();
     }
 
     public void addBulletShadow(LXXBullet bullet, BulletShadow shadow) {
