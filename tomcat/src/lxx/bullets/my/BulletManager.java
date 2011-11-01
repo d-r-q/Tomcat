@@ -51,7 +51,9 @@ public class BulletManager implements RobotListener {
 
     private void removeBullet(LXXBullet b) {
         bullets.remove(b);
-        oldBullets.add(b);
+        if (b != null) {
+            oldBullets.add(b);
+        }
     }
 
     private void onBulletHit(BulletHitEvent event) {
@@ -96,8 +98,8 @@ public class BulletManager implements RobotListener {
                     new LXXPoint(bullet.getBullet().getX(), bullet.getBullet().getY()).aDistance(new LXXPoint(b.getX(), b.getY())) < 40) {
                 return bullet;
             }
-        }
 
+        }
         return null;
     }
 

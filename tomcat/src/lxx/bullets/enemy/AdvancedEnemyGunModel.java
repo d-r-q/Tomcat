@@ -207,16 +207,13 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
     private class LogSet {
 
-        private int FIRST_SHORT_IDX = 0;
-        private int SECOND_SHORT_IDX = 1;
-        private int FIRST_MID_IDX = 2;
-        private int SECOND_MID_IDX = 3;
-        private int FIRST_LONG_IDX = 4;
-        private int SECOND_LONG_IDX = 5;
-
         private final List<Log> hitLogsSet = new ArrayList<Log>();
         private final List<Log> visitLogsSet = new ArrayList<Log>();
-        private final Log[] bestLogs = new Log[6];
+
+        private final List<Log> shortLogs = new ArrayList<Log>();
+        private final List<Log> midLogs = new ArrayList<Log>();
+        private final List<Log> longLogs = new ArrayList<Log>();
+        private final List[] bestLogs = {shortLogs, midLogs, longLogs};
 
         public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
             for (Log log : visitLogsSet) {
@@ -229,14 +226,20 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
             final Map<Log, List<PastBearingOffset>> bestLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
             final long roundTime = LXXUtils.getRoundTime(t.getTime(), t.getRound());
-            for (Log log : bestLogs) {
-                if (bestLogsBearingOffsets.containsKey(log)) {
-                    continue;
+            for (List<Log> logs : bestLogs) {
+                int i = 0;
+                for (Log log : logs) {
+                    if (i++ == 4) {
+                        break;
+                    }
+                    if (bestLogsBearingOffsets.containsKey(log)) {
+                        continue;
+                    }
+                    final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, roundTime);
+                    bestLogsBearingOffsets.put(log, logBOs);
+                    bearingOffsets.addAll(logBOs);
+                    log.usage++;
                 }
-                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, roundTime);
-                bestLogsBearingOffsets.put(log, logBOs);
-                bearingOffsets.addAll(logBOs);
-                log.usage++;
             }
 
             if (bearingOffsets.size() == 0) {
@@ -248,49 +251,24 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         }
 
         private void updateBestLogs() {
-            final List<Log> allLogs = new ArrayList<Log>(hitLogsSet);
-            allLogs.addAll(visitLogsSet);
-            for (Log hitLog : allLogs) {
-                updateBestLog(bestLogs, hitLog, FIRST_SHORT_IDX, 0);
-                updateBestLog(bestLogs, hitLog, SECOND_SHORT_IDX, 0);
-                updateBestLog(bestLogs, hitLog, FIRST_MID_IDX, 1);
-                updateBestLog(bestLogs, hitLog, SECOND_MID_IDX, 1);
-                updateBestLog(bestLogs, hitLog, FIRST_LONG_IDX, 2);
-                updateBestLog(bestLogs, hitLog, SECOND_LONG_IDX, 2);
-            }
-        }
-
-        private void updateBestLog(Log[] bestLogs, Log log, int idx, int type) {
-            // todo(zhidkov): refactor this!
-            boolean isFirst = (idx % 2) == 1 && log == bestLogs[idx - 1];
-            if (isFirst) {
-                return;
-            }
-            switch (type) {
-                case 0:
-                    if (bestLogs[idx] == null ||
-                            (bestLogs[idx].shortAvgHitRate.getCurrentValue() - bestLogs[idx].shortAvgMissRate.getCurrentValue() <
-                                    log.shortAvgHitRate.getCurrentValue() - log.shortAvgMissRate.getCurrentValue())) {
-                        bestLogs[idx] = log;
-                    }
-                    break;
-                case 1:
-                    if (bestLogs[idx] == null ||
-                            (bestLogs[idx].midAvgHitRate.getCurrentValue() - bestLogs[idx].midAvgMissRate.getCurrentValue() <
-                                    log.midAvgHitRate.getCurrentValue() - log.midAvgMissRate.getCurrentValue())) {
-                        bestLogs[idx] = log;
-                    }
-                    break;
-                case 2:
-                    if (bestLogs[idx] == null ||
-                            (bestLogs[idx].longAvgHitRate.getCurrentValue() - bestLogs[idx].longAvgMissRate.getCurrentValue() <
-                                    log.longAvgHitRate.getCurrentValue() - log.longAvgMissRate.getCurrentValue())) {
-                        bestLogs[idx] = log;
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported type: " + type);
-            }
+            Collections.sort(shortLogs, new Comparator<Log>() {
+                public int compare(Log o1, Log o2) {
+                    return (int) signum((o2.shortAvgHitRate.getCurrentValue() - o2.shortAvgMissRate.getCurrentValue()) -
+                            (o1.shortAvgHitRate.getCurrentValue() - o1.shortAvgMissRate.getCurrentValue()));
+                }
+            });
+            Collections.sort(midLogs, new Comparator<Log>() {
+                public int compare(Log o1, Log o2) {
+                    return (int) signum((o2.midAvgHitRate.getCurrentValue() - o2.midAvgMissRate.getCurrentValue()) -
+                            (o1.midAvgHitRate.getCurrentValue() - o1.midAvgMissRate.getCurrentValue()));
+                }
+            });
+            Collections.sort(longLogs, new Comparator<Log>() {
+                public int compare(Log o1, Log o2) {
+                    return (int) signum((o2.longAvgHitRate.getCurrentValue() - o2.longAvgMissRate.getCurrentValue()) -
+                            (o1.longAvgHitRate.getCurrentValue() - o1.longAvgMissRate.getCurrentValue()));
+                }
+            });
         }
 
         private void fillWithSimpleBOs(TurnSnapshot ts, LXXRobot t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
@@ -382,6 +360,16 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
         res.visitLogsSet.addAll(createVisitLogs());
         res.hitLogsSet.addAll(createHitLogs());
+
+        res.shortLogs.addAll(res.hitLogsSet);
+        res.shortLogs.addAll(res.visitLogsSet);
+
+        res.midLogs.addAll(res.hitLogsSet);
+        res.midLogs.addAll(res.visitLogsSet);
+
+        res.longLogs.addAll(res.hitLogsSet);
+        res.longLogs.addAll(res.visitLogsSet);
+
         res.updateBestLogs();
 
         return res;

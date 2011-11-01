@@ -46,12 +46,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
-    private static final Comparator<LXXBullet> byTravelledDistanceComparator = new Comparator<LXXBullet>() {
-
-        public int compare(LXXBullet o1, LXXBullet o2) {
-            return (int) signum(o2.getTravelledDistance() - o1.getTravelledDistance());
-        }
-    };
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -228,11 +222,10 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             }
         }
 
-        // todo(zhidkov): rework this very strange sort
         Collections.sort(bullets, new Comparator<LXXBullet>() {
 
             public int compare(LXXBullet o1, LXXBullet o2) {
-                return (int) signum(o2.getTravelledDistance() - o1.getTravelledDistance());
+                return (int) signum(o1.getFlightTime(robot) - o2.getFlightTime(robot));
             }
         });
 
