@@ -78,8 +78,8 @@ public class TomcatClaws implements Gun {
                 final double angleToPnt = robotPosAtFireTime.angleTo(pnt);
                 final double bearingOffset = Utils.normalRelativeAngle(angleToPnt - angleToTarget);
                 final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.75;
-                final double bo1 = bearingOffset - botWidth / 2;
-                final double bo2 = bearingOffset + botWidth / 2;
+                final double bo1 = bearingOffset - botWidth;
+                final double bo2 = bearingOffset + botWidth;
                 ival = new IntervalDouble(min(bo1, bo2), max(bo1, bo2));
                 ivalCache.put(pnt, ival);
             }
@@ -88,8 +88,7 @@ public class TomcatClaws implements Gun {
         Collections.sort(botIntervalsRadians);
 
         bearingOffsetDangers = new LinkedHashMap<Double, Double>();
-        double maxDanger = 0;
-        final List<BearingOffsetDanger> candidates = new ArrayList<BearingOffsetDanger>();
+        BearingOffsetDanger maxDangerBo = new BearingOffsetDanger(0, 0);
         for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
             double bearingOffsetDanger = 0;
             for (IntervalDouble ival : botIntervalsRadians) {
@@ -97,32 +96,20 @@ public class TomcatClaws implements Gun {
                     break;
                 } else if (ival.b < wavePointBearingOffset) {
                     continue;
-                } else {
+                } else if (abs(wavePointBearingOffset - ival.center()) < ival.getLength() / 4) {
                     bearingOffsetDanger++;
+                } else {
+                    bearingOffsetDanger += (ival.getLength() / 4) / abs(wavePointBearingOffset - ival.center());
                 }
             }
 
-            maxDanger = max(maxDanger, bearingOffsetDanger);
-
             bearingOffsetDangers.put(wavePointBearingOffset, bearingOffsetDanger);
-            if (maxDanger > 0 && maxDanger == bearingOffsetDanger) {
-                candidates.add(new BearingOffsetDanger(wavePointBearingOffset, bearingOffsetDanger));
+            if (bearingOffsetDanger > maxDangerBo.danger) {
+                maxDangerBo = new BearingOffsetDanger(wavePointBearingOffset, bearingOffsetDanger);
             }
         }
 
-        if (maxDanger == 0) {
-            return NO_BEARING_OFFSET;
-        }
-
-        for (Iterator<BearingOffsetDanger> cndIter = candidates.iterator(); cndIter.hasNext(); ) {
-            if (cndIter.next().danger < maxDanger) {
-                cndIter.remove();
-            } else {
-                break;
-            }
-        }
-
-        return candidates.get((int) (candidates.size() * random())).bearingOffset;
+        return maxDangerBo.bearingOffset;
     }
 
     private List<APoint> getFuturePoses(Target t, Collection<TurnSnapshot> starts, double bulletSpeed) {
