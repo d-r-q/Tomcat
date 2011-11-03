@@ -7,17 +7,12 @@ package lxx.bullets;
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.bullets.enemy.BulletShadow;
-import lxx.utils.APoint;
-import lxx.utils.AimingPredictionData;
-import lxx.utils.LXXPoint;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.signum;
 
@@ -32,7 +27,8 @@ public class LXXBullet {
     private Bullet bullet;
     private LXXBulletState state;
     private AimingPredictionData aimPredictionData;
-    private Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
+    private final Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
+    private final List<IntervalDouble> mergedShadows = new ArrayList<IntervalDouble>();
 
     public LXXBullet(Bullet bullet, Wave w, AimingPredictionData aimPredictionData) {
         this.bullet = bullet;
@@ -156,6 +152,13 @@ public class LXXBullet {
 
     public void addBulletShadow(LXXBullet bullet, BulletShadow shadow) {
         bulletShadows.put(bullet, shadow);
+        for (IntervalDouble bs : mergedShadows) {
+            if (bs.intersects(shadow)) {
+                bs.merge(shadow);
+                return;
+            }
+        }
+        mergedShadows.add(new IntervalDouble(shadow));
     }
 
     public BulletShadow getBulletShadow(LXXBullet bullet) {
@@ -168,5 +171,23 @@ public class LXXBullet {
 
     public void removeBulletShadow(LXXBullet bullet) {
         bulletShadows.remove(bullet);
+        mergedShadows.clear();
+        for (BulletShadow shadow : bulletShadows.values()) {
+            boolean isMerged = false;
+            for (IntervalDouble bs : mergedShadows) {
+                if (bs.intersects(shadow)) {
+                    bs.merge(shadow);
+                    isMerged = true;
+                    break;
+                }
+            }
+            if (!isMerged) {
+                mergedShadows.add(new IntervalDouble(shadow));
+            }
+        }
+    }
+
+    public List<IntervalDouble> getMergedShadows() {
+        return mergedShadows;
     }
 }

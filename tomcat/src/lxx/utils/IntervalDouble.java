@@ -4,6 +4,9 @@
 
 package lxx.utils;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class IntervalDouble implements Comparable<IntervalDouble> {
 
     public double a;
@@ -12,6 +15,11 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
     public IntervalDouble(double a, double b) {
         this.a = a;
         this.b = b;
+    }
+
+    public IntervalDouble(IntervalDouble ival) {
+        this.a = ival.a;
+        this.b = ival.b;
     }
 
     public double getLength() {
@@ -37,6 +45,20 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
         if (b < x) {
             b = x;
         }
+    }
+
+    public boolean intersects(IntervalDouble another) {
+        return (a <= another.a && b >= another.a) ||
+                (another.a <= a && another.b >= a);
+    }
+
+    public double intersection(IntervalDouble another) {
+        return min(b, another.b) - max(a, another.a);
+    }
+
+    public void merge(IntervalDouble another) {
+        a = min(a, another.a);
+        b = max(b, another.b);
     }
 
     public int compareTo(IntervalDouble another) {
