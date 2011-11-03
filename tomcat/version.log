@@ -1,3 +1,6 @@
+v. 3.44
+* divide point danger by (1 - robot's shadowed interval length)
+
 v. 3.43
 * bot effective interval doubled in gun
 
