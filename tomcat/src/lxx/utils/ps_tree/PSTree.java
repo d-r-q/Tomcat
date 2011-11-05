@@ -37,4 +37,7 @@ public class PSTree<T extends Serializable> {
         return Arrays.copyOf(res, len);
     }
 
+    public int getEntriesCount() {
+        return entriesCount;
+    }
 }

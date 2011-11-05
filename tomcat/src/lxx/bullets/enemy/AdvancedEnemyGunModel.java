@@ -60,7 +60,13 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
     }
 
     public void bulletHit(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        final LogSet logSet = getLogSet(bullet.getOwner().getName());
+        logSet.learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+            logSet.shortLogs.addAll(logSet.visitLogsSet);
+            logSet.midLogs.addAll(logSet.visitLogsSet);
+            logSet.longLogs.addAll(logSet.visitLogsSet);
+        }
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
@@ -362,13 +368,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         res.hitLogsSet.addAll(createHitLogs());
 
         res.shortLogs.addAll(res.hitLogsSet);
-        res.shortLogs.addAll(res.visitLogsSet);
-
         res.midLogs.addAll(res.hitLogsSet);
-        res.midLogs.addAll(res.visitLogsSet);
-
         res.longLogs.addAll(res.hitLogsSet);
-        res.longLogs.addAll(res.visitLogsSet);
 
         res.updateBestLogs();
 
