@@ -20,15 +20,14 @@ import robocode.Event;
  */
 public class DataViewManager implements RobotListener {
 
-    private static final Attribute[] mainDVAttrs = {
+    private static final DataView mainDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToForwardWall,
-    };
-    private static final DataView mainDataView = new SingleSourceDataView(mainDVAttrs, new double[]{0.25, 0.75});
+    }, new double[]{0.25, 0.75});
 
-    private static final Attribute[] asDVAttrs = {
+    private static final DataView asDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
@@ -36,10 +35,19 @@ public class DataViewManager implements RobotListener {
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.enemyBearingOffsetOnFirstBullet,
             AttributesManager.enemyBearingOffsetOnSecondBullet,
-    };
-    private static final DataView asDataView = new SingleSourceDataView(asDVAttrs, new double[]{0.75, 0.25});
+    }, new double[]{0.75, 0.25});
 
-    private static final Attribute[] distanceDVAttrs = {
+    private static final DataView asDataView2 = new SingleSourceDataView(new Attribute[]{
+            AttributesManager.enemyAcceleration,
+            AttributesManager.enemySpeed,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.lastVisitedGF1,
+            AttributesManager.lastVisitedGF1,
+    }, new double[]{0.75, 0.25});
+
+    private static final DataView distanceDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
@@ -47,10 +55,9 @@ public class DataViewManager implements RobotListener {
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.distBetween,
             AttributesManager.enemyTurnRate
-    };
-    private static final DataView distanceDataView = new SingleSourceDataView(distanceDVAttrs, new double[]{0.5, 0.5});
+    }, new double[]{0.5, 0.5});
 
-    private static final Attribute[] timeSinceDirChangeDVAttrs = {
+    private static final DataView timeSinceDirChangeDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
@@ -58,12 +65,11 @@ public class DataViewManager implements RobotListener {
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.enemyTimeSinceLastDirChange,
             AttributesManager.enemyTurnRate
-    };
-    private static final DataView timeSinceDirChangeDataView = new SingleSourceDataView(timeSinceDirChangeDVAttrs, new double[]{0.5, 0.5});
+    }, new double[]{0.5, 0.5});
 
-    private static final CompositeDataView duelCompositeDataView = new CompositeDataView(mainDataView, asDataView, distanceDataView, timeSinceDirChangeDataView);
+    private static final CompositeDataView duelCompositeDataView = new CompositeDataView(mainDataView, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView);
 
-    private DataView[] views = {mainDataView, asDataView, distanceDataView, duelCompositeDataView, timeSinceDirChangeDataView};
+    private DataView[] views = {mainDataView, asDataView, asDataView2, distanceDataView, duelCompositeDataView, timeSinceDirChangeDataView};
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotLog;

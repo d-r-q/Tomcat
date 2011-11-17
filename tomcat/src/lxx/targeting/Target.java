@@ -35,10 +35,12 @@ public class Target implements LXXRobot, Serializable {
     private TargetState prevState;
     private TargetState state;
     private final TargetInfo info;
+    private TargetData targetData;
 
-    public Target(BasicRobot owner, String name) {
+    public Target(BasicRobot owner, String name, TargetData targetData) {
         this.owner = owner;
         this.name = name;
+        this.targetData = targetData;
 
         info = new TargetInfo();
     }
@@ -336,6 +338,14 @@ public class Target implements LXXRobot, Serializable {
     public double getLast10TicksDist() {
         ensureValid();
         return info.getLast10TicksDist();
+    }
+
+    public void addVisit(double guessFactor) {
+        targetData.addVisit(guessFactor);
+    }
+
+    public List<Double> getVisitedGuessFactors() {
+        return targetData.getVisitedGuessFactors();
     }
 
     public LXXRobotState getPrevState() {

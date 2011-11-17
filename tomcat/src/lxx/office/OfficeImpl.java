@@ -41,7 +41,7 @@ public class OfficeImpl implements Office {
         waveManager = new WaveManager();
         tomcat.addListener(waveManager);
 
-        bulletManager = new BulletManager();
+        bulletManager = new BulletManager(waveManager);
         tomcat.addListener(bulletManager);
 
         attributesManager = new AttributesManager(this, tomcat);

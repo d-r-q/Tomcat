@@ -25,6 +25,8 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 public class TargetManager implements RobotListener {
 
+    private static final Map<String, TargetData> targetDatas = new HashMap<String, TargetData>();
+
     private final Map<String, Target> targets = new HashMap<String, Target>();
 
     private final List<Target> aliveTargets = new ArrayList<Target>();
@@ -75,7 +77,12 @@ public class TargetManager implements RobotListener {
     public Target getTarget(String name) {
         Target t;
         if ((t = targets.get(name)) == null) {
-            t = new Target(robot, name);
+            TargetData td = targetDatas.get(name);
+            if (td == null) {
+                td = new TargetData();
+                targetDatas.put(name, td);
+            }
+            t = new Target(robot, name, td);
             targets.put(name, t);
         }
         return t;

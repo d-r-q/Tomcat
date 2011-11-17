@@ -13,6 +13,7 @@ import robocode.util.Utils;
 import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.abs;
@@ -283,5 +284,13 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             return 0;
         }
         return last10Positions.getFirst().aDistance(last10Positions.getLast());
+    }
+
+    public void addVisit(double guessFactor) {
+        throw new UnsupportedOperationException();
+    }
+
+    public List<Double> getVisitedGuessFactors() {
+        throw new UnsupportedOperationException();
     }
 }

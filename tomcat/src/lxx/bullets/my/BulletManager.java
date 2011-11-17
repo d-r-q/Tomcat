@@ -13,28 +13,39 @@ import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.paint.LXXGraphics;
 import lxx.utils.LXXPoint;
+import lxx.utils.LXXUtils;
+import lxx.utils.wave.Wave;
+import lxx.utils.wave.WaveCallback;
+import lxx.utils.wave.WaveManager;
 import robocode.*;
 import robocode.util.Utils;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static java.lang.Math.signum;
 
 /**
  * User: jdev
  * Date: 15.02.2010
  */
-public class BulletManager implements RobotListener {
+public class BulletManager implements RobotListener, WaveCallback {
 
     private static boolean paintEnabled = false;
 
     private final List<LXXBullet> oldBullets = new ArrayList<LXXBullet>();
-
     private final List<LXXBullet> bullets = new ArrayList<LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
+    private final Map<Wave, LXXBullet> bulletsByWaves = new HashMap<Wave, LXXBullet>();
+    private final WaveManager waveManager;
+
+    public BulletManager(WaveManager waveManager) {
+        this.waveManager = waveManager;
+    }
 
     private void addBullet(LXXBullet bullet) {
         bullets.add(bullet);
+        bulletsByWaves.put(bullet.getWave(), bullet);
+        waveManager.addCallback(this, bullet.getWave());
         for (BulletManagerListener listener : listeners) {
             listener.bulletFired(bullet);
         }
@@ -146,4 +157,13 @@ public class BulletManager implements RobotListener {
         return new LinkedList<LXXBullet>(bullets);
     }
 
+    public void wavePassing(Wave w) {
+    }
+
+    public void waveBroken(Wave w) {
+        final LXXBullet b = bulletsByWaves.remove(w);
+        final double lateralDirection = signum(LXXUtils.lateralVelocity2(w.getSourceStateAtFireTime(), w.getTargetPosAtFireTime(), w.getTargetStateAtLaunchTime().getVelocity(), w.getTargetStateAtLaunchTime().getAbsoluteHeadingRadians()));
+        final double guessFactor = w.getHitBearingOffsetInterval().center() * lateralDirection / LXXUtils.getMaxEscapeAngle(w.getSpeed());
+        b.getTarget().addVisit(guessFactor);
+    }
 }
