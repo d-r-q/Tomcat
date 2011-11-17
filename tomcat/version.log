@@ -1,3 +1,7 @@
+v. 3.45
+* enemy visits history gathering added
+* added data view to gun with 2 last visited gfs and hi time importance
+
 v. 3.44
 * divide point danger by (1 - robot's shadowed interval length)
 
