@@ -26,6 +26,15 @@ public final class RobotImage implements LXXRobotState {
     private double turnRateRadians;
     private double energy;
 
+    public RobotImage(LXXRobotState original) {
+        this.position = new LXXPoint(original.getX(), original.getY());
+        this.velocity = original.getVelocity();
+        this.heading = original.getHeadingRadians();
+        this.battleField = original.getBattleField();
+        this.turnRateRadians = original.getTurnRateRadians();
+        this.energy = original.getEnergy();
+    }
+
     public RobotImage(APoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
         this.position = position;
         this.velocity = velocity;

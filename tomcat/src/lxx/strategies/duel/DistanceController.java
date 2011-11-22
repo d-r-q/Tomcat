@@ -33,11 +33,11 @@ public class DistanceController {
         this.tomcatEyes = tomcatEyes;
     }
 
-    public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection) {
+    public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
         return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, SIMPLE_DISTANCE);
     }
 
-    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, WaveSurfingMovement.OrbitDirection orbitDirection,
+    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection,
                                                 double desiredDistance) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
