@@ -1,3 +1,10 @@
+v. 3.47
+* WaveSurfing refactored
+* multiply wave surfing implemented
+
+v. 3.46
+* revert to v. 3.44
+
 v. 3.45
 * enemy visits history gathering added
 * added data view to gun with 2 last visited gfs and hi time importance
