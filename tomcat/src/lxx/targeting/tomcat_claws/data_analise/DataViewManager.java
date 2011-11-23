@@ -44,7 +44,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyBearingToMe,
             AttributesManager.firstBulletFlightTimeToEnemy,
             AttributesManager.lastVisitedGF1,
-            AttributesManager.lastVisitedGF1,
+            AttributesManager.lastVisitedGF2,
     }, new double[]{0.75, 0.25});
 
     private static final DataView distanceDataView = new SingleSourceDataView(new Attribute[]{
