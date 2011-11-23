@@ -151,6 +151,7 @@ public class WaveSurfingMovement implements Movement, Painter {
                 }
             }
             if (minDangerPoint != null) {
+                prediction.secondMinDangerPoint = minDangerPoint;
                 minDangerPoint.danger.calculateDanger();
                 prediction.minDanger.minDangerOnSecondWave = minDangerPoint.danger.danger;
                 prediction.minDanger.calculateDanger();
@@ -186,6 +187,7 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         g.setColor(new Color(0, 255, 0, 200));
         g.fillCircle(prevPrediction.minDangerPoint, 15);
+        g.fillCircle(prevPrediction.secondMinDangerPoint, 15);
 
         robot.getLXXGraphics().setColor(new Color(255, 0, 0, 100));
         robot.getLXXGraphics().fillSquare(prevPrediction.pifImg, 25);
@@ -215,6 +217,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         public LXXRobotState pifImg;
         public List<WSPoint> secondCWPoint;
         public List<WSPoint> secondCCWPoint;
+        public WSPoint secondMinDangerPoint;
     }
 
     private class StopableDesiredSpeedSelector implements PointsGenerator.DesiredSpeedSelector {
