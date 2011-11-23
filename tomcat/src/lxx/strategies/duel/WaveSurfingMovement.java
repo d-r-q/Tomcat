@@ -18,6 +18,7 @@ import lxx.targeting.TargetManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.*;
 import robocode.Rules;
+import robocode.util.Utils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -28,12 +29,9 @@ import static java.lang.Math.signum;
 public class WaveSurfingMovement implements Movement, Painter {
 
     private final Tomcat robot;
-    private final TomcatEyes tomcatEyes;
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
     private final PointsGenerator pointsGenerator;
-
-    private OrbitDirection minDangerOrbitDirection = OrbitDirection.CLOCKWISE;
     private double distanceToTravel;
     private Target duelOpponent;
     private MovementDirectionPrediction prevPrediction;
@@ -44,7 +42,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
         this.enemyBulletManager = office.getEnemyBulletManager();
-        this.tomcatEyes = tomcatEyes;
 
         pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager(), tomcatEyes), robot.getState().getBattleField());
     }
@@ -60,13 +57,8 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
         final APoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
-        final double desiredSpeed =
-                (robot.aDistance(prevPrediction.minDangerPoint) > LXXUtils.getStopDistance(robot.getSpeed()) + Rules.MAX_VELOCITY ||
-                        (duelOpponent != null && tomcatEyes.isRammingNow(duelOpponent)))
-                        ? 8
-                        : 0;
 
-        return pointsGenerator.getMovementDecision(surfPoint, minDangerOrbitDirection, robot.getState(), opponent, desiredSpeed);
+        return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getState(), opponent);
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
@@ -101,7 +93,6 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     private void setMovementParameters(MovementDirectionPrediction movementDirectionPrediction) {
         distanceToTravel = movementDirectionPrediction.distToMinDangerPoint;
-        minDangerOrbitDirection = movementDirectionPrediction.orbitDirection;
         prevPrediction = movementDirectionPrediction;
     }
 
@@ -109,18 +100,21 @@ public class WaveSurfingMovement implements Movement, Painter {
         final MovementDirectionPrediction prediction = new MovementDirectionPrediction();
         prediction.enemyPos = duelOpponent != null ? duelOpponent.getPosition() : null;
         prediction.bullets = lxxBullets;
-        prediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionRoundTime();
+        final LXXBullet firstBullet = lxxBullets.get(0);
+        prediction.firstBulletPredictionTime = firstBullet.getAimPredictionData().getPredictionRoundTime();
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
-        prediction.points = pointsGenerator.generatePoints(orbitDirection, lxxBullets, new RobotImage(robotImage), opponentImg != null ? new RobotImage(opponentImg) : opponentImg,
-                new PointsGenerator.MaxDesiredSpeedSelector(), 0);
+        final APoint firePosition = firstBullet.getFirePosition();
+        final APoint dstPoint = firePosition.project(Utils.normalAbsoluteAngle(firePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * orbitDirection.sign), firePosition.aDistance(robotImage));
+        robot.getLXXGraphics().drawCircle(dstPoint, 40);
+        prediction.points = pointsGenerator.generatePoints(dstPoint, lxxBullets, new RobotImage(robotImage), opponentImg != null ? new RobotImage(opponentImg) : opponentImg, 0);
         prediction.enemyAccelSign = duelOpponent != null ? signum(duelOpponent.getAcceleration()) : 0;
         prediction.distanceBetween = duelOpponent != null ? duelOpponent.aDistance(robot) : 0;
         for (WSPoint pnt : prediction.points) {
             distance += prevPoint.aDistance(pnt);
 
-            if (pnt.danger.danger < prediction.minDanger.danger) {
+            if (pnt.danger.danger < prediction.minDanger.danger || prediction.minDangerPoint == null) {
                 prediction.minDanger = pnt.danger;
                 prediction.distToMinDangerPoint = distance;
                 prediction.minDangerPoint = pnt;
@@ -128,18 +122,20 @@ public class WaveSurfingMovement implements Movement, Painter {
             prevPoint = pnt;
         }
 
-        final RobotImage meImg = new RobotImage(robotImage);
-        final RobotImage oppImg = opponentImg != null ? new RobotImage(opponentImg) : opponentImg;
-        int time = pointsGenerator.playForwardWaveSuring(orbitDirection, lxxBullets.get(0), meImg, oppImg,
-                new StopableDesiredSpeedSelector(prediction.minDangerPoint, meImg), 0);
-
-        prediction.pifImg = new RobotImage(meImg);
-
         if (lxxBullets.size() >= 2) {
+            final RobotImage meImg = new RobotImage(robotImage);
+            final RobotImage oppImg = opponentImg != null ? new RobotImage(opponentImg) : opponentImg;
+            int time = pointsGenerator.playForwardWaveSuring(prediction.minDangerPoint, firstBullet, meImg, oppImg);
+
+            prediction.pifImg = new RobotImage(meImg);
+
             List<LXXBullet> secondBullets = lxxBullets.subList(1, lxxBullets.size());
             final List<WSPoint> secondWavePoints = new ArrayList<WSPoint>();
-            final List<WSPoint> cwPoints = pointsGenerator.generatePoints(OrbitDirection.CLOCKWISE, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, new PointsGenerator.MaxDesiredSpeedSelector(), time);
-            final List<WSPoint> ccwPoints = pointsGenerator.generatePoints(OrbitDirection.COUNTER_CLOCKWISE, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, new PointsGenerator.MaxDesiredSpeedSelector(), time);
+            final APoint secondFirePosition = secondBullets.get(0).getFirePosition();
+            final APoint secondDstPointCW = secondFirePosition.project(Utils.normalAbsoluteAngle(secondFirePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.CLOCKWISE.sign), secondFirePosition.aDistance(meImg));
+            final List<WSPoint> cwPoints = pointsGenerator.generatePoints(secondDstPointCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
+            final APoint secondDstPointCCW = secondFirePosition.project(Utils.normalAbsoluteAngle(secondFirePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.COUNTER_CLOCKWISE.sign), secondFirePosition.aDistance(meImg));
+            final List<WSPoint> ccwPoints = pointsGenerator.generatePoints(secondDstPointCCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
             prediction.secondCWPoint = cwPoints;
             prediction.secondCCWPoint = ccwPoints;
             secondWavePoints.addAll(cwPoints);
@@ -187,10 +183,11 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         g.setColor(new Color(0, 255, 0, 200));
         g.fillCircle(prevPrediction.minDangerPoint, 15);
-        g.fillCircle(prevPrediction.secondMinDangerPoint, 15);
-
-        robot.getLXXGraphics().setColor(new Color(255, 0, 0, 100));
-        robot.getLXXGraphics().fillSquare(prevPrediction.pifImg, 25);
+        if (prevPrediction.secondMinDangerPoint != null) {
+            g.fillCircle(prevPrediction.secondMinDangerPoint, 15);
+            robot.getLXXGraphics().setColor(new Color(255, 0, 0, 100));
+            robot.getLXXGraphics().fillSquare(prevPrediction.pifImg, 25);
+        }
     }
 
     private void drawPath(LXXGraphics g, List<WSPoint> points, Color color) {
@@ -218,23 +215,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         public List<WSPoint> secondCWPoint;
         public List<WSPoint> secondCCWPoint;
         public WSPoint secondMinDangerPoint;
-    }
-
-    private class StopableDesiredSpeedSelector implements PointsGenerator.DesiredSpeedSelector {
-
-        private final LXXRobotState robot;
-        private APoint destination;
-
-        public StopableDesiredSpeedSelector(APoint destination, LXXRobotState robot) {
-            this.destination = destination;
-            this.robot = robot;
-        }
-
-        public double getDesiredSpeed() {
-            return (robot.aDistance(destination) > LXXUtils.getStopDistance(robot.getSpeed()) + Rules.MAX_VELOCITY)
-                    ? 8
-                    : 0;
-        }
     }
 
 }
