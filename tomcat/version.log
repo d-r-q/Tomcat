@@ -1,3 +1,6 @@
+v. 3.47a
+* antiSurf2 data view in gun fixed - second lastVisitedGF1 changed to lastVisitedGF2
+
 v. 3.47
 * WaveSurfing refactored
 * multiply wave surfing implemented
