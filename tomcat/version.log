@@ -1,3 +1,7 @@
+v. 3.47b
+* movement mechanics reworked - select orbit direction to destination point every tick
+* use exactly same code for real movement and movement prediction
+
 v. 3.47a
 * antiSurf2 data view in gun fixed - second lastVisitedGF1 changed to lastVisitedGF2
 
