@@ -136,8 +136,8 @@ public class WaveSurfingMovement implements Movement, Painter {
             final List<WSPoint> cwPoints = pointsGenerator.generatePoints(secondDstPointCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
             final APoint secondDstPointCCW = secondFirePosition.project(Utils.normalAbsoluteAngle(secondFirePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.COUNTER_CLOCKWISE.sign), secondFirePosition.aDistance(meImg));
             final List<WSPoint> ccwPoints = pointsGenerator.generatePoints(secondDstPointCCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
-            prediction.secondCWPoint = cwPoints;
-            prediction.secondCCWPoint = ccwPoints;
+            prediction.secondCWPoints = cwPoints;
+            prediction.secondCCWPoints = ccwPoints;
             secondWavePoints.addAll(cwPoints);
             secondWavePoints.addAll(ccwPoints);
             WSPoint minDangerPoint = null;
@@ -173,27 +173,25 @@ public class WaveSurfingMovement implements Movement, Painter {
             return;
         }
 
-        drawPath(g, clockwisePrediction.points, new Color(0, 255, 0, 200));
-        drawPath(g, counterClockwisePrediction.points, new Color(255, 0, 0, 200));
+        drawPath(g, clockwisePrediction.points, new Color(0, 255, 0, 200), (WSPoint) clockwisePrediction.minDangerPoint);
+        drawPath(g, counterClockwisePrediction.points, new Color(255, 0, 0, 200), (WSPoint) counterClockwisePrediction.minDangerPoint);
 
-        if (prevPrediction.secondCWPoint != null && prevPrediction.secondCCWPoint != null) {
-            drawPath(g, prevPrediction.secondCWPoint, new Color(0, 255, 255, 200));
-            drawPath(g, prevPrediction.secondCCWPoint, new Color(255, 255, 0, 200));
-        }
-
-        g.setColor(new Color(0, 255, 0, 200));
-        g.fillCircle(prevPrediction.minDangerPoint, 15);
-        if (prevPrediction.secondMinDangerPoint != null) {
-            g.fillCircle(prevPrediction.secondMinDangerPoint, 15);
+        if (prevPrediction.secondCWPoints != null && prevPrediction.secondCCWPoints != null) {
+            drawPath(g, prevPrediction.secondCWPoints, new Color(0, 255, 255, 200), prevPrediction.secondMinDangerPoint);
+            drawPath(g, prevPrediction.secondCCWPoints, new Color(255, 255, 0, 200), prevPrediction.secondMinDangerPoint);
             robot.getLXXGraphics().setColor(new Color(255, 0, 0, 100));
-            robot.getLXXGraphics().fillSquare(prevPrediction.pifImg, 25);
+            robot.getLXXGraphics().drawCircle(prevPrediction.pifImg, 8);
         }
     }
 
-    private void drawPath(LXXGraphics g, List<WSPoint> points, Color color) {
+    private void drawPath(LXXGraphics g, List<WSPoint> points, Color color, WSPoint bestPoint) {
         g.setColor(color);
         for (WSPoint pnt : points) {
-            g.fillCircle(pnt, 3);
+            if (bestPoint.equals(pnt)) {
+                g.fillCircle(pnt, 4);
+            } else {
+                g.drawCircle(pnt, 2);
+            }
         }
     }
 
@@ -212,8 +210,8 @@ public class WaveSurfingMovement implements Movement, Painter {
         public double distanceBetween;
         public long firstBulletPredictionTime;
         public LXXRobotState pifImg;
-        public List<WSPoint> secondCWPoint;
-        public List<WSPoint> secondCCWPoint;
+        public List<WSPoint> secondCWPoints;
+        public List<WSPoint> secondCCWPoints;
         public WSPoint secondMinDangerPoint;
     }
 
