@@ -174,11 +174,11 @@ public class PointsGenerator {
     }
 
     public APoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
-        if (bullet == null) {
-            return duelOpponent;
+        if (duelOpponent == null) {
+            return bullet.getFirePosition();
         }
 
-        return bullet.getFirePosition();
+        return duelOpponent;
     }
 
 }

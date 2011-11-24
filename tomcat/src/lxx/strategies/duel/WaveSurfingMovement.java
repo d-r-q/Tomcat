@@ -105,8 +105,8 @@ public class WaveSurfingMovement implements Movement, Painter {
         prediction.orbitDirection = orbitDirection;
         double distance = 0;
         APoint prevPoint = robot.getPosition();
-        final APoint firePosition = firstBullet.getFirePosition();
-        final APoint dstPoint = firePosition.project(Utils.normalAbsoluteAngle(firePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * orbitDirection.sign), firePosition.aDistance(robotImage));
+        final APoint surfPoint = opponentImg != null ? opponentImg : firstBullet.getFirePosition();
+        final APoint dstPoint = surfPoint.project(Utils.normalAbsoluteAngle(surfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * orbitDirection.sign), surfPoint.aDistance(robotImage));
         robot.getLXXGraphics().drawCircle(dstPoint, 40);
         prediction.points = pointsGenerator.generatePoints(dstPoint, lxxBullets, new RobotImage(robotImage), opponentImg != null ? new RobotImage(opponentImg) : opponentImg, 0);
         prediction.enemyAccelSign = duelOpponent != null ? signum(duelOpponent.getAcceleration()) : 0;
@@ -131,10 +131,10 @@ public class WaveSurfingMovement implements Movement, Painter {
 
             List<LXXBullet> secondBullets = lxxBullets.subList(1, lxxBullets.size());
             final List<WSPoint> secondWavePoints = new ArrayList<WSPoint>();
-            final APoint secondFirePosition = secondBullets.get(0).getFirePosition();
-            final APoint secondDstPointCW = secondFirePosition.project(Utils.normalAbsoluteAngle(secondFirePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.CLOCKWISE.sign), secondFirePosition.aDistance(meImg));
+            final APoint secondSurfPoint = oppImg != null ? oppImg : secondBullets.get(0).getFirePosition();
+            final APoint secondDstPointCW = secondSurfPoint.project(Utils.normalAbsoluteAngle(secondSurfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.CLOCKWISE.sign), secondSurfPoint.aDistance(meImg));
             final List<WSPoint> cwPoints = pointsGenerator.generatePoints(secondDstPointCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
-            final APoint secondDstPointCCW = secondFirePosition.project(Utils.normalAbsoluteAngle(secondFirePosition.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.COUNTER_CLOCKWISE.sign), secondFirePosition.aDistance(meImg));
+            final APoint secondDstPointCCW = secondSurfPoint.project(Utils.normalAbsoluteAngle(secondSurfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.COUNTER_CLOCKWISE.sign), secondSurfPoint.aDistance(meImg));
             final List<WSPoint> ccwPoints = pointsGenerator.generatePoints(secondDstPointCCW, secondBullets, new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
             prediction.secondCWPoints = cwPoints;
             prediction.secondCCWPoints = ccwPoints;
