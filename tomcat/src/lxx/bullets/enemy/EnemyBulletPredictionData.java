@@ -12,6 +12,7 @@ import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,6 +29,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
     public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, long predictionRoundTime) {
         super(predictionRoundTime);
         this.predictedBearingOffsets = predictedBearingOffsets;
+        Collections.sort(predictedBearingOffsets);
     }
 
     @Override

@@ -5,11 +5,11 @@
 package lxx.paint;
 
 import lxx.utils.APoint;
+import lxx.utils.LXXConstants;
 import robocode.util.Utils;
 
 import java.awt.*;
 
-import static java.lang.Math.ceil;
 import static java.lang.Math.round;
 import static java.lang.Math.toDegrees;
 
@@ -79,6 +79,15 @@ public class LXXGraphics {
 
     public void drawCircle(APoint position, int diameter) {
         drawOval(position.getX(), position.getY(), diameter, diameter);
+    }
+
+    public void drawCross(APoint position, int radius) {
+        final APoint north = position.project(0, radius);
+        final APoint east = position.project(LXXConstants.RADIANS_90, radius);
+        final APoint south = position.project(LXXConstants.RADIANS_180, radius);
+        final APoint west = position.project(LXXConstants.RADIANS_270, radius);
+        drawLine(north, south);
+        drawLine(west, east);
     }
 
     public void drawCircle(APoint position, double diameter) {

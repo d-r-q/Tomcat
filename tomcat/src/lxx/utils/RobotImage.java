@@ -35,21 +35,12 @@ public final class RobotImage implements LXXRobotState {
         this.energy = original.getEnergy();
     }
 
-    public RobotImage(APoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
-        this.position = position;
-        this.velocity = velocity;
-        this.heading = heading;
-        this.battleField = battleField;
-        this.turnRateRadians = turnRateRadians;
-        this.energy = energy;
-    }
-
     public void apply(MovementDecision movementDecision) {
         heading = Utils.normalAbsoluteAngle(heading + movementDecision.getTurnRateRadians());
         final double acceleration;
         if (abs(signum(velocity) - signum(movementDecision.getDesiredVelocity())) <= 1) {
             acceleration = LXXUtils.limit(-Rules.DECELERATION, abs(movementDecision.getDesiredVelocity()) - abs(velocity), Rules.ACCELERATION);
-            velocity = (abs(velocity) + acceleration) * signum(movementDecision.getDesiredVelocity());
+            velocity = (abs(velocity) + acceleration) * signum(velocity != 0 ? velocity : movementDecision.getDesiredVelocity());
         } else {
             // robocode has difficult 2-step rules in this case,
             // but we will keep it simple

@@ -4,38 +4,64 @@
 
 package lxx.strategies.duel;
 
+import lxx.bullets.LXXBullet;
+
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 class PointDanger {
 
-    public final double dangerOnFirstWave;
-    public final double dangerOnSecondWave;
-    public double distToEnemy;
-    public final double distanceToCenter;
-    public final double enemyAttackAngle;
-    public double danger;
-    public double minDangerOnSecondWave;
+    private final LXXBullet bullet;
+    private final double dangerOnFirstWave;
+    private final double distanceToCenter;
 
-    PointDanger(double dangerOnFirstWave, double dangerOnSecondWave, double distToEnemy, double distanceToWall,
-                double enemyAttackAngle) {
+    private double distToEnemy = Integer.MAX_VALUE;
+    private PointDanger minDangerOnSecondWave;
+    private double danger;
+    private double dangerMultiplier = 1;
+
+    PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distToEnemy, double distanceToWall) {
+        this.bullet = bullet;
         this.dangerOnFirstWave = dangerOnFirstWave;
-        this.dangerOnSecondWave = dangerOnSecondWave;
         this.distToEnemy = distToEnemy;
         this.distanceToCenter = distanceToWall;
-        this.enemyAttackAngle = enemyAttackAngle;
-
         calculateDanger();
     }
 
-    public void calculateDanger() {
-        this.danger = dangerOnFirstWave * 120 +
-                distanceToCenter / 800 * 5 +
-                max(0, (500 - distToEnemy)) / distToEnemy * 15 +
-                minDangerOnSecondWave / 10;
+    public double getDanger() {
+        return danger;
     }
 
-    @Override
-    public String toString() {
-        return String.format("PointDanger (%s #1, %s #2, %3.3f, %3.3f)", dangerOnFirstWave, dangerOnSecondWave, distToEnemy, distanceToCenter);
+    public void setMinDistToEnemy(double distToEnemy) {
+        this.distToEnemy = min(this.distToEnemy, distToEnemy);
+        calculateDanger();
     }
+
+    public void setMinDangerOnSecondWave(PointDanger minDangerOnSecondWave) {
+        this.minDangerOnSecondWave = minDangerOnSecondWave;
+        calculateDanger();
+    }
+
+    public void setDangerMultiplier(double dangerMultiplier) {
+        this.dangerMultiplier = dangerMultiplier;
+    }
+
+    public void calculateDanger() {
+        double thisDanger = dangerOnFirstWave * 120 +
+                distanceToCenter / 800 * 5 +
+                max(0, (500 - distToEnemy)) / distToEnemy * 15;
+        if (bullet != null) {
+            thisDanger = thisDanger * bullet.getBullet().getPower();
+        }
+
+        double secondDanger;
+        if (minDangerOnSecondWave != null) {
+            secondDanger = minDangerOnSecondWave.getDanger();
+        } else {
+            secondDanger = 0;
+        }
+
+        danger = (thisDanger + (secondDanger / 10)) * dangerMultiplier;
+    }
+
 }

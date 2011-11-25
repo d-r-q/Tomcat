@@ -6,11 +6,13 @@ package lxx.bullets;
 
 import lxx.ts_log.TurnSnapshot;
 
+import static java.lang.Math.signum;
+
 /**
  * User: jdev
  * Date: 05.08.11
  */
-public class PastBearingOffset {
+public class PastBearingOffset implements Comparable<PastBearingOffset> {
 
     public final TurnSnapshot source;
     public final double bearingOffset;
@@ -20,5 +22,9 @@ public class PastBearingOffset {
         this.source = source;
         this.bearingOffset = bearingOffset;
         this.danger = danger;
+    }
+
+    public int compareTo(PastBearingOffset o) {
+        return (int) signum(bearingOffset - o.bearingOffset);
     }
 }
