@@ -1,8 +1,14 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.strategies.challenges;
 
 import lxx.Tomcat;
-import lxx.office.PropertiesManager;
-import lxx.strategies.*;
+import lxx.strategies.AbstractStrategy;
+import lxx.strategies.Gun;
+import lxx.strategies.GunDecision;
+import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.utils.LXXConstants;
@@ -29,11 +35,8 @@ public class TCChallengerStrategy extends AbstractStrategy {
     }
 
     public boolean match() {
-        if ("TCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode"))) {
-            target = targetManager.getDuelOpponent();
-            return true;
-        }
-        return false;
+        target = targetManager.getDuelOpponent();
+        return true;
     }
 
     public double getRadarTurnAngleRadians() {
