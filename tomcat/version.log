@@ -1,3 +1,15 @@
+v. 3.48
+* reselect orbit direction, when enemy velocity signum changed, instead of acceleration signum
+* do not reselect orbit direction, when distance between changed more than 25px
+* sort predicted bearing offset to points danger calculations optimisation
+* remove calculation danger on second wave and enemy attack angle
+* multiply danger of bullet to bullet power
+* increase same orbit direction multiplier to 0.95
+* points generator clean up and refactoring
+* reuse points generation method in pif method
+* bug -8 acceleration in movement decision applying fixed
+* evaluate second wave surfing for 6 safest points in both directions
+
 v. 3.47b
 * movement mechanics reworked - select orbit direction to destination point every tick
 * use exactly same code for real movement and movement prediction
