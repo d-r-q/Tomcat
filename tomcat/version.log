@@ -1,3 +1,14 @@
+v. 3.48c
+* revert to v3.48
+* lateral* usage reworked
+* lateral velocity calculation bug refixed
+
+v. 3.48b
+* lateral velocity calculation bug fixed really now:)
+
+v. 3.48a
+* lateral velocity calculation bug fixed
+
 v. 3.48
 * reselect orbit direction, when enemy velocity signum changed, instead of acceleration signum
 * do not reselect orbit direction, when distance between changed more than 25px

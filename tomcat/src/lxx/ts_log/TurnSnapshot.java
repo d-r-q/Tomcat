@@ -4,6 +4,7 @@
 
 package lxx.ts_log;
 
+import lxx.LXXRobotState;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.LXXUtils;
@@ -23,15 +24,19 @@ public class TurnSnapshot implements Serializable {
     private final double[] attributeValues;
     private final long time;
     private final int round;
+    private final LXXRobotState meImage;
+    private final LXXRobotState enemyImage;
 
     // access optimisation
     public TurnSnapshot next;
     public final int roundTime;
 
-    public TurnSnapshot(double[] attributeValues, long time, int round) {
+    public TurnSnapshot(double[] attributeValues, long time, int round, LXXRobotState meImage, LXXRobotState enemyImage) {
         this.attributeValues = attributeValues;
         this.time = time;
         this.round = round;
+        this.meImage = meImage;
+        this.enemyImage = enemyImage;
         this.roundTime = LXXUtils.getRoundTime(time, round);
     }
 
@@ -92,5 +97,13 @@ public class TurnSnapshot implements Serializable {
 
     public double getEnemyAbsoluteHeading() {
         return toRadians(attributeValues[AttributesManager.enemyAbsoluteHeading.id]);
+    }
+
+    public LXXRobotState getMeImage() {
+        return meImage;
+    }
+
+    public LXXRobotState getEnemyImage() {
+        return enemyImage;
     }
 }

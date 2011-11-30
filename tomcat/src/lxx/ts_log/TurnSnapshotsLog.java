@@ -56,7 +56,7 @@ public class TurnSnapshotsLog implements TargetManagerListener {
         return getLastSnapshots(robot, timeDelta).get(0);
     }
 
-    private void interpolate(List<TurnSnapshot> log, TurnSnapshot turnSnapshot1, TurnSnapshot turnSnapshot2, String targetName) {
+    private void interpolate(List<TurnSnapshot> log, TurnSnapshot turnSnapshot1, TurnSnapshot turnSnapshot2) {
         final int steps = (int) (office.getTime() - turnSnapshot1.getTime());
         final long startRoundTime = turnSnapshot1.getTime();
         final int round = turnSnapshot1.getRound();
@@ -65,7 +65,8 @@ public class TurnSnapshotsLog implements TargetManagerListener {
             for (Attribute a : AttributesManager.attributes) {
                 attrValue[a.id] = turnSnapshot1.getAttrValue(a) + (turnSnapshot2.getAttrValue(a) - turnSnapshot1.getAttrValue(a)) / steps * i;
             }
-            final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round);
+            // todo(zhidkov): fix it
+            final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round, null, null);
             if (log.size() > 0 && log.get(log.size() - 1) != null) {
                 log.get(log.size() - 1).setNext(turnSnapshot);
             }
@@ -95,7 +96,7 @@ public class TurnSnapshotsLog implements TargetManagerListener {
 
         final TurnSnapshot turnSnapshot = factory.getTurnSnapshot(target);
         if (log.get(log.size() - 1) != null && log.get(log.size() - 1).getTime() + 1 < office.getTime()) {
-            interpolate(log, log.get(log.size() - 1), turnSnapshot, target.getName());
+            interpolate(log, log.get(log.size() - 1), turnSnapshot);
         }
 
         if (log.size() > 0 && log.get(log.size() - 1) != null) {

@@ -14,8 +14,6 @@ import robocode.util.Utils;
 
 import java.util.*;
 
-import static java.lang.Math.signum;
-
 /**
  * User: jdev
  * Date: 15.02.2010
@@ -111,8 +109,7 @@ public class LXXBullet {
     }
 
     public double getTargetLateralDirection() {
-        final double lateralVelocity = LXXUtils.lateralVelocity(getFirePosition(), getTargetStateAtFireTime());
-        return signum(lateralVelocity);
+        return LXXUtils.lateralDirection(getFirePosition(), getTargetStateAtFireTime());
     }
 
     public boolean equals(Object o) {

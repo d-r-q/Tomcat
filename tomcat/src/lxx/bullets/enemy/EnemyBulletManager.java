@@ -56,7 +56,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final TurnSnapshotsLog turnSnapshotsLog;
     private final BulletManager bulletManager;
 
-    private AimingPredictionData futureBulletAimingPredictionData;
     private double nextFireTime;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
@@ -307,6 +306,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
+        AimingPredictionData futureBulletAimingPredictionData;
         if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
             addBulletShadows(lxxBullet, bulletShadows);
@@ -413,7 +413,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private void bulletFired(LXXBullet bullet) {
         for (LXXBullet enemyBullet : getAllBulletsOnAir()) {
-            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet, LXXUtils.asList(bullet));
+            final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(enemyBullet, LXXUtils.asModifiableList(bullet));
             final BulletShadow shadow = bulletShadows.get(bullet);
             if (shadow == null) {
                 continue;

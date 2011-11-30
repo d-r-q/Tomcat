@@ -13,7 +13,6 @@ import lxx.utils.LXXUtils;
 
 import java.util.List;
 
-import static java.lang.Math.signum;
 import static java.lang.Math.toDegrees;
 
 public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtractor {
@@ -39,7 +38,7 @@ public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtract
         firstBullet = myBullets.get(idx);
 
         final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
-        double lateralDirection = signum(LXXUtils.lateralVelocity2(firstBullet.getFirePosition(), targetState, targetState.getSpeed(), targetState.getAbsoluteHeadingRadians()));
+        double lateralDirection = LXXUtils.lateralDirection(firstBullet.getFirePosition(), targetState);
         return toDegrees(firstBullet.getBearingOffsetRadians(enemy)) * lateralDirection;
     }
 }

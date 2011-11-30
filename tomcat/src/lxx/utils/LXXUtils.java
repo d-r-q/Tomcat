@@ -39,13 +39,6 @@ public class LXXUtils {
         return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
-    public static double getBulletPower(double bulletSpeed) {
-        // speed = 20 - 3 * firepower
-        // - 3 * firepower = speed - 20
-        // firepower = (20 - speed) / 3
-        return (20 - bulletSpeed) / 3;
-    }
-
     public static double anglesDiff(double alpha1, double alpha2) {
         return abs(Utils.normalRelativeAngle(alpha1 - alpha2));
     }
@@ -78,23 +71,30 @@ public class LXXUtils {
         return limit(a.actualRange.a, value, a.actualRange.b);
     }
 
-    public static double lateralVelocity2(APoint center, APoint pos, double velocity, double heading) {
+    public static double lateralDirection(APoint center, LXXRobotState robotState) {
+        return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
+    }
+
+    private static double lateralDirection(APoint center, APoint pos, double velocity, double heading) {
         if (Utils.isNear(0, velocity)) {
             return 1;
         }
-        return abs(velocity) * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
+        return signum(lateralVelocity(center, pos, velocity, heading));
     }
 
-    public static double lateralVelocity(APoint center, APoint pos, double velocity, double heading) {
-        return abs(velocity) * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
+    public static double lateralVelocity(APoint center, LXXRobotState robotState) {
+        return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
-    public static APoint getMyPos(TurnSnapshot bs) {
-        return new LXXPoint(bs.getRoundedAttrValue(AttributesManager.myX), bs.getRoundedAttrValue(AttributesManager.myY));
+    private static double lateralVelocity(APoint center, APoint pos, double velocity, double heading) {
+        return velocity * Math.sin(Utils.normalRelativeAngle(heading - center.angleTo(pos)));
     }
 
-    public static APoint getEnemyPos(TurnSnapshot bs) {
-        return new LXXPoint(bs.getAttrValue(AttributesManager.enemyX), bs.getAttrValue(AttributesManager.enemyY));
+    public static double getBulletPower(double bulletSpeed) {
+        // speed = 20 - 3 * firepower
+        // - 3 * firepower = speed - 20
+        // firepower = (20 - speed) / 3
+        return (20 - bulletSpeed) / 3;
     }
 
     public static double getReturnedEnergy(double bulletPower) {
@@ -132,8 +132,6 @@ public class LXXUtils {
 
     // from robowiki
     public static double getMaxEscapeAngle(APoint center, LXXRobotState state, double bulletSpeed) {
-        final double FIREPOWER = 2;
-        final double ROBOT_WIDTH = 16, ROBOT_HEIGHT = 16;
         // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
         final double eAbsBearing = center.angleTo(state);
         final double rX = center.getX();
@@ -170,10 +168,6 @@ public class LXXUtils {
         }
 
         return 0;
-    }
-
-    public static double lateralVelocity(APoint center, LXXRobotState robotState) {
-        return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
     public static double calculateAcceleration(LXXRobotState prevState, LXXRobotState curState) {
@@ -214,18 +208,6 @@ public class LXXUtils {
         }
 
         return map;
-    }
-
-    public static int getTurnTime(double speed, double turnRadians) {
-        double turnedDistance = 0;
-        int time = 0;
-        while (turnedDistance < turnRadians) {
-            turnedDistance += Rules.getTurnRateRadians(speed);
-            speed = min(speed + 1, Rules.MAX_VELOCITY);
-            time++;
-        }
-
-        return time;
     }
 
     public static double getStopDistance(double speed) {
@@ -299,10 +281,8 @@ public class LXXUtils {
         return (int) (((round & FIFTEEN_BITS) << 15) | (time & FIFTEEN_BITS));
     }
 
-    public static <T> List<T> asList(T... items) {
-        final List res = new ArrayList();
-        res.addAll(Arrays.asList(items));
-        return res;
+    public static <T> List<T> asModifiableList(T... items) {
+        return new ArrayList<T>(Arrays.asList(items));
     }
 
 }

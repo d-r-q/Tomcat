@@ -104,7 +104,7 @@ public class AttributesManager {
             attrValues[a.id] = av;
         }
 
-        return new TurnSnapshot(attrValues, robot.getTime(), robot.getRoundNum());
+        return new TurnSnapshot(attrValues, robot.getTime(), robot.getRoundNum(), robot.getState(), t.getState());
     }
 
     public static int attributesCount() {

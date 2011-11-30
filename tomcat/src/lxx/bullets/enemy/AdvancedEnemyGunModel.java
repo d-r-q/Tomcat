@@ -130,9 +130,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows, long roundTimeLimit) {
             final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(getLimits(predicate));
 
-            final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(predicate), LXXUtils.getMyPos(predicate),
-                    predicate.getMySpeed(), predicate.getMyAbsoluteHeadingRadians());
-            final double lateralDirection = lateralVelocity != 0 ? signum(lateralVelocity) : 1;
+            final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
             final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
 
@@ -278,9 +276,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         }
 
         private void fillWithSimpleBOs(TurnSnapshot ts, LXXRobot t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
-            final double lateralVelocity = LXXUtils.lateralVelocity(LXXUtils.getEnemyPos(ts), LXXUtils.getMyPos(ts),
-                    ts.getMySpeed(), ts.getMyAbsoluteHeadingRadians());
-            final double lateralDirection = Math.signum(lateralVelocity);
+            final double lateralDirection = LXXUtils.lateralDirection(ts.getEnemyImage(), ts.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(t.getFirePower());
             final double maxEscapeAngleAcc = LXXUtils.getMaxEscapeAngle(t, office.getRobot().getState(), bulletSpeed);
             if (enemyGunType != GunType.HEAD_ON) {

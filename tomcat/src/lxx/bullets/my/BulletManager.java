@@ -22,8 +22,6 @@ import robocode.util.Utils;
 
 import java.util.*;
 
-import static java.lang.Math.signum;
-
 /**
  * User: jdev
  * Date: 15.02.2010
@@ -162,7 +160,7 @@ public class BulletManager implements RobotListener, WaveCallback {
 
     public void waveBroken(Wave w) {
         final LXXBullet b = bulletsByWaves.remove(w);
-        final double lateralDirection = signum(LXXUtils.lateralVelocity2(w.getSourceStateAtFireTime(), w.getTargetPosAtFireTime(), w.getTargetStateAtLaunchTime().getVelocity(), w.getTargetStateAtLaunchTime().getAbsoluteHeadingRadians()));
+        final double lateralDirection = LXXUtils.lateralDirection(w.getSourceStateAtFireTime(), w.getTargetStateAtLaunchTime());
         final double guessFactor = w.getHitBearingOffsetInterval().center() * lateralDirection / LXXUtils.getMaxEscapeAngle(w.getSpeed());
         b.getTarget().addVisit(guessFactor);
     }
