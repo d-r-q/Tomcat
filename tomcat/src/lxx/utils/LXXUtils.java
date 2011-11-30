@@ -228,10 +228,6 @@ public class LXXUtils {
         return time;
     }
 
-    public static double bearingOffset(double baseAngle, double alpha) {
-        return Utils.normalRelativeAngle(alpha - baseAngle);
-    }
-
     // we solve this problem in coordinate system with center in farest pnt and y direction equals to segment angle
     // in this cs following set of equations taking place:
     // / x = 0 - equation of segment
