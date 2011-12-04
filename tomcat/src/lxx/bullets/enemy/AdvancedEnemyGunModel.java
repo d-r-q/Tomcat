@@ -14,10 +14,7 @@ import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.utils.AvgValue;
-import lxx.utils.Interval;
-import lxx.utils.IntervalDouble;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.wave.Wave;
@@ -61,11 +58,37 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
 
     public void bulletHit(LXXBullet bullet) {
         final LogSet logSet = getLogSet(bullet.getOwner().getName());
+
+        final AEGMPredictionData aimPredictionData = (AEGMPredictionData) bullet.getAimPredictionData();
+        updateEnemyHitRate(logSet, aimPredictionData, true);
+
         logSet.learn(bullet, entriesByBullets.get(bullet).predicate, true);
         if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
             logSet.shortLogs.addAll(logSet.visitLogsSet);
             logSet.midLogs.addAll(logSet.visitLogsSet);
             logSet.longLogs.addAll(logSet.visitLogsSet);
+            logSet.enemyHitRateLogs.addAll(logSet.visitLogsSet);
+        }
+    }
+
+    private void updateEnemyHitRate(LogSet logSet, AEGMPredictionData aimPredictionData, boolean isHit) {
+        for (Log log : logSet.hitLogsSet) {
+            if (aimPredictionData.getBearingOffsets(log) != null) {
+                if (isHit) {
+                    log.enemyHitRate.hit();
+                } else {
+                    log.enemyHitRate.miss();
+                }
+            }
+        }
+        for (Log log : logSet.visitLogsSet) {
+            if (aimPredictionData.getBearingOffsets(log) != null) {
+                if (isHit) {
+                    log.enemyHitRate.hit();
+                } else {
+                    log.enemyHitRate.miss();
+                }
+            }
         }
     }
 
@@ -74,7 +97,10 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
     }
 
     public void bulletMiss(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, false);
+        final LogSet logSet = getLogSet(bullet.getOwner().getName());
+        final AEGMPredictionData aimPredictionData = (AEGMPredictionData) bullet.getAimPredictionData();
+        updateEnemyHitRate(logSet, aimPredictionData, false);
+        logSet.learn(bullet, entriesByBullets.get(bullet).predicate, false);
     }
 
     private LogSet getLogSet(String enemyName) {
@@ -118,6 +144,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private final AvgValue shortAvgMissRate = new AvgValue(3);
         private final AvgValue midAvgMissRate = new AvgValue(11);
         private final AvgValue longAvgMissRate = new AvgValue(100);
+
+        private final HitRate enemyHitRate = new HitRate();
 
         private Attribute[] attrs;
         public int usage = 0;
@@ -217,7 +245,8 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         private final List<Log> shortLogs = new ArrayList<Log>();
         private final List<Log> midLogs = new ArrayList<Log>();
         private final List<Log> longLogs = new ArrayList<Log>();
-        private final List[] bestLogs = {shortLogs, midLogs, longLogs};
+        private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
+        private final List[] bestLogs = {shortLogs, midLogs, longLogs, enemyHitRateLogs};
 
         public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
             for (Log log : visitLogsSet) {
@@ -233,7 +262,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             for (List<Log> logs : bestLogs) {
                 int i = 0;
                 for (Log log : logs) {
-                    if (i++ == 4) {
+                    if (i++ == 3) {
                         break;
                     }
                     if (bestLogsBearingOffsets.containsKey(log)) {
@@ -271,6 +300,16 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
                 public int compare(Log o1, Log o2) {
                     return (int) signum((o2.longAvgHitRate.getCurrentValue() - o2.longAvgMissRate.getCurrentValue()) -
                             (o1.longAvgHitRate.getCurrentValue() - o1.longAvgMissRate.getCurrentValue()));
+                }
+            });
+            Collections.sort(enemyHitRateLogs, new Comparator<Log>() {
+                public int compare(Log o1, Log o2) {
+                    if (o1.enemyHitRate.getFireCount() == 0) {
+                        return 1;
+                    } else if (o2.enemyHitRate.getFireCount() == 0) {
+                        return -1;
+                    }
+                    return (int) signum(o1.enemyHitRate.getHitRate() - o2.enemyHitRate.getHitRate());
                 }
             });
         }
@@ -366,6 +405,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
         res.shortLogs.addAll(res.hitLogsSet);
         res.midLogs.addAll(res.hitLogsSet);
         res.longLogs.addAll(res.hitLogsSet);
+        res.enemyHitRateLogs.addAll(res.hitLogsSet);
 
         res.updateBestLogs();
 
