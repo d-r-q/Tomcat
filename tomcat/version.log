@@ -1,3 +1,6 @@
+v. 3.49
+* use 3 best logs in terms of log hit rate - log miss rate and 3 best logs in terms of enemy hit rate
+
 v. 3.48c
 * revert to v3.48
 * lateral* usage reworked
