@@ -7,7 +7,10 @@ package lxx.bullets;
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.bullets.enemy.BulletShadow;
-import lxx.utils.*;
+import lxx.utils.APoint;
+import lxx.utils.AimingPredictionData;
+import lxx.utils.IntervalDouble;
+import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
@@ -135,12 +138,8 @@ public class LXXBullet {
         return wave;
     }
 
-    public LXXPoint getCurrentPosition() {
-        return new LXXPoint(bullet.getX(), bullet.getY());
-    }
-
-    public double getFlightTime(APoint robot) {
-        return (getFirePosition().aDistance(robot) - getTravelledDistance()) / getSpeed();
+    public double getFlightTime(APoint pnt) {
+        return (getFirePosition().aDistance(pnt) - getTravelledDistance()) / getSpeed();
     }
 
     public void addBulletShadow(LXXBullet bullet, BulletShadow shadow) {

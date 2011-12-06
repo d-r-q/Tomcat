@@ -5,11 +5,14 @@
 package lxx.ts_log;
 
 import lxx.LXXRobot;
+import lxx.LXXRobotState;
 import lxx.office.Office;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
+import lxx.utils.LXXPoint;
+import lxx.utils.RobotImage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,13 +68,24 @@ public class TurnSnapshotsLog implements TargetManagerListener {
             for (Attribute a : AttributesManager.attributes) {
                 attrValue[a.id] = turnSnapshot1.getAttrValue(a) + (turnSnapshot2.getAttrValue(a) - turnSnapshot1.getAttrValue(a)) / steps * i;
             }
-            // todo(zhidkov): fix it
-            final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round, null, null);
+            final TurnSnapshot turnSnapshot = new TurnSnapshot(attrValue, startRoundTime + i, round,
+                    getState(turnSnapshot1.getMeImage(), turnSnapshot2.getMeImage(), 1 / steps * i),
+                    getState(turnSnapshot1.getEnemyImage(), turnSnapshot2.getEnemyImage(), 1 / steps * i));
             if (log.size() > 0 && log.get(log.size() - 1) != null) {
                 log.get(log.size() - 1).setNext(turnSnapshot);
             }
             log.add(turnSnapshot);
         }
+    }
+
+    private LXXRobotState getState(LXXRobotState initState, LXXRobotState finishState, double interpolationK) {
+        return new RobotImage(new LXXPoint(initState.getX() + (finishState.getX() - initState.getX()) * interpolationK,
+                initState.getY() + (finishState.getY() - initState.getY()) * interpolationK),
+                initState.getVelocity() + (finishState.getVelocity() - initState.getVelocity()) * interpolationK,
+                initState.getHeadingRadians() + (finishState.getHeadingRadians() - initState.getHeadingRadians()) * interpolationK,
+                initState.getBattleField(),
+                initState.getTurnRateRadians() + (finishState.getTurnRateRadians() - initState.getTurnRateRadians()) * interpolationK,
+                initState.getEnergy() + (finishState.getEnergy() - initState.getEnergy()) * interpolationK);
     }
 
     public TurnSnapshot getLastSnapshot(Target target) {
