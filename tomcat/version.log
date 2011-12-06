@@ -1,3 +1,6 @@
+v. 3.50
+* use projected position on first bullet flight time for calculating enemy BO on first and second bullet attributes
+
 v. 3.49
 * use 3 best logs in terms of log hit rate - log miss rate and 3 best logs in terms of enemy hit rate
 
