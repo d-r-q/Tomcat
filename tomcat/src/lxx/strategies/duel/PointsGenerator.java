@@ -88,7 +88,7 @@ public class PointsGenerator {
 
     public int generatePoints(APoint dstPoint, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time, List<WSPoint> points) {
 
-        final APoint surfPoint = getSurfPoint(opponentImg, bullet);
+        final LXXPoint surfPoint = getSurfPoint(opponentImg, bullet);
         final double travelledDistance = bullet.getTravelledDistance();
         final APoint firePosition = bullet.getFirePosition();
         final double bulletSpeed = bullet.getSpeed();
@@ -123,7 +123,7 @@ public class PointsGenerator {
         return generatePoints(dstPoint, bullet, robotImg, opponentImg, 0, null);
     }
 
-    public MovementDecision getMovementDecision(APoint surfPoint, APoint dstPoint, LXXRobotState robot, LXXRobotState opponent) {
+    public MovementDecision getMovementDecision(LXXPoint surfPoint, APoint dstPoint, LXXRobotState robot, LXXRobotState opponent) {
         final double alphaToRobot = surfPoint.angleTo(robot);
         final double alphaToDst = surfPoint.angleTo(dstPoint);
         final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + Rules.ACCELERATION);
@@ -141,9 +141,9 @@ public class PointsGenerator {
         return getMovementDecision(surfPoint, orbitDirection, robot, opponent, desiredSpeed);
     }
 
-    private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
+    private MovementDecision getMovementDecision(LXXPoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, LXXRobotState opponent, double desiredSpeed) {
-        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection);
+        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot.getPosition(), orbitDirection);
         desiredHeading = battleField.smoothWalls(robot.getPosition(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
 
         double direction = robot.getAbsoluteHeadingRadians();
@@ -161,7 +161,7 @@ public class PointsGenerator {
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);
     }
 
-    public APoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
+    public LXXPoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
         if (duelOpponent == null) {
             return bullet.getFirePosition();
         }

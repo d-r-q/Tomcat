@@ -36,6 +36,7 @@ public class Target implements LXXRobot, Serializable {
     private TargetState state;
     private final TargetInfo info;
     private TargetData targetData;
+    private boolean isRammingNow;
 
     public Target(BasicRobot owner, String name, TargetData targetData) {
         this.owner = owner;
@@ -64,6 +65,9 @@ public class Target implements LXXRobot, Serializable {
             // todo (zhidkov): notify listeners
             System.out.println("[WARN]: scans for " + getName() + " skipped: " + (state.time - prevState.time));
         }
+
+        isRammingNow = ((LXXUtils.anglesDiff(angleTo(owner), getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_30 &&
+                getSpeed() > 0) || (owner.aDistance(this) < 50));
 
         eventsList.clear();
     }
@@ -366,6 +370,10 @@ public class Target implements LXXRobot, Serializable {
 
     public double getGunHeat() {
         return state.gunHeat;
+    }
+
+    public boolean isRammingNow() {
+        return isRammingNow;
     }
 
     public class TargetState implements LXXRobotState {

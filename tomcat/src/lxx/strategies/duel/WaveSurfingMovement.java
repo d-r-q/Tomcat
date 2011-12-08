@@ -14,11 +14,7 @@ import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.targeting.tomcat_eyes.TomcatEyes;
-import lxx.utils.APoint;
-import lxx.utils.LXXConstants;
-import lxx.utils.LXXUtils;
-import lxx.utils.RobotImage;
+import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -27,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Math.min;
 import static java.lang.Math.signum;
+import static java.lang.StrictMath.min;
 
 public class WaveSurfingMovement implements Movement, Painter {
 
@@ -42,12 +38,12 @@ public class WaveSurfingMovement implements Movement, Painter {
     private List<WSPoint> secondCWPoints;
     private List<WSPoint> secondCCWPoints;
 
-    public WaveSurfingMovement(Office office, TomcatEyes tomcatEyes) {
+    public WaveSurfingMovement(Office office) {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
         this.enemyBulletManager = office.getEnemyBulletManager();
 
-        pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager(), tomcatEyes), robot.getState().getBattleField());
+        pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager()), robot.getState().getBattleField());
     }
 
     public MovementDecision getMovementDecision() {
@@ -58,7 +54,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
-        final APoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
+        final LXXPoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
 
         return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getState(), opponent);
     }

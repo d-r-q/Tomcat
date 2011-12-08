@@ -8,7 +8,6 @@ import lxx.Tomcat;
 import lxx.office.StatisticsManager;
 import lxx.strategies.FirePowerSelector;
 import lxx.targeting.Target;
-import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
 
@@ -18,11 +17,9 @@ import static java.lang.StrictMath.ceil;
 
 public class DuelFirePowerSelector implements FirePowerSelector {
 
-    private final TomcatEyes tomcatEyes;
     private final StatisticsManager statisticsManager;
 
-    public DuelFirePowerSelector(TomcatEyes tomcatEyes, StatisticsManager statisticsManager) {
-        this.tomcatEyes = tomcatEyes;
+    public DuelFirePowerSelector(StatisticsManager statisticsManager) {
         this.statisticsManager = statisticsManager;
     }
 
@@ -35,7 +32,7 @@ public class DuelFirePowerSelector implements FirePowerSelector {
         if (robot.aDistance(target) < 75) {
             return min(3, robot.getEnergy() - 0.1);
         }
-        if (tomcatEyes.isRammingNow(target) && robot.aDistance(target) < 150) {
+        if (target.isRammingNow() && robot.aDistance(target) < 150) {
             bulletPower = 3;
         }
 

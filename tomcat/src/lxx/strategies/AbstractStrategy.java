@@ -9,7 +9,6 @@ import lxx.targeting.Target;
 
 public abstract class AbstractStrategy implements Strategy {
 
-    private static final double DEFAULT_FIRE_POWER = 1.5;
     protected final Tomcat robot;
 
     protected AbstractStrategy(Tomcat robot) {
@@ -17,32 +16,10 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     public TurnDecision makeDecision() {
-        MovementDecision md;
-        try {
-            md = getMovementDecision();
-        } catch (Throwable t) {
-            t.printStackTrace();
-            md = new MovementDecision(0, 0);
-        }
-        Target target = null;
-        try {
-            target = selectTarget();
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        double firePower = DEFAULT_FIRE_POWER;
-        try {
-            firePower = selectFirePower(target);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        GunDecision gd;
-        try {
-            gd = getGunDecision(target, firePower);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            gd = new GunDecision(0, null);
-        }
+        MovementDecision md = getMovementDecision();
+        Target target = selectTarget();
+        double firePower = selectFirePower(target);
+        GunDecision gd = getGunDecision(target, firePower);
         return new TurnDecision(md,
                 gd.getGunTurnAngleRadians(), firePower,
                 getRadarTurnAngleRadians(), target, gd.getAimPredictionData());
