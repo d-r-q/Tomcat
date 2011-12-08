@@ -14,4 +14,16 @@ public enum OrbitDirection {
     OrbitDirection(int sign) {
         this.sign = sign;
     }
+
+    public OrbitDirection getOpposite() {
+        switch (this) {
+            case CLOCKWISE:
+                return COUNTER_CLOCKWISE;
+            case COUNTER_CLOCKWISE:
+                return CLOCKWISE;
+            default:
+                throw new IllegalArgumentException("Unsupported orbit direction: " + this);
+        }
+    }
+
 }

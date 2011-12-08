@@ -28,14 +28,11 @@ public class PointsGenerator {
         this.battleField = battleField;
     }
 
-    private PointDanger getPointDanger(LXXBullet lxxBullet, LXXRobotState robot, LXXRobotState duelOpponent) {
-        final double firstWaveDng = getWaveDanger(robot, lxxBullet);
-        final double distToEnemy = duelOpponent != null ? robot.aDistance(duelOpponent) : 5;
-
-        return new PointDanger(lxxBullet, firstWaveDng, distToEnemy, battleField.center.aDistance(robot));
+    private PointDanger getPointDanger(LXXBullet lxxBullet, LXXPoint robotPos) {
+        return new PointDanger(lxxBullet, lxxBullet != null ? getWaveDanger(robotPos, lxxBullet) : 0, 0, battleField.center.aDistance(robotPos));
     }
 
-    private double getWaveDanger(APoint pnt, LXXBullet bullet) {
+    private double getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
         if (bullet == null) {
             return 0;
         }
@@ -44,8 +41,8 @@ public class PointsGenerator {
         if (predictedBearingOffsets.size() == 0) {
             return 0;
         }
-        final APoint firePos = bullet.getFirePosition();
-        final double alpha = firePos.angleTo(pnt);
+        final LXXPoint firePos = bullet.getFirePosition();
+        final double alpha = LXXUtils.angle(firePos.x, firePos.y, pnt.x, pnt.y);
         final double bearingOffset = Utils.normalRelativeAngle(alpha - bullet.noBearingOffset());
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(alpha, firePos.aDistance(pnt));
 
@@ -67,7 +64,8 @@ public class PointsGenerator {
         }
 
         double intersection = 0;
-        final IntervalDouble robotIval = new IntervalDouble(bearingOffset - robotWidthInRadians / 2, bearingOffset + robotWidthInRadians / 2);
+        final double halfRobotWidthInRadians = robotWidthInRadians / 2;
+        final IntervalDouble robotIval = new IntervalDouble(bearingOffset - halfRobotWidthInRadians, bearingOffset + halfRobotWidthInRadians);
         for (IntervalDouble shadow : bullet.getMergedShadows()) {
             if (robotIval.intersects(shadow)) {
                 intersection += robotIval.intersection(shadow);
@@ -106,7 +104,7 @@ public class PointsGenerator {
                 opponentImg.apply(new MovementDecision(enemyDesiredVelocity, 0));
             }
             if (points != null) {
-                points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImg, opponentImg)));
+                points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImg.getPosition())));
                 if (opponentImg != null) {
                     for (WSPoint prevPoint : points) {
                         prevPoint.danger.setMinDistToEnemy(prevPoint.aDistance(opponentImg));
