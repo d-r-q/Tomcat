@@ -16,7 +16,7 @@ import static java.lang.Math.abs;
  */
 public class RobotSnapshot implements LXXRobotState {
 
-    private final APoint position;
+    private final LXXPoint position;
     private final double headingRadians;
     private final double absoluteHeadingRadians;
     private final double turnRateRadians;
@@ -61,11 +61,11 @@ public class RobotSnapshot implements LXXRobotState {
     }
 
     public double getX() {
-        return position.getX();
+        return position.x;
     }
 
     public double getY() {
-        return position.getY();
+        return position.y;
     }
 
     public double aDistance(APoint p) {
@@ -113,5 +113,10 @@ public class RobotSnapshot implements LXXRobotState {
 
     public double getEnergy() {
         return energy;
+    }
+
+    @Override
+    public LXXPoint getPosition() {
+        return position;
     }
 }

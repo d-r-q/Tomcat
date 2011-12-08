@@ -6,6 +6,7 @@ package lxx;
 
 import lxx.utils.APoint;
 import lxx.utils.BattleField;
+import lxx.utils.LXXPoint;
 
 public interface LXXRobotState extends APoint {
 
@@ -28,4 +29,7 @@ public interface LXXRobotState extends APoint {
     BattleField getBattleField();
 
     double getEnergy();
+
+    LXXPoint getPosition();
+
 }

@@ -144,7 +144,7 @@ public class PointsGenerator {
     private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, LXXRobotState opponent, double desiredSpeed) {
         double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection);
-        desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        desiredHeading = battleField.smoothWalls(robot.getPosition(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
 
         double direction = robot.getAbsoluteHeadingRadians();
         if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {

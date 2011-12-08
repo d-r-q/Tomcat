@@ -19,14 +19,14 @@ import static java.lang.Math.signum;
  */
 public final class RobotImage implements LXXRobotState {
 
-    private APoint position;
+    private LXXPoint position;
     private double velocity;
     private double heading;
     private BattleField battleField;
     private double turnRateRadians;
     private double energy;
 
-    public RobotImage(APoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
+    public RobotImage(LXXPoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
         this.position = position;
         this.velocity = velocity;
         this.heading = heading;
@@ -64,11 +64,11 @@ public final class RobotImage implements LXXRobotState {
     }
 
     public double getX() {
-        return position.getX();
+        return position.x;
     }
 
     public double getY() {
-        return position.getY();
+        return position.y;
     }
 
     public double aDistance(APoint p) {
@@ -121,5 +121,9 @@ public final class RobotImage implements LXXRobotState {
 
     public double getEnergy() {
         return energy;
+    }
+
+    public LXXPoint getPosition() {
+        return position;
     }
 }
