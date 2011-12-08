@@ -144,15 +144,10 @@ public class PointsGenerator {
                 robotPos.y < battleField.noSmoothY.a || robotPos.y > battleField.noSmoothY.b) {
             desiredHeading = battleField.smoothWalls(robotPos, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
         }
-
-        double direction = robot.getAbsoluteHeadingRadians();
-        if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {
-            direction = Utils.normalAbsoluteAngle(direction + LXXConstants.RADIANS_180);
-        }
         if (opponent != null) {
-            double angleToOpponent = robot.angleTo(opponent);
-            if (((LXXUtils.anglesDiff(direction, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.1)) ||
-                    LXXUtils.getBoundingRectangleAt(robot.project(direction, desiredSpeed), LXXConstants.ROBOT_SIDE_SIZE / 2 - 2).intersects(LXXUtils.getBoundingRectangleAt(opponent))) {
+            final LXXPoint oppPos = opponent.getPosition();
+            double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
+            if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.2))) {
                 desiredSpeed = 0;
             }
         }
