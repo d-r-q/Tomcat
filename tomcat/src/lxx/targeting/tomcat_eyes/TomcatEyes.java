@@ -13,7 +13,6 @@ import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXUtils;
 
 import java.util.HashMap;
 import java.util.Map;
