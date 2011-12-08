@@ -33,9 +33,6 @@ public class PointsGenerator {
     }
 
     private double getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
-        if (bullet == null) {
-            return 0;
-        }
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         final List<PastBearingOffset> predictedBearingOffsets = aimPredictionData.getPredictedBearingOffsets();
         if (predictedBearingOffsets.size() == 0) {
@@ -141,8 +138,12 @@ public class PointsGenerator {
 
     private MovementDecision getMovementDecision(LXXPoint surfPoint, OrbitDirection orbitDirection,
                                                  LXXRobotState robot, LXXRobotState opponent, double desiredSpeed) {
-        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot.getPosition(), orbitDirection);
-        desiredHeading = battleField.smoothWalls(robot.getPosition(), desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        final LXXPoint robotPos = robot.getPosition();
+        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robotPos, orbitDirection);
+        if (robotPos.x < battleField.noSmoothX.a || robotPos.x > battleField.noSmoothX.b ||
+                robotPos.y < battleField.noSmoothY.a || robotPos.y > battleField.noSmoothY.b) {
+            desiredHeading = battleField.smoothWalls(robotPos, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
+        }
 
         double direction = robot.getAbsoluteHeadingRadians();
         if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {
