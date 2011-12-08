@@ -29,7 +29,7 @@ public class PointsGenerator {
     }
 
     private PointDanger getPointDanger(LXXBullet lxxBullet, LXXPoint robotPos) {
-        return new PointDanger(lxxBullet, lxxBullet != null ? getWaveDanger(robotPos, lxxBullet) : 0, 0, battleField.center.aDistance(robotPos));
+        return new PointDanger(lxxBullet, lxxBullet != null ? getWaveDanger(robotPos, lxxBullet) : 0, battleField.center.aDistance(robotPos));
     }
 
     private double getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
