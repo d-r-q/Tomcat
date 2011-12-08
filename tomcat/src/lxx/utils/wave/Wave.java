@@ -30,6 +30,7 @@ public class Wave {
 
     public final double noBearingOffset;
 
+    private boolean isPassed = false;
     private IntervalDouble hitBearingOffsetInterval;
 
     public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime) {
@@ -54,6 +55,7 @@ public class Wave {
         final LXXPoint bulletPos = (LXXPoint) sourceState.project(angleToTarget, getTraveledDistance());
         final boolean contains = targetRect.contains(bulletPos);
         if (contains) {
+            isPassed = true;
             final double bo = Utils.normalRelativeAngle(angleToTarget - noBearingOffset);
             final double targetWidth = LXXUtils.getRobotWidthInRadians(angleToTarget, sourceState.aDistance(targetState.getRobot()));
             final IntervalDouble currentInterval = new IntervalDouble(bo - targetWidth / 2, bo + targetWidth / 2);
@@ -93,6 +95,10 @@ public class Wave {
 
     public IntervalDouble getHitBearingOffsetInterval() {
         return hitBearingOffsetInterval;
+    }
+
+    public boolean isPassed() {
+        return isPassed;
     }
 
     public boolean equals(Object o) {
