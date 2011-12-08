@@ -223,13 +223,12 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             return false;
         }
 
-        private Map<Attribute, Interval> getLimits(TurnSnapshot center) {
-            final Map<Attribute, Interval> res = new HashMap<Attribute, Interval>();
+        private Interval[] getLimits(TurnSnapshot center) {
+            final Interval[] res = new Interval[AttributesManager.attributesCount()];
             for (Attribute attr : attrs) {
                 double delta = halfSideLength.get(attr);
-                res.put(attr,
-                        new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
-                                (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta))));
+                res[attr.id] = new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
+                        (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta)));
             }
 
             return res;

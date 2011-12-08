@@ -12,9 +12,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -171,64 +168,6 @@ public class PSTreeNode<T extends Serializable> {
         return bs.getRoundedAttrValue(attrIdx);
     }
 
-    public List<PSTreeEntry<T>> getEntries(TurnSnapshot bs, int limit) {
-        if (isLoaded) {
-            if (attributeIdx == -1 && children.size() == 0) {
-                return new ArrayList<PSTreeEntry<T>>();
-            }
-            int idx = 0;
-            final int value = getAttrValue(bs, attributes[attributeIdx + 1]);
-            for (PSTreeNode n : children) {
-                if (n.interval.contains(value)) {
-                    break;
-                }
-                idx++;
-            }
-            if (idx == children.size()) {
-                idx--;
-            }
-            final List<PSTreeEntry<T>> res = new ArrayList<PSTreeEntry<T>>(children.get(idx).getEntries(bs, limit));
-            int step = 1;
-            while (res.size() < limit && (idx - step >= 0 || idx + step < children.size())) {
-                final PSTreeNode<T> n1 = idx - step >= 0 ?
-                        children.get(idx - step)
-                        : null;
-                final PSTreeNode<T> n2 = idx + step < children.size()
-                        ? children.get(idx + step)
-                        : null;
-
-                try {
-                    if (n1 != null && n1.mediana != null) {
-                        if (n2 == null || n2.mediana == null) {
-                            res.addAll(n1.getEntries(bs, limit));
-                        } else if (abs(n1.mediana - value) < abs(n2.mediana - value)) {
-                            res.addAll(n1.getEntries(bs, limit));
-                            if (res.size() < limit) {
-                                res.addAll(n2.getEntries(bs, limit));
-                            }
-                        } else {
-                            res.addAll(n2.getEntries(bs, limit));
-                            if (res.size() < limit) {
-                                res.addAll(n1.getEntries(bs, limit));
-                            }
-                        }
-                    } else {
-                        if (n2 != null && n2.mediana != null) {
-                            res.addAll(n2.getEntries(bs, limit));
-                        }
-                    }
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-
-                step++;
-            }
-            return res;
-        } else {
-            return entries;
-        }
-    }
-
     public int getEntryCount() {
         int res = 0;
         if (entries != null) {
@@ -242,7 +181,7 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public int getEntries(Map<Attribute, Interval> limits, PSTreeEntry<T>[] res, int len) {
+    public int getEntries(Interval[] limits, PSTreeEntry<T>[] res, int len) {
         if (children.size() == 0) {
             final PSTreeEntry<T>[] entriesArr = entries.toArray(new PSTreeEntry[entries.size()]);
             if (len == 0) {
@@ -268,7 +207,7 @@ public class PSTreeNode<T extends Serializable> {
             return len + entriesArr.length;
         }
 
-        final Interval limit = limits.get(attributes[attributeIdx + 1]);
+        final Interval limit = limits[attributes[attributeIdx + 1].id];
         int resSize = len;
         for (final PSTreeNode<T> child : children) {
             if (child.range.a > child.range.b || child.range.b < limit.a) {

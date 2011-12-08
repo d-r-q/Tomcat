@@ -8,10 +8,7 @@ import lxx.ts_log.attributes.Attribute;
 import lxx.utils.Interval;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * User: jdev
@@ -31,13 +28,9 @@ public class PSTree<T extends Serializable> {
         entriesCount++;
     }
 
-    public PSTreeEntry<T>[] getSimilarEntries(Map<Attribute, Interval> limits) {
-        final PSTreeEntry[] res = new PSTreeEntry[entriesCount];
+    public PSTreeEntry<T>[] getSimilarEntries(Interval[] limits) {
+        final PSTreeEntry<T>[] res = new PSTreeEntry[entriesCount];
         int len = root.getEntries(limits, res, 0);
         return Arrays.copyOf(res, len);
-    }
-
-    public int getEntriesCount() {
-        return entriesCount;
     }
 }
