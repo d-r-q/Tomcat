@@ -84,9 +84,9 @@ public class PointsGenerator {
     public int generatePoints(APoint dstPoint, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time, List<WSPoint> points) {
 
         final LXXPoint surfPoint = getSurfPoint(opponentImg, bullet);
-        final double travelledDistance = bullet.getTravelledDistance();
-        final APoint firePosition = bullet.getFirePosition();
         final double bulletSpeed = bullet.getSpeed();
+        double travelledDistance = bullet.getTravelledDistance() + bulletSpeed * time;
+        final LXXPoint firePosition = bullet.getFirePosition();
         final double enemyDesiredVelocity;
         if (opponentImg != null) {
             enemyDesiredVelocity = Rules.MAX_VELOCITY * signum(opponentImg.getVelocity());
@@ -94,22 +94,23 @@ public class PointsGenerator {
             enemyDesiredVelocity = 0;
         }
 
+        LXXPoint robotImgPosition;
         do {
             final MovementDecision md = getMovementDecision(surfPoint, dstPoint, robotImg, opponentImg);
             robotImg.apply(md);
-            if (opponentImg != null) {
-                opponentImg.apply(new MovementDecision(enemyDesiredVelocity, 0));
-            }
+            robotImgPosition = robotImg.getPosition();
             if (points != null) {
-                points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImg.getPosition())));
+                points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPosition)));
                 if (opponentImg != null) {
+                    opponentImg.apply(new MovementDecision(enemyDesiredVelocity, 0));
                     for (WSPoint prevPoint : points) {
                         prevPoint.danger.setMinDistToEnemy(prevPoint.aDistance(opponentImg));
                     }
                 }
             }
             time++;
-        } while (firePosition.aDistance(robotImg) - travelledDistance > bulletSpeed * time);
+            travelledDistance += bulletSpeed;
+        } while (firePosition.aDistanceSq(robotImgPosition) > travelledDistance * travelledDistance);
 
         return time;
     }

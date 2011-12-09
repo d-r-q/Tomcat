@@ -20,10 +20,10 @@ class PointDanger {
     private double danger;
     private double dangerMultiplier = 1;
 
-    PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distanceToWall) {
+    PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distanceToCenter) {
         this.bullet = bullet;
         this.dangerOnFirstWave = dangerOnFirstWave;
-        this.distanceToCenter = distanceToWall;
+        this.distanceToCenter = distanceToCenter;
         calculateDanger();
     }
 
