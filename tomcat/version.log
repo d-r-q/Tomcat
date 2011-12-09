@@ -1,3 +1,15 @@
+v. 3.50a
+* work with walls (smoothing, distancing etc.) optimisation
+* limits container in PSTree changed from map to array
+* isEnemyRammingNow() optimised
+* angle calculation in DistanceController optimised
+* RobotImage speed & absoluteHeading optimised
+* waves processing optimised
+* MovementDecision optimised - explicit collisions with walls avoiding removed
+* getPointDanger() optimised
+* wall smoothing optimised - do not smoothing if min distance to wall greater, than wall stick
+* avoiding with enemy collisions optimised
+
 v. 3.50
 * use projected position on first bullet flight time for calculating enemy BO on first and second bullet attributes
 
