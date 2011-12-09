@@ -119,6 +119,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         secondWavePoints.addAll(secondCCWPoints);
         WSPoint minDangerPoint = new WSPoint(robotImage, new PointDanger(null, 10000, 0));
         for (WSPoint pnt : secondWavePoints) {
+            pnt.danger.calculateDanger();
             if (minDangerPoint.danger.getDanger() > pnt.danger.getDanger()) {
                 minDangerPoint = pnt;
                 pifImage = meImg;
@@ -136,6 +137,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             if (prevPrediction != null && pnt.orbitDirection == prevPrediction.minDangerPoint.orbitDirection) {
                 pnt.danger.setDangerMultiplier(0.95);
             }
+            pnt.danger.calculateDanger();
         }
         return wsPoints;
     }

@@ -104,7 +104,7 @@ public class PointsGenerator {
                 if (opponentImg != null) {
                     opponentImg.apply(new MovementDecision(enemyDesiredVelocity, 0));
                     for (WSPoint prevPoint : points) {
-                        prevPoint.danger.setMinDistToEnemy(prevPoint.aDistance(opponentImg));
+                        prevPoint.danger.setMinDistToEnemySq(prevPoint.aDistanceSq(opponentImg.getPosition()));
                     }
                 }
             }
