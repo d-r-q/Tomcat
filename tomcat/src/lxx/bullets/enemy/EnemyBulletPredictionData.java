@@ -8,14 +8,13 @@ import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
 import lxx.paint.LXXGraphics;
+import lxx.ts_log.TurnSnapshot;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 
 import java.awt.*;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
 
@@ -23,13 +22,45 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
     private static final int B = 20;
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
+    
+    private final Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions;
+    private final TurnSnapshot ts;
+    private Collection<BulletShadow> bulletShadows;
+    private List<PastBearingOffset> predictedBearingOffsets;
 
-    private final List<PastBearingOffset> predictedBearingOffsets;
-
-    public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, long predictionRoundTime) {
+    public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, long predictionRoundTime,
+                                     Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions,
+                                     TurnSnapshot ts, Collection<BulletShadow> bulletShadows) {
         super(predictionRoundTime);
+        this.allLogsPredictions = allLogsPredictions;
+        this.ts = ts;
         this.predictedBearingOffsets = predictedBearingOffsets;
+        this.bulletShadows = bulletShadows;
         Collections.sort(predictedBearingOffsets);
+    }
+
+    public TurnSnapshot getTs() {
+        return ts;
+    }
+
+    public List<PastBearingOffset> getBearingOffsets(AdvancedEnemyGunModel.Log log) {
+        return allLogsPredictions.get(log);
+    }
+
+    public void setPredictedBearingOffsets(List<PastBearingOffset> predictedBearingOffsets) {
+        this.predictedBearingOffsets = predictedBearingOffsets;
+    }
+    
+    public void addLogPrediction(AdvancedEnemyGunModel.Log log, List<PastBearingOffset> bearingOffsets) {
+        allLogsPredictions.put(log, bearingOffsets);
+    }
+
+    public Collection<BulletShadow> getBulletShadows() {
+        return bulletShadows;
+    }
+
+    public void setBulletShadows(Collection<BulletShadow> bulletShadows) {
+        this.bulletShadows = bulletShadows;
     }
 
     @Override

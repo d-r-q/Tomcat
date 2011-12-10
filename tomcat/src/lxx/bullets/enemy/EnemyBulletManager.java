@@ -4,7 +4,6 @@
 
 package lxx.bullets.enemy;
 
-import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.RobotListener;
 import lxx.Tomcat;
@@ -42,14 +41,14 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L);
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L, null, null, null);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
-    private final AdvancedEnemyGunModel enemyFireAnglePredictor;
+    private final AdvancedEnemyGunModel enemyGunModel;
 
     private final WaveManager waveManager;
     private final Tomcat robot;
@@ -59,8 +58,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private double nextFireTime;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyFireAnglePredictor = new AdvancedEnemyGunModel(office.getTurnSnapshotsLog(), office);
-        addListener(enemyFireAnglePredictor);
+        enemyGunModel = new AdvancedEnemyGunModel(office.getTurnSnapshotsLog(), office);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
         this.bulletManager = office.getBulletManager();
@@ -86,9 +84,10 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave);
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
             addBulletShadows(lxxBullet, bulletShadows);
-            lxxBullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
+            lxxBullet.setAimPredictionData(enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
                     bulletShadows.values()));
 
+            enemyGunModel.bulletFired(lxxBullet);
             predictedBullets.put(wave, lxxBullet);
 
             for (BulletManagerListener listener : listeners) {
@@ -112,23 +111,17 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 listener.bulletMiss(lxxBullet);
             }
         }
-
         predictedBullets.remove(w);
+        enemyGunModel.processMiss(lxxBullet);
         updateBulletsOnAir();
+        enemyGunModel.processVisit(lxxBullet);
     }
 
     private void updateBulletsOnAir() {
         for (LXXBullet bullet : predictedBullets.values()) {
-            updateBullet(bullet);
-        }
-    }
-
-    private void updateBullet(LXXBullet bullet) {
-        final LXXRobot owner = bullet.getOwner();
-        if (bullet.getAimPredictionData().getPredictionRoundTime() < LXXUtils.getRoundTime(robot.getTime(), robot.getRound())) {
-            bullet.setAimPredictionData(enemyFireAnglePredictor.getPredictionData(owner,
-                    ((AEGMPredictionData) bullet.getAimPredictionData()).getTs(),
-                    bullet.getBulletShadows()));
+            if (bullet.getState() == LXXBulletState.ON_AIR) {
+                enemyGunModel.updateBulletPredictionData(bullet);
+            }
         }
     }
 
@@ -156,7 +149,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             }
         }
 
-        predictedBullets.remove(w);
+        enemyGunModel.processIntercept(lxxBullet);
         updateBulletsOnAir();
     }
 
@@ -175,7 +168,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             listener.bulletHit(lxxBullet);
         }
 
-        predictedBullets.remove(w);
+        enemyGunModel.processHit(lxxBullet);
         updateBulletsOnAir();
     }
 
@@ -310,7 +303,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
             addBulletShadows(lxxBullet, bulletShadows);
-            futureBulletAimingPredictionData = enemyFireAnglePredictor.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
+            futureBulletAimingPredictionData = enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
         } else {
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
         }
@@ -419,14 +412,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 continue;
             }
             enemyBullet.addBulletShadow(bullet, shadow);
-
-            for (PastBearingOffset bo : ((EnemyBulletPredictionData) enemyBullet.getAimPredictionData()).getPredictedBearingOffsets()) {
-                if (shadow.contains(bo.bearingOffset)) {
-                    updateBullet(enemyBullet);
-                    break;
-                }
-            }
         }
+        updateBulletsOnAir();
     }
 
 }

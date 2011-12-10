@@ -1,3 +1,6 @@
+v. 3.51
+* CPU usage profiling added
+
 v. 3.50a.opts.3
 * use distance square for points generation loop break
 * dist to enemy danger component calculation optimised
