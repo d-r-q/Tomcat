@@ -1,3 +1,8 @@
+v. 3.50a.opts.3
+* use distance square for points generation loop break
+* dist to enemy danger component calculation optimised
+* enable avoiding collisions with enemy only when distance between is less than 100
+
 v. 3.50a
 * work with walls (smoothing, distancing etc.) optimisation
 * limits container in PSTree changed from map to array
