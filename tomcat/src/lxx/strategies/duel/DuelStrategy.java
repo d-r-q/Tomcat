@@ -6,6 +6,7 @@ package lxx.strategies.duel;
 
 import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
+import lxx.office.Office;
 import lxx.strategies.*;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
@@ -27,8 +28,8 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     public DuelStrategy(Tomcat robot,
                         Movement withBulletsMovement,
                         Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager,
-                        EnemyBulletManager enemyBulletManager) {
-        super(robot);
+                        EnemyBulletManager enemyBulletManager, Office office) {
+        super(robot, office);
 
         this.withBulletsMovement = withBulletsMovement;
         this.gun = gun;

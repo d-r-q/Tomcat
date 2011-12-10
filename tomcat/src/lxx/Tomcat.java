@@ -15,6 +15,7 @@ import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.StrategySelector;
 import lxx.strategies.TurnDecision;
+import lxx.utils.time_profiling.TimeProfileProperties;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
@@ -67,9 +68,16 @@ public class Tomcat extends BasicRobot {
         init();
 
         while (isAlive) {
-            doTurn();
-            execute();
+            TimeProfileProperties.TURN_TIME.start();
+
+            TimeProfileProperties.PROCESS_LISTENERS_TIME.start();
             notifyListeners();
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.PROCESS_LISTENERS_TIME);
+
+            doTurn();
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TURN_TIME);
+
+            execute();
         }
 
     }

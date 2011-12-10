@@ -13,6 +13,7 @@ import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.AttributesManager;
+import lxx.utils.time_profiling.TimeProfiler;
 import lxx.utils.wave.WaveManager;
 
 public interface Office {
@@ -42,4 +43,6 @@ public interface Office {
     boolean isDebugMode();
 
     TomcatEyes getTomcatEyes();
+
+    TimeProfiler getTimeProfiler();
 }

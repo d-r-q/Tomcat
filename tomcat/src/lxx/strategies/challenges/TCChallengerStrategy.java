@@ -5,6 +5,7 @@
 package lxx.strategies.challenges;
 
 import lxx.Tomcat;
+import lxx.office.Office;
 import lxx.strategies.AbstractStrategy;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
@@ -27,8 +28,8 @@ public class TCChallengerStrategy extends AbstractStrategy {
 
     protected Target target;
 
-    public TCChallengerStrategy(Tomcat robot, Gun gun, TargetManager targetManager) {
-        super(robot);
+    public TCChallengerStrategy(Tomcat robot, Gun gun, TargetManager targetManager, final Office office) {
+        super(robot, office);
 
         this.gun = gun;
         this.targetManager = targetManager;

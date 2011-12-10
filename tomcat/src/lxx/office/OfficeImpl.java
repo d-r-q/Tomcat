@@ -14,6 +14,7 @@ import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.AttributesManager;
+import lxx.utils.time_profiling.TimeProfiler;
 import lxx.utils.wave.WaveManager;
 
 public class OfficeImpl implements Office {
@@ -30,10 +31,14 @@ public class OfficeImpl implements Office {
     private StatisticsManager statisticsManager;
     private TomcatEyes tomcatEyes;
     private PaintManager paintManager;
+    private TimeProfiler timeProfiler;
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
         this.tomcatEyes = new TomcatEyes(tomcat);
+
+        timeProfiler = new TimeProfiler();
+        tomcat.addListener(timeProfiler);
 
         targetManager = new TargetManager(tomcat);
         tomcat.addListener(targetManager);
@@ -119,5 +124,9 @@ public class OfficeImpl implements Office {
 
     public TomcatEyes getTomcatEyes() {
         return tomcatEyes;
+    }
+
+    public TimeProfiler getTimeProfiler() {
+        return timeProfiler;
     }
 }

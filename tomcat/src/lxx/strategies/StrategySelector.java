@@ -39,7 +39,7 @@ public class StrategySelector {
 
         strategies.add(new FindEnemiesStrategy(robot, targetManager, robot.getInitialOthers()));
         if ("TCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode"))) {
-            strategies.add(new TCChallengerStrategy(robot, tomcatClaws, targetManager));
+            strategies.add(new TCChallengerStrategy(robot, tomcatClaws, targetManager, office));
         }
         if ("MCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode"))) {
             strategies.add(new MCChallengerStrategy(robot, wsm, targetManager, enemyBulletManager));
@@ -48,7 +48,7 @@ public class StrategySelector {
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
                 wsm,
                 tomcatClaws,
-                new DuelFirePowerSelector(office.getStatisticsManager()), targetManager, enemyBulletManager);
+                new DuelFirePowerSelector(office.getStatisticsManager()), targetManager, enemyBulletManager, office);
         strategies.add(duelStrategy);
 
         final WinStrategy winStrategy = new WinStrategy(robot, targetManager, enemyBulletManager);
