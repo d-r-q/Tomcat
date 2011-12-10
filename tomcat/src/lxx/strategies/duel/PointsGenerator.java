@@ -110,7 +110,8 @@ public class PointsGenerator {
             }
             time++;
             travelledDistance += bulletSpeed;
-        } while (firePosition.aDistanceSq(robotImgPosition) > travelledDistance * travelledDistance);
+        }
+        while (travelledDistance < 0 || firePosition.aDistanceSq(robotImgPosition) > travelledDistance * travelledDistance);
 
         return time;
     }
@@ -147,9 +148,12 @@ public class PointsGenerator {
         }
         if (opponent != null) {
             final LXXPoint oppPos = opponent.getPosition();
-            double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
-            if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.2))) {
-                desiredSpeed = 0;
+            final double distToOpponent = robot.aDistance(oppPos);
+            if (distToOpponent < 100) {
+                double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
+                if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, distToOpponent) * 1.01))) {
+                    desiredSpeed = 0;
+                }
             }
         }
 
