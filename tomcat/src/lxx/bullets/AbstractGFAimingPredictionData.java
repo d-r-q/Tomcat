@@ -65,20 +65,6 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
         step = (maxBearingOffset * 2 + LXXConstants.RADIANS_1) / matches.size();
     }
 
-    public double getDangerExt(double baseBearingOffset, double botWidthRadians) {
-        if (dangers.size() == 0) {
-            calculateDangers(getMatches());
-        }
-        final int fromIdx = (int) LXXUtils.limit(0, floor((baseBearingOffset - botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
-        final int toIdx = (int) LXXUtils.limit(0, ceil((baseBearingOffset + botWidthRadians / 2 + maxBearingOffset) / step), dangers.size() - 1);
-        double danger = 0;
-        for (int i = fromIdx; i <= toIdx; i++) {
-            danger = max(danger, dangers.get(i).danger);
-        }
-
-        return danger;
-    }
-
     public double getDangerInt(double baseBearingOffset, double botWidthRadians) {
         if (dangers.size() == 0) {
             calculateDangers(getMatches());

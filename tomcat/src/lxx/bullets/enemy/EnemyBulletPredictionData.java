@@ -49,6 +49,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
 
     public void setPredictedBearingOffsets(List<PastBearingOffset> predictedBearingOffsets) {
         this.predictedBearingOffsets = predictedBearingOffsets;
+        Collections.sort(predictedBearingOffsets);
     }
     
     public void addLogPrediction(AdvancedEnemyGunModel.Log log, List<PastBearingOffset> bearingOffsets) {

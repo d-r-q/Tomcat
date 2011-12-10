@@ -9,7 +9,8 @@ public enum TimeProfileProperties {
     TURN_TIME(0, "Turn time"),
     PROCESS_LISTENERS_TIME(1, "Listeners time"),
     MOVEMENT_TIME(2, "Movement time"),
-    GUN_TIME(3, "Gun time");
+    GUN_TIME(3, "Gun time"),
+    EBM_WAVE_TIME(4, "EBM wave time");
 
     public final int idx;
     public final String name;
@@ -24,7 +25,7 @@ public enum TimeProfileProperties {
 
     public void start() {
         if (startTime != -1) {
-            throw new IllegalStateException("Stop was not called");
+            System.out.printf("[WARN] %s: Stop was not called\n", name);
         }
         startTime = System.nanoTime();
     }

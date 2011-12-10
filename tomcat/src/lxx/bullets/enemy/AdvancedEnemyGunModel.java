@@ -107,7 +107,7 @@ public class AdvancedEnemyGunModel {
     }
 
     public void processVisit(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.get(bullet);
+        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.remove(bullet);
         final double direction = bullet.getTargetLateralDirection();
         double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
@@ -127,21 +127,26 @@ public class AdvancedEnemyGunModel {
         for (List<Log> logs : logSet.bestLogs) {
             int i = 0;
             for (Log log : logs) {
-                if (i++ == BEST_LOGS_COUNT) {
-                    break;
+                if (i++ < BEST_LOGS_COUNT) {
+                    if (calculatedLogs.contains(log)) {
+                        continue;
+                    }
+                    List<PastBearingOffset> logBOs = aimPredictionData.getBearingOffsets(log);
+                    if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
+                            hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows())) {
+                        logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
+                        aimPredictionData.addLogPrediction(log, logBOs);
+                        hasRecalculatedLogs = true;
+                    }
+                    calculatedLogs.add(log);
+                    bearingOffsets.addAll(logBOs);
+                } else {
+                    // todo: do not recalculate logs, which is not needing
+                    if (aimPredictionData.getBearingOffsets(log) != null && !calculatedLogs.contains(log)) {
+                        aimPredictionData.addLogPrediction(log,
+                                log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows()));
+                    }
                 }
-                if (calculatedLogs.contains(log)) {
-                    continue;
-                }
-                List<PastBearingOffset> logBOs = aimPredictionData.getBearingOffsets(log);
-                if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
-                        hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows())) {
-                    logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
-                    aimPredictionData.addLogPrediction(log, logBOs);
-                    hasRecalculatedLogs = true;
-                }
-                calculatedLogs.add(log);
-                bearingOffsets.addAll(logBOs);
             }
         }
 
