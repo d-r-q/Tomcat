@@ -16,6 +16,7 @@ import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.*;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
+import lxx.utils.time_profiling.TimeProfileProperties;
 import robocode.Rules;
 
 import java.util.*;
@@ -203,7 +204,9 @@ public class AdvancedEnemyGunModel {
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
+            TimeProfileProperties.RANGE_SEARCH_TIME.start();
             final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(getLimits(predicate));
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.RANGE_SEARCH_TIME);
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
