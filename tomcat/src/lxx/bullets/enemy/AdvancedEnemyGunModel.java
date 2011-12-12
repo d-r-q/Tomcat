@@ -30,6 +30,7 @@ public class AdvancedEnemyGunModel {
     private static final int BEST_LOGS_COUNT = 3;
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
+    private static final long NO_LIMIT = Long.MAX_VALUE;
 
     private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
 
@@ -127,14 +128,14 @@ public class AdvancedEnemyGunModel {
         for (List<Log> logs : logSet.bestLogs) {
             int i = 0;
             for (Log log : logs) {
+                if (calculatedLogs.contains(log)) {
+                    continue;
+                }
                 if (i++ < BEST_LOGS_COUNT) {
-                    if (calculatedLogs.contains(log)) {
-                        continue;
-                    }
                     List<PastBearingOffset> logBOs = aimPredictionData.getBearingOffsets(log);
                     if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
                             hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows())) {
-                        logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
+                        logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime);
                         aimPredictionData.addLogPrediction(log, logBOs);
                         hasRecalculatedLogs = true;
                     }
@@ -142,9 +143,12 @@ public class AdvancedEnemyGunModel {
                     bearingOffsets.addAll(logBOs);
                 } else {
                     // todo: do not recalculate logs, which is not needing
-                    if (aimPredictionData.getBearingOffsets(log) != null && !calculatedLogs.contains(log)) {
+                    if (aimPredictionData.getBearingOffsets(log) != null &&
+                            (isShadowsRemoved ||
+                                    (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
+                                    hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows()))) {
                         aimPredictionData.addLogPrediction(log,
-                                log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows()));
+                                log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime));
                     }
                 }
             }
@@ -202,7 +206,7 @@ public class AdvancedEnemyGunModel {
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
         }
 
-        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
+        private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows, long roundTimeLimit) {
             final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(getLimits(predicate));
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
@@ -212,6 +216,9 @@ public class AdvancedEnemyGunModel {
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             int notShadowedBulletsCount = 0;
             for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
+                if (entry.predicate.roundTime > roundTimeLimit) {
+                    continue;
+                }
                 if (notShadowedBulletsCount == 5) {
                     break;
                 }
@@ -306,7 +313,7 @@ public class AdvancedEnemyGunModel {
                     if (bestLogsBearingOffsets.containsKey(log)) {
                         continue;
                     }
-                    final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows);
+                    final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, NO_LIMIT);
                     bestLogsBearingOffsets.put(log, logBOs);
                     bearingOffsets.addAll(logBOs);
                     log.usage++;
@@ -389,7 +396,7 @@ public class AdvancedEnemyGunModel {
                 final EnemyBulletPredictionData ebpd = (EnemyBulletPredictionData) bullet.getAimPredictionData();
                 List<PastBearingOffset> bearingOffsets = ebpd.getBearingOffsets(log);
                 if (bearingOffsets == null) {
-                    bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
+                    bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : ebpd.getTs().roundTime);
                 }
                 double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
