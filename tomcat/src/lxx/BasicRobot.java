@@ -64,7 +64,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return LXXUtils.angle(position, point);
     }
 
-    public APoint project(double alpha, double distance) {
+    public LXXPoint project(double alpha, double distance) {
         return position.project(alpha, distance);
     }
 
