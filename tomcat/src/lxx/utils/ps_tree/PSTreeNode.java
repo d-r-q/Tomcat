@@ -34,6 +34,7 @@ public class PSTreeNode<T extends Serializable> {
     private boolean isLoaded = false;
     private ArrayList<PSTreeEntry<T>> entries = null;
     private Iterator<PSTreeNode<T>> childIterator = null;
+    private int entriesCount;
 
     public PSTreeNode(int loadFactor, Interval interval, int attributeIdx, Attribute[] attributes,
                       double maxIntervalLength, PSTreeNode<T> parent) {
@@ -90,10 +91,11 @@ public class PSTreeNode<T extends Serializable> {
             entries = new ArrayList<PSTreeEntry<T>>();
         }
         entries.add(0, PSTreeEntry);
+        entriesCount = entries.size();
         if (mediana == null) {
             mediana = (double) getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx]);
         } else {
-            mediana = (mediana * entries.size() + getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
+            mediana = (mediana * entriesCount + getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx])) / (entries.size() + 1);
         }
         final int value = getAttrValue(PSTreeEntry.predicate, attributes[attributeIdx]);
         if (value < range.a) {
@@ -188,51 +190,11 @@ public class PSTreeNode<T extends Serializable> {
         return res;
     }
 
-    public int getEntries(Interval[] limits, PSTreeEntry<T>[] res, int len) {
-        if (entries != null) {
-            final PSTreeEntry<T>[] entriesArr = entries.toArray(new PSTreeEntry[entries.size()]);
-            if (len == 0) {
-                System.arraycopy(entriesArr, 0, res, 0, entriesArr.length);
-            } else {
-                final PSTreeEntry<T>[] resCopy = Arrays.copyOf(res, len);
-                int i1 = 0;
-                int i2 = 0;
-                int resIdx = 0;
-                while (i1 < entriesArr.length && i2 < len) {
-                    if (entriesArr[i1].predicate.roundTime >= resCopy[i2].predicate.roundTime) {
-                        res[resIdx++] = entriesArr[i1++];
-                    } else {
-                        res[resIdx++] = resCopy[i2++];
-                    }
-                }
-                if (i1 < entriesArr.length) {
-                    System.arraycopy(entriesArr, i1, res, resIdx, entriesArr.length - i1);
-                } else if (i2 < len) {
-                    System.arraycopy(resCopy, i2, res, resIdx, len - i2);
-                }
-            }
-            return len + entriesArr.length;
-        }
-
-        final Interval limit = limits[attributes[attributeIdx + 1].id];
-        int resSize = len;
-        for (final PSTreeNode<T> child : children) {
-            if (child.range.a > child.range.b || child.range.b < limit.a) {
-                continue;
-            } else if (child.range.a > limit.b) {
-                break;
-            } else {
-                resSize = child.getEntries(limits, res, resSize);
-            }
-        }
-
-        return resSize;
-    }
-
     public PSTreeEntry<T>[] getEntries0(Interval[] limits, int totalEntriesCount) {
         PSTreeNode<T> cursor = this;
         PSTreeEntry<T>[] buffer1 = new PSTreeEntry[totalEntriesCount];
         PSTreeEntry<T>[] buffer2 = new PSTreeEntry[totalEntriesCount];
+        PSTreeEntry<T>[] buffer3 = new PSTreeEntry[totalEntriesCount];
         PSTreeEntry<T>[] prevBuffer;
         PSTreeEntry<T>[] newBuffer = buffer2;
         int bufferLen = 0;
@@ -246,23 +208,23 @@ public class PSTreeNode<T extends Serializable> {
                     prevBuffer = buffer2;
                     newBuffer = buffer1;
                 }
-                final PSTreeEntry<T>[] entriesArr = cursor.entries.toArray(new PSTreeEntry[cursor.entries.size()]);
+                final PSTreeEntry<T>[] entriesArr = cursor.entries.toArray(buffer3);
                 int i1 = 0;
                 int i2 = 0;
                 int resIdx = 0;
-                while (i1 < entriesArr.length && i2 < bufferLen) {
+                while (i1 < cursor.entriesCount && i2 < bufferLen) {
                     if (entriesArr[i1].predicate.roundTime >= prevBuffer[i2].predicate.roundTime) {
                         newBuffer[resIdx++] = entriesArr[i1++];
                     } else {
                         newBuffer[resIdx++] = prevBuffer[i2++];
                     }
                 }
-                if (i1 < entriesArr.length) {
-                    System.arraycopy(entriesArr, i1, newBuffer, resIdx, entriesArr.length - i1);
+                if (i1 < cursor.entriesCount) {
+                    System.arraycopy(entriesArr, i1, newBuffer, resIdx, cursor.entriesCount - i1);
                 } else if (i2 < bufferLen) {
                     System.arraycopy(prevBuffer, i2, newBuffer, resIdx, bufferLen - i2);
                 }
-                bufferLen += entriesArr.length;
+                bufferLen += cursor.entriesCount;
                 cursor = cursor.parent;
             } else {
                 final Interval limit = limits[cursor.attributes[cursor.attributeIdx + 1].id];
