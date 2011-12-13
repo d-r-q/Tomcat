@@ -16,7 +16,6 @@ import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
 
-import java.awt.geom.Rectangle2D;
 import java.util.*;
 
 import static java.lang.Math.*;
@@ -27,13 +26,12 @@ public class TomcatClaws implements Gun {
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
     private static final int AIMING_TIME = 2;
-    private static final int NO_BEARING_OFFSET = 0;
 
     private final Tomcat robot;
     private final TurnSnapshotsLog log;
     private final DataView dataView;
 
-    private APoint robotPosAtFireTime;
+    private LXXPoint robotPosAtFireTime;
     private List<APoint> futurePoses;
     private Map<Double, Double> bearingOffsetDangers;
     private double bestBearingOffset;
@@ -131,17 +129,16 @@ public class TomcatClaws implements Gun {
 
     private APoint getFuturePos(Target t, TurnSnapshot start, double bulletSpeed) {
         final LXXPoint targetPos = t.getPosition();
-        APoint futurePos = new LXXPoint(targetPos);
+        LXXPoint futurePos = new LXXPoint(targetPos);
 
         TurnSnapshot currentSnapshot = start.next;
         currentSnapshot = skip(currentSnapshot, AIMING_TIME);
         final BattleField battleField = robot.getState().getBattleField();
         final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
-        BulletState bs;
         final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;
         long timeDelta;
         double bulletTravelledDistance = bulletSpeed;
-        while ((bs = isBulletHitEnemy(futurePos, bulletTravelledDistance)) == BulletState.COMING) {
+        while (bulletTravelledDistance * bulletTravelledDistance < robotPosAtFireTime.aDistanceSq(futurePos)) {
             if (currentSnapshot == null) {
                 return null;
             }
@@ -157,9 +154,6 @@ public class TomcatClaws implements Gun {
             currentSnapshot = skip(currentSnapshot, minBulletFlightTime);
         }
 
-        if (bs == BulletState.PASSED) {
-            throw new RuntimeException("Future pos calculation error");
-        }
 
         return futurePos;
     }
@@ -174,24 +168,6 @@ public class TomcatClaws implements Gun {
         }
 
         return start;
-    }
-
-    private BulletState isBulletHitEnemy(APoint predictedPos, double bulletTravelledDistance) {
-        final double angleToPredictedPos = robotPosAtFireTime.angleTo(predictedPos);
-        final LXXPoint bulletPos = (LXXPoint) robotPosAtFireTime.project(angleToPredictedPos, bulletTravelledDistance);
-        final Rectangle2D enemyRectAtPredictedPos = LXXUtils.getBoundingRectangleAt(predictedPos);
-        if (enemyRectAtPredictedPos.contains(bulletPos)) {
-            return BulletState.HITTING;
-        } else if (bulletTravelledDistance > robotPosAtFireTime.aDistance(predictedPos) + LXXConstants.ROBOT_SIDE_HALF_SIZE) {
-            return BulletState.PASSED;
-        }
-        return BulletState.COMING;
-    }
-
-    private enum BulletState {
-        COMING,
-        HITTING,
-        PASSED
     }
 
 }

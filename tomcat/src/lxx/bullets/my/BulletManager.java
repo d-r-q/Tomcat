@@ -139,7 +139,7 @@ public class BulletManager implements RobotListener, WaveCallback {
             addBullet(((FireEvent) event).getBullet());
         } else if (event instanceof LXXPaintEvent && bullets.size() > 0 && paintEnabled) {
             final LXXBullet firstBullet = getFirstBullet();
-            if (firstBullet == null) {
+            if (firstBullet == null || firstBullet.getAimPredictionData() == null) {
                 return;
             }
             LXXGraphics g = ((LXXPaintEvent) event).getGraphics();

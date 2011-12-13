@@ -1,16 +1,21 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.utils.time_profiling;
 
 /**
-* User: jdev
-* Date: 10.12.11
-*/
+ * User: jdev
+ * Date: 10.12.11
+ */
 public enum TimeProfileProperties {
 
     TURN_TIME(0, "Turn time"),
     PROCESS_LISTENERS_TIME(1, "Listeners time"),
     MOVEMENT_TIME(2, "Movement time"),
     GUN_TIME(3, "Gun time"),
-    EBM_WAVE_TIME(4, "EBM wave time");
+    EBM_WAVE_TIME(4, "EBM wave time"),
+    RANGE_SEARCH_TIME(5, "Range search new time");
 
     public final int idx;
     public final String name;
