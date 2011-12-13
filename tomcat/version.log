@@ -1,4 +1,5 @@
 v. 3.52
+* updating prediction data for bullets on air reworked
 * do not recalculate data for logs, which has been removed from best logs and not needed in recalculation
 * do not use visit data, collected after bullet has been fired
 
