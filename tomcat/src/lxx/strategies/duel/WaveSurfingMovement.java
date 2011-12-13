@@ -28,6 +28,8 @@ import static java.lang.StrictMath.min;
 
 public class WaveSurfingMovement implements Movement, Painter {
 
+    public static final int FIRST_BULLET_FLIGHT_TIME_LIMIT = 2;
+
     private final Tomcat robot;
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
@@ -143,7 +145,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private List<LXXBullet> getBullets() {
-        List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(2);
+        List<LXXBullet> bulletsOnAir = enemyBulletManager.getBulletsOnAir(FIRST_BULLET_FLIGHT_TIME_LIMIT);
         if (bulletsOnAir.size() < 2 && duelOpponent != null) {
             bulletsOnAir.add(enemyBulletManager.createFutureBullet(duelOpponent));
         }

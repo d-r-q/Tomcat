@@ -116,50 +116,50 @@ public class AdvancedEnemyGunModel {
     }
 
     public void updateBulletPredictionData(LXXBullet bullet) {
-        final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
-
-        final Set<Log> calculatedLogs = new HashSet<Log>();
         final LXXRobot owner = bullet.getOwner();
-        final LogSet logSet = getLogSet(owner.getName());
-        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         final long roundTime = LXXUtils.getRoundTime(owner.getTime(), owner.getRound());
-        final boolean isShadowsRemoved = bullet.getBulletShadows().size() != aimPredictionData.getBulletShadows().size();
-        boolean hasRecalculatedLogs = false;
-        for (List<Log> logs : logSet.bestLogs) {
-            int i = 0;
-            for (Log log : logs) {
-                if (calculatedLogs.contains(log)) {
-                    continue;
-                }
-                if (i++ < BEST_LOGS_COUNT) {
-                    List<PastBearingOffset> logBOs = aimPredictionData.getBearingOffsets(log);
-                    if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime > aimPredictionData.getPredictionRoundTime()) ||
-                            hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows())) {
-                        logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime);
-                        aimPredictionData.addLogPrediction(log, logBOs);
-                        hasRecalculatedLogs = true;
-                    }
-                    calculatedLogs.add(log);
-                    bearingOffsets.addAll(logBOs);
-                } else {
-                    if (aimPredictionData.getBearingOffsets(log) != null &&
-                            (isShadowsRemoved ||
-                                    (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime > aimPredictionData.getPredictionRoundTime()) ||
-                                    hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows()))) {
-                        aimPredictionData.addLogPrediction(log,
-                                log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime));
-                    }
-                }
-            }
-        }
+        updateOldData(bullet);
+        calculateNewData(bullet, roundTime);
+    }
 
-        if (hasRecalculatedLogs && bearingOffsets.size() != 0) {
-            aimPredictionData.setPredictedBearingOffsets(bearingOffsets);
-            aimPredictionData.setPredictionRoundTime(roundTime);
+    private void updateOldData(LXXBullet bullet) {
+        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
+        final boolean isShadowsRemoved = bullet.getBulletShadows().size() != aimPredictionData.getBulletShadows().size();
+        for (Log log : aimPredictionData.getLogs()) {
+            if (!isNeedInUpdate(log, bullet, aimPredictionData, isShadowsRemoved)) {
+                continue;
+            }
+            aimPredictionData.addLogPrediction(log,
+                    log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), getRoundTimeLimit(log, aimPredictionData)));
         }
         if (isShadowsRemoved) {
             aimPredictionData.setBulletShadows(bullet.getBulletShadows());
         }
+    }
+
+    private void calculateNewData(LXXBullet bullet, long roundTime) {
+        final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
+        final LogSet logSet = getLogSet(bullet.getOwner().getName());
+        final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
+        for (Log log : logSet.getBestLogs()) {
+            List<PastBearingOffset> logBearingOffsets = aimPredictionData.getBearingOffsets(log);
+            if (logBearingOffsets == null) {
+                logBearingOffsets = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), getRoundTimeLimit(log, aimPredictionData));
+                aimPredictionData.addLogPrediction(log, logBearingOffsets);
+            }
+            bearingOffsets.addAll(logBearingOffsets);
+        }
+
+        if (bearingOffsets.size() != 0) {
+            aimPredictionData.setPredictedBearingOffsets(bearingOffsets);
+            aimPredictionData.setPredictionRoundTime(roundTime);
+        }
+    }
+
+    private boolean isNeedInUpdate(Log log, LXXBullet bullet, EnemyBulletPredictionData aimPredictionData, boolean shadowsRemoved) {
+        return (shadowsRemoved ||
+                (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime >= aimPredictionData.getPredictionRoundTime()) ||
+                hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows()));
     }
 
     private boolean hasShadowedBOs(List<PastBearingOffset> bos, Collection<BulletShadow> shadows) {
@@ -303,20 +303,11 @@ public class AdvancedEnemyGunModel {
 
             final Map<Log, List<PastBearingOffset>> bestLogsBearingOffsets = new HashMap<Log, List<PastBearingOffset>>();
             final long roundTime = LXXUtils.getRoundTime(t.getTime(), t.getRound());
-            for (List<Log> logs : bestLogs) {
-                int i = 0;
-                for (Log log : logs) {
-                    if (i++ == BEST_LOGS_COUNT) {
-                        break;
-                    }
-                    if (bestLogsBearingOffsets.containsKey(log)) {
-                        continue;
-                    }
-                    final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, NO_LIMIT);
-                    bestLogsBearingOffsets.put(log, logBOs);
-                    bearingOffsets.addAll(logBOs);
-                    log.usage++;
-                }
+            for (Log log : getBestLogs()) {
+                final List<PastBearingOffset> logBOs = log.getBearingOffsets(ts, t.getFirePower(), bulletShadows, NO_LIMIT);
+                bestLogsBearingOffsets.put(log, logBOs);
+                bearingOffsets.addAll(logBOs);
+                log.usage++;
             }
 
             if (bearingOffsets.size() == 0) {
@@ -358,6 +349,16 @@ public class AdvancedEnemyGunModel {
             });
         }
 
+        private Set<Log> getBestLogs() {
+            final Set<Log> bestLogs = new HashSet<Log>();
+            for (List<Log> logs : this.bestLogs) {
+                for (int i = 0; i < BEST_LOGS_COUNT; i++) {
+                    bestLogs.add(logs.get(i));
+                }
+            }
+            return bestLogs;
+        }
+
         private void fillWithSimpleBOs(TurnSnapshot ts, LXXRobot t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
             final double lateralDirection = LXXUtils.lateralDirection(ts.getEnemyImage(), ts.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(t.getFirePower());
@@ -395,7 +396,7 @@ public class AdvancedEnemyGunModel {
                 final EnemyBulletPredictionData ebpd = (EnemyBulletPredictionData) bullet.getAimPredictionData();
                 List<PastBearingOffset> bearingOffsets = ebpd.getBearingOffsets(log);
                 if (bearingOffsets == null) {
-                    bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : ebpd.getTs().roundTime);
+                    bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), getRoundTimeLimit(log, ebpd));
                 }
                 double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
@@ -438,6 +439,10 @@ public class AdvancedEnemyGunModel {
             return realDanger / totalDanger;
         }
 
+    }
+
+    private static long getRoundTimeLimit(Log log, EnemyBulletPredictionData ebpd) {
+        return log.type == LogType.HIT_LOG ? NO_LIMIT : ebpd.getTs().roundTime;
     }
 
     private LogSet createLogSet() {

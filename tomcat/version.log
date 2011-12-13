@@ -1,3 +1,7 @@
+v. 3.52
+* do not recalculate data for logs, which has been removed from best logs and not needed in recalculation
+* do not use visit data, collected after bullet has been fired
+
 v. 3.51
 * CPU usage profiling added
 * prediction data management reworked: now do not unnecessary calculations and update bullets in air with data from bulletHitBullet and hitByByllet events
