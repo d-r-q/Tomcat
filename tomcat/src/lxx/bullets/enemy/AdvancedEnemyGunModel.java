@@ -124,15 +124,15 @@ public class AdvancedEnemyGunModel {
 
     private void updateOldData(LXXBullet bullet) {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
-        final boolean isShadowsRemoved = bullet.getBulletShadows().size() != aimPredictionData.getBulletShadows().size();
+        final boolean isShadowsChanged = bullet.getBulletShadows().size() != aimPredictionData.getBulletShadows().size();
         for (Log log : aimPredictionData.getLogs()) {
-            if (!isNeedInUpdate(log, bullet, aimPredictionData, isShadowsRemoved)) {
+            if (!isNeedInUpdate(log, bullet, aimPredictionData, isShadowsChanged)) {
                 continue;
             }
             aimPredictionData.addLogPrediction(log,
                     log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), getRoundTimeLimit(log, aimPredictionData)));
         }
-        if (isShadowsRemoved) {
+        if (isShadowsChanged) {
             aimPredictionData.setBulletShadows(bullet.getBulletShadows());
         }
     }
@@ -156,8 +156,8 @@ public class AdvancedEnemyGunModel {
         }
     }
 
-    private boolean isNeedInUpdate(Log log, LXXBullet bullet, EnemyBulletPredictionData aimPredictionData, boolean shadowsRemoved) {
-        return (shadowsRemoved ||
+    private boolean isNeedInUpdate(Log log, LXXBullet bullet, EnemyBulletPredictionData aimPredictionData, boolean isShadowsChanged) {
+        return (isShadowsChanged ||
                 (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime >= aimPredictionData.getPredictionRoundTime()) ||
                 hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows()));
     }
