@@ -133,7 +133,7 @@ public class AdvancedEnemyGunModel {
                 }
                 if (i++ < BEST_LOGS_COUNT) {
                     List<PastBearingOffset> logBOs = aimPredictionData.getBearingOffsets(log);
-                    if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
+                    if (isShadowsRemoved || logBOs == null || (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime > aimPredictionData.getPredictionRoundTime()) ||
                             hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows())) {
                         logBOs = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime);
                         aimPredictionData.addLogPrediction(log, logBOs);
@@ -142,10 +142,9 @@ public class AdvancedEnemyGunModel {
                     calculatedLogs.add(log);
                     bearingOffsets.addAll(logBOs);
                 } else {
-                    // todo: do not recalculate logs, which is not needing
                     if (aimPredictionData.getBearingOffsets(log) != null &&
                             (isShadowsRemoved ||
-                                    (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime <= roundTime) ||
+                                    (log.type == LogType.HIT_LOG && log.lastUpdateRoundTime > aimPredictionData.getPredictionRoundTime()) ||
                                     hasShadowedBOs(aimPredictionData.getBearingOffsets(log), bullet.getBulletShadows()))) {
                         aimPredictionData.addLogPrediction(log,
                                 log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), log.type == LogType.HIT_LOG ? NO_LIMIT : aimPredictionData.getTs().roundTime));
