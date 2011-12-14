@@ -22,7 +22,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
     private static final int B = 20;
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
-    
+
     private final Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions;
     private final TurnSnapshot ts;
     private Collection<BulletShadow> bulletShadows;
@@ -47,11 +47,15 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         return allLogsPredictions.get(log);
     }
 
+    public Set<AdvancedEnemyGunModel.Log> getLogs() {
+        return allLogsPredictions.keySet();
+    }
+
     public void setPredictedBearingOffsets(List<PastBearingOffset> predictedBearingOffsets) {
         this.predictedBearingOffsets = predictedBearingOffsets;
         Collections.sort(predictedBearingOffsets);
     }
-    
+
     public void addLogPrediction(AdvancedEnemyGunModel.Log log, List<PastBearingOffset> bearingOffsets) {
         allLogsPredictions.put(log, bearingOffsets);
     }
