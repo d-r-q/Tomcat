@@ -8,7 +8,6 @@ import lxx.ts_log.attributes.Attribute;
 import lxx.utils.Interval;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * User: jdev
@@ -20,7 +19,7 @@ public class PSTree<T extends Serializable> {
     private int entriesCount = 0;
 
     public PSTree(Attribute[] splitAttributes, int loadFactor, double maxIntervalLength) {
-        root = new PSTreeNode<T>(loadFactor, splitAttributes[0].getRoundedRange(), -1, splitAttributes, maxIntervalLength);
+        root = new PSTreeNode<T>(loadFactor, splitAttributes[0].getRoundedRange(), -1, splitAttributes, maxIntervalLength, null);
     }
 
     public void addEntry(PSTreeEntry<T> PSTreeEntry) {
@@ -29,8 +28,6 @@ public class PSTree<T extends Serializable> {
     }
 
     public PSTreeEntry<T>[] getSimilarEntries(Interval[] limits) {
-        final PSTreeEntry<T>[] res = new PSTreeEntry[entriesCount];
-        int len = root.getEntries(limits, res, 0);
-        return Arrays.copyOf(res, len);
+        return root.getEntries(limits, entriesCount);
     }
 }
