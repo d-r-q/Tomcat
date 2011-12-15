@@ -15,6 +15,8 @@ import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.utils.*;
+import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.time_profiling.TimeProfiler;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -32,6 +34,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     private final TargetManager targetManager;
     private final EnemyBulletManager enemyBulletManager;
     private final PointsGenerator pointsGenerator;
+    private final TimeProfiler timeProfiler;
     private Target duelOpponent;
     private MovementDirectionPrediction prevPrediction;
     private RobotImage pifImage;
@@ -42,6 +45,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
         this.enemyBulletManager = office.getEnemyBulletManager();
+        timeProfiler = office.getTimeProfiler();
 
         pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager()), robot.getState().getBattleField());
     }
@@ -50,7 +54,9 @@ public class WaveSurfingMovement implements Movement, Painter {
         duelOpponent = targetManager.getDuelOpponent();
         final List<LXXBullet> lxxBullets = getBullets();
         if (needToReselectOrbitDirection(lxxBullets)) {
+            TimeProfileProperties.SELECT_ORBIT_DIRECTION_TIME.start();
             selectOrbitDirection(lxxBullets);
+            timeProfiler.stopAndSaveProperty(TimeProfileProperties.SELECT_ORBIT_DIRECTION_TIME);
         }
 
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
