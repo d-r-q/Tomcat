@@ -1,3 +1,7 @@
+v. 3.52b
+* updating prediction data for bullets in air reworked
+* getSimilarEntries optimised
+
 v. 3.51
 * CPU usage profiling added
 * prediction data management reworked: now do not unnecessary calculations and update bullets in air with data from bulletHitBullet and hitByByllet events
