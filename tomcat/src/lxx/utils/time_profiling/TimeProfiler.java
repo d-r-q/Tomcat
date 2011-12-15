@@ -1,11 +1,18 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.utils.time_profiling;
 
 import lxx.RobotListener;
 import lxx.events.TickEvent;
 import lxx.utils.ValueInfo;
-import robocode.*;
+import robocode.DeathEvent;
+import robocode.Event;
+import robocode.SkippedTurnEvent;
+import robocode.WinEvent;
 
-import java.util.*;
+import java.util.LinkedList;
 
 import static java.lang.Math.max;
 
@@ -13,13 +20,14 @@ import static java.lang.Math.max;
  * User: jdev
  * Date: 10.12.11
  */
-public class TimeProfiler implements RobotListener {    
-    
+public class TimeProfiler implements RobotListener {
+
     private static final TimeProfileProperties[] registeredProperties = TimeProfileProperties.values();
-    
+
     private static int maxPropertyNameLength = 0;
-    
+
     private static final ValueInfo[] battleProfile = new ValueInfo[TimeProfileProperties.values().length];
+
     static {
         final TimeProfileProperties[] values = TimeProfileProperties.values();
         for (int i = 0; i < values.length; i++) {
@@ -27,9 +35,9 @@ public class TimeProfiler implements RobotListener {
             maxPropertyNameLength = max(maxPropertyNameLength, values[i].name.length());
         }
     }
-    
+
     private static final LinkedList<ValueInfo[]> roundProfiles = new LinkedList<ValueInfo[]>();
-    
+
     private static final ValueInfo[] turnProfile = new ValueInfo[TimeProfileProperties.values().length];
     private static final String ROUND_TIME_PROFILE_NAME = "== Round Time Profile ==";
     private static final String BATTLE_TIME_PROFILE_NAME = "== Battle Time Profile ==";
@@ -52,11 +60,10 @@ public class TimeProfiler implements RobotListener {
             printProfiles();
         } else if (event instanceof DeathEvent || event instanceof WinEvent) {
             printProfile(ROUND_TIME_PROFILE_NAME, roundProfiles.getLast());
-        } else if (event instanceof BattleEndedEvent) {
             printProfile(BATTLE_TIME_PROFILE_NAME, battleProfile);
         }
     }
-    
+
     public void stopAndSaveProperty(TimeProfileProperties property) {
         if (property.getStartTime() == -1) {
             throw new IllegalStateException("Start was not called");
@@ -69,8 +76,8 @@ public class TimeProfiler implements RobotListener {
     }
 
     private void printProfiles() {
-        printProfile(BATTLE_TIME_PROFILE_NAME, battleProfile);
-        printProfile(ROUND_TIME_PROFILE_NAME, roundProfiles.getLast());
+        // printProfile(BATTLE_TIME_PROFILE_NAME, battleProfile);
+        // printProfile(ROUND_TIME_PROFILE_NAME, roundProfiles.getLast());
         printProfile("== Turn Time Profile ==", turnProfile);
     }
 
