@@ -4,7 +4,6 @@
 
 package lxx.bullets.enemy;
 
-import ags.utils.KdTree;
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
@@ -15,7 +14,6 @@ import lxx.ts_log.TurnSnapshotsLog;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.*;
-import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.time_profiling.TimeProfileProperties;
 import lxx.utils.tr_tree.LoadedTRTreeEntry;
@@ -25,7 +23,8 @@ import robocode.Rules;
 
 import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
 import static java.lang.StrictMath.signum;
 
 public class AdvancedEnemyGunModel {
@@ -179,8 +178,6 @@ public class AdvancedEnemyGunModel {
 
     class Log {
 
-        private KdTreeAdapter<LoadedKdTreeEntry<UndirectedGuessFactor>> kdLog;
-        private PSTree<UndirectedGuessFactor> log;
         private TrinaryRTree<TRTreeEntry> trtLog;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,
@@ -208,17 +205,10 @@ public class AdvancedEnemyGunModel {
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
             this.type = type;
-            this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
             this.trtLog = new TrinaryRTree<TRTreeEntry>(attrs);
-            this.kdLog = new KdTreeAdapter<LoadedKdTreeEntry<UndirectedGuessFactor>>(this.attrs, 5000);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
-            Interval[] range = getRange(predicate);
-
-            TimeProfileProperties.PS_RANGE_SEARCH_TIME.start();
-            final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(range);
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.PS_RANGE_SEARCH_TIME);
 
             IntervalDouble[] range2 = getRange2(predicate);
 
@@ -226,24 +216,10 @@ public class AdvancedEnemyGunModel {
             final TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
             Arrays.sort(entries2, new Comparator<TRTreeEntry>() {
                 public int compare(TRTreeEntry o1, TRTreeEntry o2) {
-                    return o1.location.roundTime - o2.location.roundTime;
+                    return o2.location.roundTime - o1.location.roundTime;
                 }
             });
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
-
-            TimeProfileProperties.MOV_KNN_TIME.start();
-            List<KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>>> nearestNeighbours = kdLog.getNearestNeighbours(predicate, max(1, entries.length));
-            Collections.sort(nearestNeighbours, new Comparator<KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>>>() {
-                public int compare(KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>> o1, KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>> o2) {
-                    return o2.value.turnSnapshot.roundTime - o1.value.turnSnapshot.roundTime;
-                }
-            });
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.MOV_KNN_TIME);
-
-            if (entries.length != entries2.length) {
-                trtLog.rangeSearch(range2);
-                System.out.println("AAAAAAAAAAAAA");
-            }
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
@@ -321,9 +297,7 @@ public class AdvancedEnemyGunModel {
         }
 
         public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
-            log.addEntry(entry);
             trtLog.insert(new LoadedTRTreeEntry<UndirectedGuessFactor>(entry.predicate, entry.result));
-            kdLog.addEntry(kdEntry);
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
 
