@@ -8,6 +8,7 @@ import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletPredictionData;
 import lxx.office.Office;
+import lxx.office.PropertiesManager;
 import lxx.utils.AvgValue;
 
 public class AEGMDebugger implements Plugin, BulletManagerListener {
@@ -26,6 +27,7 @@ public class AEGMDebugger implements Plugin, BulletManagerListener {
 
     public void bulletFired(LXXBullet bullet) {
         avgBearingOffsets.addValue(((EnemyBulletPredictionData) bullet.getAimPredictionData()).getPredictedBearingOffsets().size());
+        PropertiesManager.setDebugProperty("[DEBUG] avg BOs", String.valueOf(avgBearingOffsets.getCurrentValue()));
     }
 
     public void bulletHit(LXXBullet bullet) {
