@@ -212,19 +212,41 @@ public class PSTreeNode<T extends Serializable> {
                 int i1 = 0;
                 int i2 = 0;
                 int resIdx = 0;
-                while (i1 < cursor.entriesCount && i2 < bufferLen) {
-                    if (entriesArr[i1].predicate.roundTime >= prevBuffer[i2].predicate.roundTime) {
-                        newBuffer[resIdx++] = entriesArr[i1++];
+                while (i1 < cursor.entriesCount || i2 < bufferLen) {
+                    PSTreeEntry<T> cnd;
+                    if (i1 == cursor.entriesCount) {
+                        newBuffer[resIdx++] = prevBuffer[i2++];
+                    } else if (i2 == bufferLen) {
+                        cnd = entriesArr[i1++];
+                        boolean matches = true;
+
+                        for (int j = 0; j < attributes.length; j++) {
+                            if (!limits[attributes[j].id].contains((int) cnd.predicate.getAttrValue(attributes[j]))) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            newBuffer[resIdx++] = cnd;
+                        }
+                    } else if (entriesArr[i1].predicate.roundTime >= prevBuffer[i2].predicate.roundTime) {
+                        cnd = entriesArr[i1++];
+                        boolean matches = true;
+
+                        for (int j = 0; j < attributes.length; j++) {
+                            if (!limits[attributes[j].id].contains((int) cnd.predicate.getAttrValue(attributes[j]))) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            newBuffer[resIdx++] = cnd;
+                        }
                     } else {
                         newBuffer[resIdx++] = prevBuffer[i2++];
                     }
                 }
-                if (i1 < cursor.entriesCount) {
-                    System.arraycopy(entriesArr, i1, newBuffer, resIdx, cursor.entriesCount - i1);
-                } else if (i2 < bufferLen) {
-                    System.arraycopy(prevBuffer, i2, newBuffer, resIdx, bufferLen - i2);
-                }
-                bufferLen += cursor.entriesCount;
+                bufferLen = resIdx;
                 cursor = cursor.parent;
             } else {
                 final Interval limit = limits[cursor.attributes[cursor.attributeIdx + 1].id];
