@@ -4,6 +4,7 @@
 
 package lxx.bullets.enemy;
 
+import ags.utils.KdTree;
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
@@ -17,6 +18,7 @@ import lxx.utils.*;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.tr_tree.LoadedTRTreeEntry;
 import lxx.utils.tr_tree.TRTreeEntry;
 import lxx.utils.tr_tree.TrinaryRTree;
 import robocode.Rules;
@@ -221,14 +223,25 @@ public class AdvancedEnemyGunModel {
             IntervalDouble[] range2 = getRange2(predicate);
 
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
+            final TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
+            Arrays.sort(entries2, new Comparator<TRTreeEntry>() {
+                public int compare(TRTreeEntry o1, TRTreeEntry o2) {
+                    return o1.location.roundTime - o2.location.roundTime;
+                }
+            });
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
 
             TimeProfileProperties.MOV_KNN_TIME.start();
-            kdLog.getNearestNeighbours(predicate, max(1, entries.length));
+            List<KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>>> nearestNeighbours = kdLog.getNearestNeighbours(predicate, max(1, entries.length));
+            Collections.sort(nearestNeighbours, new Comparator<KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>>>() {
+                public int compare(KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>> o1, KdTree.Entry<LoadedKdTreeEntry<UndirectedGuessFactor>> o2) {
+                    return o2.value.turnSnapshot.roundTime - o1.value.turnSnapshot.roundTime;
+                }
+            });
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.MOV_KNN_TIME);
 
             if (entries.length != entries2.length) {
+                trtLog.rangeSearch(range2);
                 System.out.println("AAAAAAAAAAAAA");
             }
 
@@ -238,31 +251,32 @@ public class AdvancedEnemyGunModel {
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             int notShadowedBulletsCount = 0;
-            for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
+            for (TRTreeEntry e : entries2) {
+                LoadedTRTreeEntry<UndirectedGuessFactor> entry = (LoadedTRTreeEntry<UndirectedGuessFactor>) e;
                 if (notShadowedBulletsCount == 5) {
                     break;
                 }
-                if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
+                if (entry.data.lateralDirection != 0 && lateralDirection != 0) {
 
-                    final double bearingOffset = entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick;
+                    final double bearingOffset = entry.data.guessFactor * entry.data.lateralDirection * lateralDirection * maxEscapeAngleQuick;
                     if (isShadowed(bearingOffset, bulletShadows)) {
                         continue;
                     } else {
                         notShadowedBulletsCount++;
                     }
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset, 1));
+                    bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset, 1));
                 } else {
                     boolean hasNotShadowed = false;
-                    final double bearingOffset1 = entry.result.guessFactor * 1 * maxEscapeAngleQuick;
+                    final double bearingOffset1 = entry.data.guessFactor * 1 * maxEscapeAngleQuick;
                     if (!isShadowed(bearingOffset1, bulletShadows)) {
                         hasNotShadowed = true;
-                        bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset1, 1));
+                        bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset1, 1));
                     }
 
-                    final double bearingOffset2 = entry.result.guessFactor * -1 * maxEscapeAngleQuick;
+                    final double bearingOffset2 = entry.data.guessFactor * -1 * maxEscapeAngleQuick;
                     if (!isShadowed(bearingOffset2, bulletShadows)) {
                         hasNotShadowed = true;
-                        bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset2, 1));
+                        bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset2, 1));
                     }
 
                     if (hasNotShadowed) {
@@ -308,7 +322,7 @@ public class AdvancedEnemyGunModel {
 
         public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
             log.addEntry(entry);
-            trtLog.insert(new TRTreeEntry(entry.predicate));
+            trtLog.insert(new LoadedTRTreeEntry<UndirectedGuessFactor>(entry.predicate, entry.result));
             kdLog.addEntry(kdEntry);
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
