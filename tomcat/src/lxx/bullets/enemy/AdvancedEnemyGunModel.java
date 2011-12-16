@@ -23,8 +23,7 @@ import robocode.Rules;
 
 import java.util.*;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
+import static java.lang.Math.*;
 import static java.lang.StrictMath.signum;
 
 public class AdvancedEnemyGunModel {
@@ -114,7 +113,8 @@ public class AdvancedEnemyGunModel {
         final double direction = bullet.getTargetLateralDirection();
         double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-        getLogSet(bullet.getOwner().getName()).learn(entry);
+        final LoadedKdTreeEntry<UndirectedGuessFactor> kDentry = new LoadedKdTreeEntry<UndirectedGuessFactor>(((EnemyBulletPredictionData) bullet.getAimPredictionData()).getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
+        getLogSet(bullet.getOwner().getName()).learn(entry, kDentry);
     }
 
     public void updateBulletPredictionData(LXXBullet bullet) {
@@ -177,6 +177,7 @@ public class AdvancedEnemyGunModel {
 
     class Log {
 
+        private KdTreeAdapter<LoadedKdTreeEntry<UndirectedGuessFactor>> kdLog;
         private PSTree<UndirectedGuessFactor> log;
         private TrinaryRTree<TRTreeEntry> trtLog;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
@@ -207,6 +208,7 @@ public class AdvancedEnemyGunModel {
             this.type = type;
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
             this.trtLog = new TrinaryRTree<TRTreeEntry>(attrs);
+            this.kdLog = new KdTreeAdapter<LoadedKdTreeEntry<UndirectedGuessFactor>>(this.attrs, 5000);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
@@ -221,6 +223,10 @@ public class AdvancedEnemyGunModel {
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
             TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+
+            TimeProfileProperties.MOV_KNN_TIME.start();
+            kdLog.getNearestNeighbours(predicate, max(1, entries.length));
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.MOV_KNN_TIME);
 
             if (entries.length != entries2.length) {
                 System.out.println("AAAAAAAAAAAAA");
@@ -300,9 +306,10 @@ public class AdvancedEnemyGunModel {
             return res;
         }
 
-        public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry) {
+        public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
             log.addEntry(entry);
             trtLog.insert(new TRTreeEntry(entry.predicate));
+            kdLog.addEntry(kdEntry);
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
 
@@ -319,9 +326,9 @@ public class AdvancedEnemyGunModel {
         private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
         private final List[] bestLogs = {shortLogs, midLogs, longLogs, enemyHitRateLogs};
 
-        public void learn(PSTreeEntry<UndirectedGuessFactor> entry) {
+        public void learn(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
             for (Log log : visitLogsSet) {
-                log.addEntry(entry);
+                log.addEntry(entry, kdEntry);
             }
         }
 
@@ -412,8 +419,9 @@ public class AdvancedEnemyGunModel {
                 final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
                 final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
                 entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
+                final LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry = new LoadedKdTreeEntry<UndirectedGuessFactor>(predicate, new UndirectedGuessFactor(undirectedGuessFactor, direction));
                 for (Log log : hitLogsSet) {
-                    log.addEntry(entry);
+                    log.addEntry(entry, kdEntry);
                 }
             }
         }
