@@ -7,6 +7,7 @@ package lxx.plugins;
 import lxx.RobotListener;
 import lxx.events.TickEvent;
 import lxx.office.Office;
+import lxx.office.PropertiesManager;
 import robocode.BattleEndedEvent;
 import robocode.Event;
 
@@ -19,12 +20,13 @@ import java.util.List;
  */
 public class PluginManager implements RobotListener {
 
-    @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection"})
     private final List<Plugin> plugins = new ArrayList<Plugin>();
 
     public PluginManager(Office office) {
+        if ("true".equals(PropertiesManager.getDebugProperty("aegm.debug"))) {
+            plugins.add(new AEGMDebugger());
+        }
         if (office.isDebugMode()) {
-
             for (Plugin plugin : plugins) {
                 plugin.roundStarted(office);
             }
