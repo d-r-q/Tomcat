@@ -221,7 +221,7 @@ public class PSTreeNode<T extends Serializable> {
                         boolean matches = true;
 
                         for (int j = 0; j < attributes.length; j++) {
-                            if (!limits[attributes[j].id].contains((int) cnd.predicate.getAttrValue(attributes[j]))) {
+                            if (!limits[attributes[j].id].contains(cnd.predicate.getAttrValue(attributes[j]))) {
                                 matches = false;
                                 break;
                             }
@@ -234,7 +234,7 @@ public class PSTreeNode<T extends Serializable> {
                         boolean matches = true;
 
                         for (int j = 0; j < attributes.length; j++) {
-                            if (!limits[attributes[j].id].contains((int) cnd.predicate.getAttrValue(attributes[j]))) {
+                            if (!limits[attributes[j].id].contains(cnd.predicate.getAttrValue(attributes[j]))) {
                                 matches = false;
                                 break;
                             }

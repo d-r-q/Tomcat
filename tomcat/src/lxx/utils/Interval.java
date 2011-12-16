@@ -26,6 +26,10 @@ public class Interval {
         return c >= a && c <= b;
     }
 
+    public boolean contains(double c) {
+        return c >= a && c <= b;
+    }
+
     public String toString() {
         return "[" + a + ", " + b + "]";
     }

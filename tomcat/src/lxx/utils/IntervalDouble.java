@@ -12,6 +12,11 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
     public double a;
     public double b;
 
+    public IntervalDouble() {
+        this.a = Long.MAX_VALUE;
+        this.b = Long.MIN_VALUE;
+    }
+
     public IntervalDouble(double a, double b) {
         this.a = a;
         this.b = b;
@@ -56,6 +61,10 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
         return min(b, another.b) - max(a, another.a);
     }
 
+    public boolean contains(IntervalDouble another) {
+        return a <= another.a && b >= another.b;
+    }
+
     public void merge(IntervalDouble another) {
         a = min(a, another.a);
         b = max(b, another.b);
@@ -64,4 +73,5 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
     public int compareTo(IntervalDouble another) {
         return a < another.a ? -1 : a == another.a ? 0 : 1;
     }
+
 }

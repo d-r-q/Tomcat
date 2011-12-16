@@ -17,6 +17,8 @@ import lxx.utils.*;
 import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.tr_tree.TRTreeEntry;
+import lxx.utils.tr_tree.TrinaryRTree;
 import robocode.Rules;
 
 import java.util.*;
@@ -176,6 +178,7 @@ public class AdvancedEnemyGunModel {
     class Log {
 
         private PSTree<UndirectedGuessFactor> log;
+        private TrinaryRTree<TRTreeEntry> trtLog;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
@@ -203,12 +206,25 @@ public class AdvancedEnemyGunModel {
             this.attrs = attrs;
             this.type = type;
             this.log = new PSTree<UndirectedGuessFactor>(this.attrs, 2, 0.0001);
+            this.trtLog = new TrinaryRTree<TRTreeEntry>(attrs);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
-            TimeProfileProperties.RANGE_SEARCH_TIME.start();
-            final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(getLimits(predicate));
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.RANGE_SEARCH_TIME);
+            Interval[] range = getRange(predicate);
+
+            TimeProfileProperties.PS_RANGE_SEARCH_TIME.start();
+            final PSTreeEntry<UndirectedGuessFactor>[] entries = log.getSimilarEntries(range);
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.PS_RANGE_SEARCH_TIME);
+
+            IntervalDouble[] range2 = getRange2(predicate);
+
+            TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
+            TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+
+            if (entries.length != entries2.length) {
+                System.out.println("AAAAAAAAAAAAA");
+            }
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
@@ -262,7 +278,7 @@ public class AdvancedEnemyGunModel {
             return false;
         }
 
-        private Interval[] getLimits(TurnSnapshot center) {
+        private Interval[] getRange(TurnSnapshot center) {
             final Interval[] res = new Interval[AttributesManager.attributesCount()];
             for (Attribute attr : attrs) {
                 double delta = halfSideLength.get(attr);
@@ -273,8 +289,20 @@ public class AdvancedEnemyGunModel {
             return res;
         }
 
+        private IntervalDouble[] getRange2(TurnSnapshot center) {
+            final IntervalDouble[] res = new IntervalDouble[AttributesManager.attributesCount()];
+            for (Attribute attr : attrs) {
+                double delta = halfSideLength.get(attr);
+                res[attr.id] = new IntervalDouble((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
+                        (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta)));
+            }
+
+            return res;
+        }
+
         public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry) {
             log.addEntry(entry);
+            trtLog.insert(new TRTreeEntry(entry.predicate));
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
 
