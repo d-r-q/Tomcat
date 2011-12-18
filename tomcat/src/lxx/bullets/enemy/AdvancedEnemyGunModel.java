@@ -34,23 +34,14 @@ public class AdvancedEnemyGunModel {
 
     private static final Map<String, LogSet> logSets = new HashMap<String, LogSet>();
 
-    private final Map<LXXBullet, PSTreeEntry<UndirectedGuessFactor>> entriesByBullets = new HashMap<LXXBullet, PSTreeEntry<UndirectedGuessFactor>>();
-
-    private final TurnSnapshotsLog turnSnapshotsLog;
     private final Office office;
 
-    public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog, Office office) {
-        this.turnSnapshotsLog = turnSnapshotsLog;
+    public AdvancedEnemyGunModel(Office office) {
         this.office = office;
     }
 
     public EnemyBulletPredictionData getPredictionData(LXXRobot t, final TurnSnapshot turnSnapshot, Collection<BulletShadow> bulletShadows) {
         return getLogSet(t.getName()).getPredictionData(turnSnapshot, t, bulletShadows);
-    }
-
-    public void bulletFired(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(turnSnapshotsLog.getLastSnapshot(bullet.getOwner(), FIRE_DETECTION_LATENCY));
-        entriesByBullets.put(bullet, entry);
     }
 
     public void processHit(LXXBullet bullet) {
@@ -59,7 +50,7 @@ public class AdvancedEnemyGunModel {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         updateEnemyHitRate(logSet, aimPredictionData, true);
 
-        logSet.learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        logSet.learn(bullet, true);
         if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
             logSet.shortLogs.addAll(logSet.visitLogsSet);
             logSet.midLogs.addAll(logSet.visitLogsSet);
@@ -90,14 +81,14 @@ public class AdvancedEnemyGunModel {
     }
 
     public void processIntercept(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, entriesByBullets.get(bullet).predicate, true);
+        getLogSet(bullet.getOwner().getName()).learn(bullet, true);
     }
 
     public void processMiss(LXXBullet bullet) {
         LogSet logSet = getLogSet(bullet.getOwner().getName());
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         updateEnemyHitRate(logSet, aimPredictionData, false);
-        logSet.learn(bullet, entriesByBullets.get(bullet).predicate, false);
+        logSet.learn(bullet, false);
     }
 
     private LogSet getLogSet(String enemyName) {
@@ -109,13 +100,11 @@ public class AdvancedEnemyGunModel {
         return logSet;
     }
 
-    public void processVisit(LXXBullet bullet) {
-        final PSTreeEntry<UndirectedGuessFactor> entry = entriesByBullets.remove(bullet);
+    public void processVisit(LXXBullet bullet) {       
         final double direction = bullet.getTargetLateralDirection();
-        double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-        final LoadedKdTreeEntry<UndirectedGuessFactor> kDentry = new LoadedKdTreeEntry<UndirectedGuessFactor>(((EnemyBulletPredictionData) bullet.getAimPredictionData()).getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
-        getLogSet(bullet.getOwner().getName()).learn(entry, kDentry);
+        final double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+        final LoadedTRTreeEntry<UndirectedGuessFactor> entry = new LoadedTRTreeEntry<UndirectedGuessFactor>(bullet.getAimPredictionData().getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
+        getLogSet(bullet.getOwner().getName()).learn(entry);
     }
 
     public void updateBulletPredictionData(LXXBullet bullet) {
@@ -208,18 +197,37 @@ public class AdvancedEnemyGunModel {
             this.trtLog = new TrinaryRTree<TRTreeEntry>(attrs);
         }
 
+        /*
+        == Round Time Profile ==
+        -  TR Range search time: [    3 849 |    67 363 |      3 924 190]
+        -          TR sort time: [        0 |   107 847 |      3 917 260]
+        == Battle Time Profile ==
+        -  TR Range search time: [        0 |    58 794 |    702 423 728]
+        -          TR sort time: [        0 |    64 321 |      6 519 528]
+
+        == Round Time Profile ==
+        -  TR Range search time: [    3 849 |    77 357 |        683 672]
+        -          TR sort time: [        0 |    95 866 |      2 898 680]
+        == Battle Time Profile ==
+        -  TR Range search time: [        0 |    59 130 |     96 401 710]
+        -          TR sort time: [        0 |    57 420 |     98 645 204]
+         */
+
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
 
-            IntervalDouble[] range2 = getRange2(predicate);
+            final IntervalDouble[] range = getRange(predicate);
 
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            final TRTreeEntry[] entries2 = trtLog.rangeSearch(range2);
+            final TRTreeEntry[] entries2 = trtLog.rangeSearch(range);
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+
+            TimeProfileProperties.TR_SORT_TIME.start();
             Arrays.sort(entries2, new Comparator<TRTreeEntry>() {
                 public int compare(TRTreeEntry o1, TRTreeEntry o2) {
                     return o2.location.roundTime - o1.location.roundTime;
                 }
             });
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
@@ -274,18 +282,7 @@ public class AdvancedEnemyGunModel {
             return false;
         }
 
-        private Interval[] getRange(TurnSnapshot center) {
-            final Interval[] res = new Interval[AttributesManager.attributesCount()];
-            for (Attribute attr : attrs) {
-                double delta = halfSideLength.get(attr);
-                res[attr.id] = new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
-                        (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta)));
-            }
-
-            return res;
-        }
-
-        private IntervalDouble[] getRange2(TurnSnapshot center) {
+        private IntervalDouble[] getRange(TurnSnapshot center) {
             final IntervalDouble[] res = new IntervalDouble[AttributesManager.attributesCount()];
             for (Attribute attr : attrs) {
                 double delta = halfSideLength.get(attr);
@@ -296,8 +293,8 @@ public class AdvancedEnemyGunModel {
             return res;
         }
 
-        public void addEntry(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
-            trtLog.insert(new LoadedTRTreeEntry<UndirectedGuessFactor>(entry.predicate, entry.result));
+        public void addEntry(LoadedTRTreeEntry<UndirectedGuessFactor> entry) {
+            trtLog.insert(entry);
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
 
@@ -314,9 +311,9 @@ public class AdvancedEnemyGunModel {
         private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
         private final List[] bestLogs = {shortLogs, midLogs, longLogs, enemyHitRateLogs};
 
-        public void learn(PSTreeEntry<UndirectedGuessFactor> entry, LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry) {
+        public void learn(LoadedTRTreeEntry<UndirectedGuessFactor> entry) {
             for (Log log : visitLogsSet) {
-                log.addEntry(entry, kdEntry);
+                log.addEntry(entry);
             }
         }
 
@@ -398,18 +395,17 @@ public class AdvancedEnemyGunModel {
             }
         }
 
-        public void learn(LXXBullet bullet, TurnSnapshot predicate, boolean isHit) {
+        public void learn(LXXBullet bullet, boolean isHit) {
             recalculateLogSetEfficiency(bullet, visitLogsSet, isHit);
             recalculateLogSetEfficiency(bullet, hitLogsSet, isHit);
             updateBestLogs();
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
                 final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-                final PSTreeEntry<UndirectedGuessFactor> entry = new PSTreeEntry<UndirectedGuessFactor>(predicate);
-                entry.result = new UndirectedGuessFactor(undirectedGuessFactor, direction);
-                final LoadedKdTreeEntry<UndirectedGuessFactor> kdEntry = new LoadedKdTreeEntry<UndirectedGuessFactor>(predicate, new UndirectedGuessFactor(undirectedGuessFactor, direction));
+                final LoadedTRTreeEntry<UndirectedGuessFactor> entry = new LoadedTRTreeEntry<UndirectedGuessFactor>(bullet.getAimPredictionData().getTs(), new
+                        UndirectedGuessFactor(undirectedGuessFactor, direction));
                 for (Log log : hitLogsSet) {
-                    log.addEntry(entry, kdEntry);
+                    log.addEntry(entry);
                 }
             }
         }

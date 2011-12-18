@@ -134,7 +134,7 @@ public class TrinaryRTree<E extends TRTreeEntry> {
 
     public TRTreeEntry[] rangeSearch(IntervalDouble[] range) {
         final TRTreeEntry[] res = new TRTreeEntry[entryCount];
-        int len = rangeSearchImpl(range, res);
+        final int len = rangeSearchImpl(range, res);
         return Arrays.copyOf(res, len);
     }
 

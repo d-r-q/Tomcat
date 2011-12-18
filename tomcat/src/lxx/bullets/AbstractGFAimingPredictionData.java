@@ -6,6 +6,7 @@ package lxx.bullets;
 
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.paint.LXXGraphics;
+import lxx.ts_log.TurnSnapshot;
 import lxx.utils.APoint;
 import lxx.utils.AimingPredictionData;
 import lxx.utils.LXXConstants;
@@ -29,7 +30,7 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     private static final NumberFormat format = new DecimalFormat("###.###");
 
     private final List<BearingOffsetDanger> dangers = new ArrayList<BearingOffsetDanger>();
-
+    private final TurnSnapshot ts;
 
     private long predictionRoundTime;
     private double step;
@@ -37,8 +38,13 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
     private double maxBearingOffset = 0;
     protected double maxDanger;
 
-    public AbstractGFAimingPredictionData(long predictionTime) {
+    public AbstractGFAimingPredictionData(TurnSnapshot ts, long predictionTime) {
         this.predictionRoundTime = predictionTime;
+        this.ts = ts;
+    }
+
+    public TurnSnapshot getTs() {
+        return ts;
     }
 
     public long getPredictionRoundTime() {

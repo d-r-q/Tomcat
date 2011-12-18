@@ -61,7 +61,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final TimeProfiler timeProfiler;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
-        enemyGunModel = new AdvancedEnemyGunModel(office.getTurnSnapshotsLog(), office);
+        enemyGunModel = new AdvancedEnemyGunModel(office);
         this.waveManager = office.getWaveManager();
         this.robot = robot;
         this.bulletManager = office.getBulletManager();
@@ -91,7 +91,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             lxxBullet.setAimPredictionData(enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
                     bulletShadows.values()));
 
-            enemyGunModel.bulletFired(lxxBullet);
             predictedBullets.put(wave, lxxBullet);
 
             for (BulletManagerListener listener : listeners) {

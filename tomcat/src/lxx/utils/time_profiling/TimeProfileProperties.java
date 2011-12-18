@@ -15,10 +15,9 @@ public enum TimeProfileProperties {
     MOVEMENT_TIME(2, "Movement time"),
     GUN_TIME(3, "Gun time"),
     EBM_WAVE_TIME(4, "EBM wave time"),
-    PS_RANGE_SEARCH_TIME(5, "PS Range search time"),
-    TR_RANGE_SEARCH_TIME(6, "TR Range search time"),
-    MOV_KNN_TIME(7, "Movement kNN time"),
-    SELECT_ORBIT_DIRECTION_TIME(8, "Select orb. dir. time");
+    TR_RANGE_SEARCH_TIME(5, "TR Range search time"),
+    TR_SORT_TIME(6, "TR sort time"),
+    SELECT_ORBIT_DIRECTION_TIME(7, "Select orb. dir. time");
 
     public final int idx;
     public final String name;

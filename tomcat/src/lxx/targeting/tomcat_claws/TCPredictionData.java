@@ -29,7 +29,7 @@ public class TCPredictionData extends AbstractGFAimingPredictionData {
     private final APoint initialPos;
 
     public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos) {
-        super(-1);
+        super(null, -1);
         this.matches = matches;
         this.predictedPoses = predictedPoses;
         this.robotPos = robotPos;
@@ -38,10 +38,6 @@ public class TCPredictionData extends AbstractGFAimingPredictionData {
 
     public Map<Double, Double> getMatches() {
         return matches;
-    }
-
-    public long getPredictionRoundTime() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
