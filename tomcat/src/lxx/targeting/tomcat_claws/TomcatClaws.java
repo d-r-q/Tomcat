@@ -158,7 +158,7 @@ public class TomcatClaws implements Gun {
         }
 
         if (bs == BulletState.PASSED) {
-            throw new RuntimeException("Future pos calculation error");
+            System.out.println("[WARN] Future pos calculation error");
         }
 
         return futurePos;

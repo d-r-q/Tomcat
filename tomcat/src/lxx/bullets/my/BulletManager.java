@@ -51,6 +51,9 @@ public class BulletManager implements RobotListener, WaveCallback {
 
     private void onBulletHitBullet(BulletHitBulletEvent e) {
         final LXXBullet b = getLXXBullet(e.getBullet());
+        if (b == null) {
+            return;
+        }
         removeBullet(b);
         b.setState(LXXBulletState.INTERCEPTED);
         for (BulletManagerListener lst : listeners) {
@@ -67,6 +70,9 @@ public class BulletManager implements RobotListener, WaveCallback {
 
     private void onBulletHit(BulletHitEvent event) {
         final LXXBullet b = getLXXBullet(event.getBullet());
+        if (b == null) {
+            return;
+        }
         if (b.getTarget().getName().equals(event.getName())) {
             for (BulletManagerListener listener : listeners) {
                 listener.bulletHit(b);
@@ -84,6 +90,9 @@ public class BulletManager implements RobotListener, WaveCallback {
 
     private void onBulletMissed(BulletMissedEvent event) {
         final LXXBullet b = getLXXBullet(event.getBullet());
+        if (b == null) {
+            return;
+        }
         if (b.getTarget() != null && b.getTarget().isAlive()) {
             for (BulletManagerListener lst : listeners) {
                 lst.bulletMiss(b);
