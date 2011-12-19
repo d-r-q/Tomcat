@@ -12,10 +12,7 @@ import lxx.targeting.GunType;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
-import lxx.utils.AvgValue;
-import lxx.utils.HitRate;
-import lxx.utils.IntervalDouble;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import lxx.utils.r_tree.LoadedRTreeEntry;
 import lxx.utils.r_tree.RTree;
 import lxx.utils.r_tree.RTreeEntry;
@@ -168,6 +165,7 @@ public class AdvancedEnemyGunModel {
 
     class Log {
 
+        private static final int BULLETS_PER_LOG = 5;
         private RTree<RTreeEntry> trtLog;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,
@@ -203,16 +201,19 @@ public class AdvancedEnemyGunModel {
             final IntervalDouble[] range = getRange(predicate);
 
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            final RTreeEntry[] entries2 = trtLog.rangeSearch(range);
+            final RTreeEntry[] entries = trtLog.rangeSearch(range);
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
 
-            TimeProfileProperties.TR_SORT_TIME.start();
-            Arrays.sort(entries2, new Comparator<RTreeEntry>() {
-                public int compare(RTreeEntry o1, RTreeEntry o2) {
-                    return o2.location.roundTime - o1.location.roundTime;
-                }
-            });
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
+            final HeapSort heapSort;
+            int sortedEntris = BULLETS_PER_LOG;
+            if (entries.length > BULLETS_PER_LOG) {
+                TimeProfileProperties.TR_SORT_TIME.start();
+                heapSort = new HeapSort(entries);
+                heapSort.sortLastN(BULLETS_PER_LOG);
+                office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
+            } else {
+                heapSort = null;
+            }
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
@@ -220,11 +221,18 @@ public class AdvancedEnemyGunModel {
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
             int notShadowedBulletsCount = 0;
-            for (RTreeEntry e : entries2) {
-                LoadedRTreeEntry<UndirectedGuessFactor> entry = (LoadedRTreeEntry<UndirectedGuessFactor>) e;
-                if (notShadowedBulletsCount == 5) {
+            for (int i = entries.length - 1; i >= 0; i--) {
+                if (notShadowedBulletsCount == BULLETS_PER_LOG) {
                     break;
                 }
+                if (i < entries.length - sortedEntris) {
+                    int entriesToSort = BULLETS_PER_LOG - notShadowedBulletsCount;
+                    sortedEntris += entriesToSort;
+                    TimeProfileProperties.TR_SORT_TIME.start();
+                    heapSort.sortLastN(sortedEntris);
+                    office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
+                }
+                final LoadedRTreeEntry<UndirectedGuessFactor> entry = (LoadedRTreeEntry<UndirectedGuessFactor>) entries[i];
                 if (entry.data.lateralDirection != 0 && lateralDirection != 0) {
 
                     final double bearingOffset = entry.data.guessFactor * entry.data.lateralDirection * lateralDirection * maxEscapeAngleQuick;
