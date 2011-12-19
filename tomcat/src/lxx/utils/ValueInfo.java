@@ -34,7 +34,7 @@ public class ValueInfo {
         } else if (maxValue == minValue) {
             return String.format("[ %,14.0f ]", minValue);
         } else {
-            return String.format("[%,9.0f | %,9.0f | %,14.0f]", minValue, avgValue.getCurrentValue(), maxValue);
+            return String.format("[ %,9.0f | %,9.0f | %,14.0f]", minValue, avgValue.getCurrentValue(), maxValue);
         }
     }
 }
