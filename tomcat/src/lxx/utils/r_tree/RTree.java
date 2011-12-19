@@ -2,37 +2,37 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.utils.tr_tree;
+package lxx.utils.r_tree;
 
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
 
 import java.util.Arrays;
 
-public class TrinaryRTree<E extends TRTreeEntry> {
+public class RTree<E extends RTreeEntry> {
 
     private static final int LEFT = 0;
     private static final int CENTER = 1;
     private static final int RIGHT = 2;
 
-    private final TrinaryRTree<E> parent;
+    private final RTree<E> parent;
     private final Attribute[] dimensions;
     private final IntervalDouble[] coveredRange;
 
-    private E[] entries = (E[]) new TRTreeEntry[32];
+    private E[] entries = (E[]) new RTreeEntry[32];
     private int nextEntryIdx;
 
-    private TrinaryRTree<E>[] children;
+    private RTree<E>[] children;
     private int nextChild = -1;
 
     private boolean singular = true;
     private int entryCount;
 
-    public TrinaryRTree(Attribute[] dimensions) {
+    public RTree(Attribute[] dimensions) {
         this(null, dimensions);
     }
 
-    private TrinaryRTree(TrinaryRTree<E> parent, Attribute[] dimensions) {
+    private RTree(RTree<E> parent, Attribute[] dimensions) {
         this.parent = parent;
         this.dimensions = dimensions;
         coveredRange = new IntervalDouble[dimensions.length];
@@ -51,7 +51,7 @@ public class TrinaryRTree<E extends TRTreeEntry> {
             entries[nextEntryIdx++] = entry;
             if (nextEntryIdx == entries.length) {
                 if (singular) {
-                    E[] newEntries = (E[]) new TRTreeEntry[entries.length * 2];
+                    E[] newEntries = (E[]) new RTreeEntry[entries.length * 2];
                     System.arraycopy(entries, 0, newEntries, 0, entries.length);
                     entries = newEntries;
                 } else {
@@ -70,10 +70,10 @@ public class TrinaryRTree<E extends TRTreeEntry> {
         final double splitDimensionLength = splitDimensionRange.getLength();
         final IntervalDouble centerIval = new IntervalDouble(splitDimensionRange.a + splitDimensionLength * 0.33,
                 splitDimensionRange.b - splitDimensionLength * 0.33);
-        children = new TrinaryRTree[3];
-        children[LEFT] = new TrinaryRTree<E>(this, dimensions);
-        children[CENTER] = new TrinaryRTree<E>(this, dimensions);
-        children[RIGHT] = new TrinaryRTree<E>(this, dimensions);
+        children = new RTree[3];
+        children[LEFT] = new RTree<E>(this, dimensions);
+        children[CENTER] = new RTree<E>(this, dimensions);
+        children[RIGHT] = new RTree<E>(this, dimensions);
 
         for (int i = 0; i < entries.length; i++) {
             if (entries[i].location.toArray()[dimensions[splitDimensionIdx].id] <= centerIval.a) {
@@ -99,8 +99,8 @@ public class TrinaryRTree<E extends TRTreeEntry> {
         return bestDimensionIdx;
     }
 
-    private TrinaryRTree<E> selectChild(TRTreeEntry entry) {
-        TrinaryRTree<E> bestChild = children[0];
+    private RTree<E> selectChild(RTreeEntry entry) {
+        RTree<E> bestChild = children[0];
         double bestChildExtension = getExtension(children[0], entry);
         for (int i = 1; i < children.length; i++) {
             double ext = getExtension(children[i], entry);
@@ -112,7 +112,7 @@ public class TrinaryRTree<E extends TRTreeEntry> {
         return bestChild;
     }
 
-    private double getExtension(TrinaryRTree<E> child, TRTreeEntry entry) {
+    private double getExtension(RTree<E> child, RTreeEntry entry) {
         double extension = 0;
 
         for (int i = 0; i < coveredRange.length; i++) {
@@ -132,14 +132,14 @@ public class TrinaryRTree<E extends TRTreeEntry> {
         return extension;
     }
 
-    public TRTreeEntry[] rangeSearch(IntervalDouble[] range) {
-        final TRTreeEntry[] res = new TRTreeEntry[entryCount];
+    public RTreeEntry[] rangeSearch(IntervalDouble[] range) {
+        final RTreeEntry[] res = new RTreeEntry[entryCount];
         final int len = rangeSearchImpl(range, res);
         return Arrays.copyOf(res, len);
     }
 
-    private int rangeSearchImpl(IntervalDouble[] range, TRTreeEntry[] result) {
-        TrinaryRTree<E> cursor = this;
+    private int rangeSearchImpl(IntervalDouble[] range, RTreeEntry[] result) {
+        RTree<E> cursor = this;
         cursor.nextChild = 0;
         int resultIdx = 0;
         do {

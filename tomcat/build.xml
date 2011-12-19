@@ -7,7 +7,7 @@
 <project name="Tomcat" basedir="."
          default="release">
     <property file="excluded\build.properties"/>
-    <property name="robot.version" value="3.52b.rs.fix.trt.3"/>
+    <property name="robot.version" value="3.53"/>
 
     <path id="src.files">
         <pathelement location="src"/>

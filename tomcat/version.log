@@ -1,3 +1,8 @@
+v. 3.53
+* PSTree removed
+* RTree implemented
+* Range search in movement fixed
+
 v. 3.52b
 * updating prediction data for bullets in air reworked
 * getSimilarEntries optimised
