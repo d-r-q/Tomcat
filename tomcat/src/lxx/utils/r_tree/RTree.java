@@ -10,11 +10,6 @@ import lxx.utils.IntervalDouble;
 import java.util.Arrays;
 
 public class RTree<E extends RTreeEntry> {
-
-    private static final int LEFT = 0;
-    private static final int CENTER = 1;
-    private static final int RIGHT = 2;
-
     private final RTree<E> parent;
     private final Attribute[] dimensions;
     private final IntervalDouble[] coveredRange;
@@ -24,6 +19,7 @@ public class RTree<E extends RTreeEntry> {
 
     private RTree<E>[] children;
     private int nextChild = -1;
+    private int splitDimensionIdx = -1;
 
     private boolean singular = true;
     private int entryCount;
@@ -65,24 +61,13 @@ public class RTree<E extends RTreeEntry> {
     }
 
     private void split() {
-        final int splitDimensionIdx = getSplitDimensionIdx();
-        final IntervalDouble splitDimensionRange = coveredRange[splitDimensionIdx];
-        final double splitDimensionLength = splitDimensionRange.getLength();
-        final IntervalDouble centerIval = new IntervalDouble(splitDimensionRange.a + splitDimensionLength * 0.33,
-                splitDimensionRange.b - splitDimensionLength * 0.33);
+        splitDimensionIdx = getSplitDimensionIdx();
         children = new RTree[3];
-        children[LEFT] = new RTree<E>(this, dimensions);
-        children[CENTER] = new RTree<E>(this, dimensions);
-        children[RIGHT] = new RTree<E>(this, dimensions);
-
+        for (int i = 0; i < children.length; i++) {
+            children[i] = new RTree<E>(this, dimensions);
+        }
         for (int i = 0; i < entries.length; i++) {
-            if (entries[i].location.toArray()[dimensions[splitDimensionIdx].id] <= centerIval.a) {
-                children[LEFT].insert(entries[i]);
-            } else if (entries[i].location.toArray()[dimensions[splitDimensionIdx].id] >= centerIval.b) {
-                children[RIGHT].insert(entries[i]);
-            } else {
-                children[CENTER].insert(entries[i]);
-            }
+            insert(entries[i]);
         }
         entries = null;
     }
@@ -100,36 +85,9 @@ public class RTree<E extends RTreeEntry> {
     }
 
     private RTree<E> selectChild(RTreeEntry entry) {
-        RTree<E> bestChild = children[0];
-        double bestChildExtension = getExtension(children[0], entry);
-        for (int i = 1; i < children.length; i++) {
-            double ext = getExtension(children[i], entry);
-            if (ext < bestChildExtension) {
-                bestChildExtension = ext;
-                bestChild = children[i];
-            }
-        }
-        return bestChild;
-    }
-
-    private double getExtension(RTree<E> child, RTreeEntry entry) {
-        double extension = 0;
-
-        for (int i = 0; i < coveredRange.length; i++) {
-            final double entryValue = entry.location.toArray()[dimensions[i].id];
-            final IntervalDouble coveredRange = child.coveredRange[i];
-            final double diff;
-            if (coveredRange.a > entryValue) {
-                diff = coveredRange.a - entryValue;
-            } else if (coveredRange.b < entryValue) {
-                diff = entryValue - coveredRange.b;
-            } else {
-                diff = 0;
-            }
-            extension += diff * diff / dimensions[i].maxRange.getLength();
-        }
-
-        return extension;
+        final IntervalDouble splitDimensionRange = coveredRange[splitDimensionIdx];
+        int idx = (int) ((entry.location.toArray()[dimensions[splitDimensionIdx].id] - splitDimensionRange.a) / (splitDimensionRange.getLength() * 1.05) * children.length);
+        return children[idx];
     }
 
     public RTreeEntry[] rangeSearch(IntervalDouble[] range) {

@@ -7,7 +7,7 @@
 <project name="Tomcat" basedir="."
          default="release">
     <property file="excluded\build.properties"/>
-    <property name="robot.version" value="3.53.rs.opt"/>
+    <property name="robot.version" value="3.53.a.rpt.2"/>
 
     <path id="src.files">
         <pathelement location="src"/>
@@ -112,6 +112,10 @@
         </copy>
 
         <delete dir="${bin.dir}"/>
+
+    </target>
+
+    <target name="build-all" depends="release, debug">
 
     </target>
 

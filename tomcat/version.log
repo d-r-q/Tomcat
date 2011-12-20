@@ -1,3 +1,7 @@
+v. 3.53a
+* use step by step heap sort to select only needed entries in movement (sort time reduced by 4 times)
+* rectangles overlaping in RTree preventing added
+
 v. 3.53
 * PSTree removed
 * RTree implemented
