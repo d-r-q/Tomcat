@@ -117,6 +117,8 @@
             <fileset dir="${bin.dir}" includes="**/*"/>
         </delete>
 
+        <delete file="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar"/>
+
     </target>
 
     <target name="build-all">
