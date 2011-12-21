@@ -16,7 +16,7 @@ public class HeapSort {
         for (int i = array.length / 2; i >= 0; i--) {
             downHeap(i, array.length - 1);
         }
-        i = array.length - 1;
+        i = array.length;
     }
 
     public void sortLastN(int n) {
@@ -25,7 +25,7 @@ public class HeapSort {
             array[i] = array[0];
             array[0] = temp;
 
-            downHeap(0, i - 1);
+            downHeap(0, i);
         }
     }
 
