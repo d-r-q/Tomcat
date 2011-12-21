@@ -166,8 +166,8 @@ public class AdvancedEnemyGunModel {
     class Log {
 
         private static final int BULLETS_PER_LOG = 5;
-        private RTree trtLog;
-        private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
+
+        private final Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
                 AttributesManager.distBetween, 75D,
@@ -184,6 +184,8 @@ public class AdvancedEnemyGunModel {
 
         private final HitRate enemyHitRate = new HitRate();
 
+        private RTree rTree;
+
         private final Attribute[] attrs;
         private final LogType type;
 
@@ -193,7 +195,7 @@ public class AdvancedEnemyGunModel {
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
             this.type = type;
-            this.trtLog = new RTree(attrs);
+            this.rTree = new RTree(attrs);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
@@ -201,7 +203,7 @@ public class AdvancedEnemyGunModel {
             final IntervalDouble[] range = getRange(predicate);
 
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            final RTreeEntry[] entries = trtLog.rangeSearch(range);
+            final RTreeEntry[] entries = rTree.rangeSearch(range);
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
 
             final HeapSort heapSort;
@@ -265,66 +267,6 @@ public class AdvancedEnemyGunModel {
             return bearingOffsets;
         }
 
-        private List<PastBearingOffset> getBearingOffsetsOld(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
-
-            final IntervalDouble[] range = getRange(predicate);
-
-            TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            final RTreeEntry[] entries2 = trtLog.rangeSearch(range);
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
-
-            TimeProfileProperties.TR_SORT_TIME.start();
-            Arrays.sort(entries2, new Comparator<RTreeEntry>() {
-                public int compare(RTreeEntry o1, RTreeEntry o2) {
-                    return o2.location.roundTime - o1.location.roundTime;
-                }
-            });
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
-
-            final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
-            final double bulletSpeed = Rules.getBulletSpeed(firePower);
-            final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
-
-            final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
-            int notShadowedBulletsCount = 0;
-            for (RTreeEntry e : entries2) {
-                LoadedRTreeEntry<UndirectedGuessFactor> entry = (LoadedRTreeEntry<UndirectedGuessFactor>) e;
-                if (notShadowedBulletsCount == 5) {
-                    break;
-                }
-                if (entry.data.lateralDirection != 0 && lateralDirection != 0) {
-
-                    final double bearingOffset = entry.data.guessFactor * entry.data.lateralDirection * lateralDirection * maxEscapeAngleQuick;
-                    if (isShadowed(bearingOffset, bulletShadows)) {
-                        continue;
-                    } else {
-                        notShadowedBulletsCount++;
-                    }
-                    bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset, 1));
-                } else {
-                    boolean hasNotShadowed = false;
-                    final double bearingOffset1 = entry.data.guessFactor * 1 * maxEscapeAngleQuick;
-                    if (!isShadowed(bearingOffset1, bulletShadows)) {
-                        hasNotShadowed = true;
-                        bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset1, 1));
-                    }
-
-                    final double bearingOffset2 = entry.data.guessFactor * -1 * maxEscapeAngleQuick;
-                    if (!isShadowed(bearingOffset2, bulletShadows)) {
-                        hasNotShadowed = true;
-                        bearingOffsets.add(new PastBearingOffset(entry.location, bearingOffset2, 1));
-                    }
-
-                    if (hasNotShadowed) {
-                        notShadowedBulletsCount++;
-                    }
-                }
-            }
-
-            return bearingOffsets;
-        }
-
-
         private boolean isShadowed(double bearingOffset, Collection<BulletShadow> shadows) {
             for (BulletShadow shadow : shadows) {
                 if (shadow.contains(bearingOffset)) {
@@ -347,7 +289,7 @@ public class AdvancedEnemyGunModel {
         }
 
         public void addEntry(LoadedRTreeEntry<UndirectedGuessFactor> entry) {
-            trtLog.insert(entry);
+            rTree.insert(entry);
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
 
@@ -469,19 +411,6 @@ public class AdvancedEnemyGunModel {
                 List<PastBearingOffset> bearingOffsets = ebpd.getBearingOffsets(log);
                 if (bearingOffsets == null) {
                     bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
-                    List<PastBearingOffset> boOld = log.getBearingOffsetsOld(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
-                    if (bearingOffsets.size() != boOld.size()) {
-                        System.out.println("AAAAAAAAAAAAAAAAAAAAA");
-
-                    }
-                    if (boOld.size() > 5) {
-                        for (int i = 0; i < boOld.size(); i++) {
-                            if (boOld.get(i).bearingOffset != bearingOffsets.get(i).bearingOffset) {
-                                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAA");
-                                log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
-                            }
-                        }
-                    }
                 }
                 double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
