@@ -1,5 +1,6 @@
 v. 3.53b
 * intersection calculation in RTree optimised: do not calculate intersection for children, if parent intersection is FULL; calculate intersection only on step from parent to child
+* heap sort fixed
 
 v. 3.53a
 * use step by step heap sort to select only needed entries in movement (sort time reduced by 4 times)
