@@ -69,7 +69,9 @@
             <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
         </copy>
 
-        <delete dir="${bin.dir}"/>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${bin.dir}" includes="**/*"/>
+        </delete>
 
     </target>
 
@@ -111,12 +113,15 @@
             <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar"/>
         </copy>
 
-        <delete dir="${bin.dir}"/>
+        <delete includeEmptyDirs="true">
+            <fileset dir="${bin.dir}" includes="**/*"/>
+        </delete>
 
     </target>
 
-    <target name="build-all" depends="release, debug">
-
+    <target name="build-all">
+        <antcall target="release"/>
+        <antcall target="debug"/>
     </target>
 
 </project>
