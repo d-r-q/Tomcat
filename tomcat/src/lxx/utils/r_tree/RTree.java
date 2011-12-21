@@ -9,16 +9,20 @@ import lxx.utils.IntervalDouble;
 
 import java.util.Arrays;
 
-public class RTree<E extends RTreeEntry> {
-    private final RTree<E> parent;
+public class RTree {
+    private static final int CHILDREN_COUNT = 3;
+    private final RTree parent;
     private final Attribute[] dimensions;
     private final IntervalDouble[] coveredRange;
 
-    private E[] entries = (E[]) new RTreeEntry[32];
+    private RTreeEntry[] entries = new RTreeEntry[32];
     private int nextEntryIdx;
 
-    private RTree<E>[] children;
+    private RTree[] children;
+
     private int nextChild = -1;
+    private Intersection intersection;
+
     private int splitDimensionIdx = -1;
 
     private boolean singular = true;
@@ -28,7 +32,7 @@ public class RTree<E extends RTreeEntry> {
         this(null, dimensions);
     }
 
-    private RTree(RTree<E> parent, Attribute[] dimensions) {
+    private RTree(RTree parent, Attribute[] dimensions) {
         this.parent = parent;
         this.dimensions = dimensions;
         coveredRange = new IntervalDouble[dimensions.length];
@@ -37,7 +41,7 @@ public class RTree<E extends RTreeEntry> {
         }
     }
 
-    public void insert(E entry) {
+    public void insert(RTreeEntry entry) {
         entryCount++;
         for (int i = 0; i < coveredRange.length; i++) {
             coveredRange[i].extend(entry.location.toArray()[dimensions[i].id]);
@@ -47,7 +51,7 @@ public class RTree<E extends RTreeEntry> {
             entries[nextEntryIdx++] = entry;
             if (nextEntryIdx == entries.length) {
                 if (singular) {
-                    E[] newEntries = (E[]) new RTreeEntry[entries.length * 2];
+                    RTreeEntry[] newEntries = new RTreeEntry[entries.length * 2];
                     System.arraycopy(entries, 0, newEntries, 0, entries.length);
                     entries = newEntries;
                 } else {
@@ -62,10 +66,11 @@ public class RTree<E extends RTreeEntry> {
 
     private void split() {
         splitDimensionIdx = getSplitDimensionIdx();
-        children = new RTree[3];
+        children = new RTree[CHILDREN_COUNT];
         for (int i = 0; i < children.length; i++) {
-            children[i] = new RTree<E>(this, dimensions);
+            children[i] = new RTree(this, dimensions);
         }
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < entries.length; i++) {
             insert(entries[i]);
         }
@@ -84,7 +89,7 @@ public class RTree<E extends RTreeEntry> {
         return bestDimensionIdx;
     }
 
-    private RTree<E> selectChild(RTreeEntry entry) {
+    private RTree selectChild(RTreeEntry entry) {
         final IntervalDouble splitDimensionRange = coveredRange[splitDimensionIdx];
         int idx = (int) ((entry.location.toArray()[dimensions[splitDimensionIdx].id] - splitDimensionRange.a) / (splitDimensionRange.getLength() * 1.05) * children.length);
         return children[idx];
@@ -97,15 +102,15 @@ public class RTree<E extends RTreeEntry> {
     }
 
     private int rangeSearchImpl(IntervalDouble[] range, RTreeEntry[] result) {
-        RTree<E> cursor = this;
+        RTree cursor = this;
         cursor.nextChild = 0;
+        cursor.intersection = null;
         int resultIdx = 0;
         do {
-            final Intersection intersection = intersection(range, cursor.coveredRange);
-            if (intersection == Intersection.NONE) {
+            if (cursor.intersection == Intersection.NONE) {
                 cursor = cursor.parent;
             } else if (cursor.children == null) {
-                if (intersection == Intersection.FULL) {
+                if (cursor.intersection == Intersection.FULL) {
                     System.arraycopy(cursor.entries, 0, result, resultIdx, cursor.nextEntryIdx);
                     resultIdx += cursor.nextEntryIdx;
                 } else {
@@ -126,6 +131,9 @@ public class RTree<E extends RTreeEntry> {
                 } else {
                     cursor = cursor.children[cursor.nextChild++];
                     cursor.nextChild = 0;
+                    cursor.intersection = (cursor.parent.intersection == Intersection.FULL)
+                            ? Intersection.FULL
+                            : intersection(range, cursor.coveredRange);
                 }
             }
         } while (cursor != null);
