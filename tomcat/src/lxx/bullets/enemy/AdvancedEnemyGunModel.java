@@ -166,7 +166,7 @@ public class AdvancedEnemyGunModel {
     class Log {
 
         private static final int BULLETS_PER_LOG = 5;
-        private RTree<RTreeEntry> trtLog;
+        private RTree trtLog;
         private Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,
                 AttributesManager.myAcceleration, 0D,
@@ -193,7 +193,7 @@ public class AdvancedEnemyGunModel {
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
             this.type = type;
-            this.trtLog = new RTree<RTreeEntry>(attrs);
+            this.trtLog = new RTree(attrs);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
