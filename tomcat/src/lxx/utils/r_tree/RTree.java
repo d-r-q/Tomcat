@@ -146,7 +146,7 @@ public class RTree {
             double intersection = range[dimensions[i].id].intersection(coveringRange[i]);
             if (intersection < 0) {
                 intersectionType = Intersection.NONE;
-            } else if (intersection >= 0 && intersection != coveringRange[i].getLength()) {
+            } else if (intersection != coveringRange[i].getLength()) {
                 intersectionType = Intersection.PARTIALLY;
             }
         }
