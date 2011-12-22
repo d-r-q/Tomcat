@@ -174,13 +174,13 @@ public class AdvancedEnemyGunModel {
                 AttributesManager.myDistToForwardWall, 50D,
                 AttributesManager.myDistLast10Ticks, 20D);
 
-        private final AvgValue shortAvgHitRate = new AvgValue(3);
-        private final AvgValue midAvgHitRate = new AvgValue(11);
-        private final AvgValue longAvgHitRate = new AvgValue(100);
+        private final AvgValue shortAvgHitRate = new AvgValue(9);
+        private final AvgValue midAvgHitRate = new AvgValue(45);
+        private final AvgValue longAvgHitRate = new AvgValue(5000);
 
-        private final AvgValue shortAvgMissRate = new AvgValue(3);
-        private final AvgValue midAvgMissRate = new AvgValue(11);
-        private final AvgValue longAvgMissRate = new AvgValue(100);
+        private final AvgValue shortAvgMissRate = new AvgValue(9);
+        private final AvgValue midAvgMissRate = new AvgValue(45);
+        private final AvgValue longAvgMissRate = new AvgValue(5000);
 
         private final HitRate enemyHitRate = new HitRate();
 
