@@ -14,7 +14,6 @@ import lxx.utils.KdTreeEntry;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 
 /**
@@ -54,20 +53,21 @@ public class SingleSourceDataView implements DataView {
         }
         Collections.sort(similarEntries, distTimeComparator);
 
-        KdTree.Entry<KdTreeEntry> prev = null;
-        for (Iterator<KdTree.Entry<KdTreeEntry>> iter = similarEntries.iterator(); iter.hasNext(); ) {
-            final KdTree.Entry<KdTreeEntry> cur = iter.next();
-            if (prev != null && abs(prev.value.turnSnapshot.roundTime - cur.value.turnSnapshot.roundTime) < 5) {
-                iter.remove();
-            } else {
-                prev = cur;
-            }
-
-        }
+        final LinkedList<IntervalLong> coveredTimeIntervals = new LinkedList<IntervalLong>();
         final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
-
         for (KdTree.Entry<KdTreeEntry> e : similarEntries) {
-            dataSet.add(e.value.turnSnapshot);
+            boolean contained = false;
+            final int eRoundTime = e.value.turnSnapshot.roundTime;
+            for (IntervalLong ival : coveredTimeIntervals) {
+                if (ival.contains(eRoundTime)) {
+                    contained = true;
+                    break;
+                }
+            }
+            if (!contained) {
+                dataSet.add(e.value.turnSnapshot);
+                coveredTimeIntervals.add(new IntervalLong(eRoundTime - 10, eRoundTime + 10));
+            }
             if (dataSet.size() > 10) {
                 break;
             }
