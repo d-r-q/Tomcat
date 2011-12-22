@@ -20,7 +20,7 @@ public class HeapSort {
     }
 
     public void sortLastN(int n) {
-        for (; i > 1 && i >= array.length - n; i--) {
+        for (; i > 0 && i >= array.length - n; i--) {
             final RTreeEntry temp = array[i];
             array[i] = array[0];
             array[0] = temp;
