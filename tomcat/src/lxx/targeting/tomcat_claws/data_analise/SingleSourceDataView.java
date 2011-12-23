@@ -4,13 +4,12 @@
 
 package lxx.targeting.tomcat_claws.data_analise;
 
-import ags.utils.KdTree;
+import lxx.data_analysis.kd_tree.GunKdTreeEntry;
+import lxx.data_analysis.kd_tree.KdTreeAdapter;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
 import lxx.utils.IntervalLong;
-import lxx.utils.KdTreeAdapter;
-import lxx.utils.KdTreeEntry;
 
 import java.util.*;
 
@@ -24,40 +23,37 @@ public class SingleSourceDataView implements DataView {
 
     private static final DistTimeComparator distTimeComparator = new DistTimeComparator();
 
-    private final KdTreeAdapter<KdTreeEntry> dataSource;
+    private final KdTreeAdapter<GunKdTreeEntry> dataSource;
 
     private final double[] weights;
 
     public SingleSourceDataView(Attribute[] attributes, double[] weights) {
         this.weights = weights;
-        dataSource = new KdTreeAdapter<KdTreeEntry>(attributes, 50000);
+        dataSource = new KdTreeAdapter<GunKdTreeEntry>(attributes, 50000);
     }
 
     public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
-        final List<KdTree.Entry<KdTreeEntry>> similarEntries = dataSource.getNearestNeighbours(ts);
+        final GunKdTreeEntry[] similarEntries = dataSource.getNearestNeighbours(ts);
         final IntervalLong timeInterval = new IntervalLong(Integer.MAX_VALUE, Integer.MIN_VALUE);
         final IntervalDouble distInterval = new IntervalDouble(Integer.MAX_VALUE, Integer.MIN_VALUE);
-        for (KdTree.Entry<KdTreeEntry> entry : similarEntries) {
-            final int timeDiff = ts.roundTime - entry.value.turnSnapshot.roundTime;
-            if (timeDiff < 0) {
-                throw new RuntimeException("Something wrong");
-            }
+        for (GunKdTreeEntry entry : similarEntries) {
+            final int timeDiff = ts.roundTime - entry.ts.roundTime;
             timeInterval.extend(timeDiff);
             distInterval.extend(entry.distance);
         }
 
-        for (KdTree.Entry<KdTreeEntry> e : similarEntries) {
-            final double timeDist = (e.value.turnSnapshot.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
+        for (GunKdTreeEntry e : similarEntries) {
+            final double timeDist = (e.ts.roundTime - timeInterval.a) / (timeInterval.getLength()) * weights[0];
             final double locDist = (e.distance - distInterval.a) / (distInterval.getLength()) * weights[1];
-            e.distance = sqrt(timeDist * timeDist + locDist * locDist);
+            e.normalWeightedDistance = sqrt(timeDist * timeDist + locDist * locDist);
         }
-        Collections.sort(similarEntries, distTimeComparator);
+        Arrays.sort(similarEntries, distTimeComparator);
 
         final LinkedList<IntervalLong> coveredTimeIntervals = new LinkedList<IntervalLong>();
         final List<TurnSnapshot> dataSet = new LinkedList<TurnSnapshot>();
-        for (KdTree.Entry<KdTreeEntry> e : similarEntries) {
+        for (GunKdTreeEntry e : similarEntries) {
             boolean contained = false;
-            final int eRoundTime = e.value.turnSnapshot.roundTime;
+            final int eRoundTime = e.ts.roundTime;
             for (IntervalLong ival : coveredTimeIntervals) {
                 if (ival.contains(eRoundTime)) {
                     contained = true;
@@ -65,7 +61,7 @@ public class SingleSourceDataView implements DataView {
                 }
             }
             if (!contained) {
-                dataSet.add(e.value.turnSnapshot);
+                dataSet.add(e.ts);
                 coveredTimeIntervals.add(new IntervalLong(eRoundTime - 10, eRoundTime + 10));
             }
             if (dataSet.size() > 10) {
@@ -77,13 +73,13 @@ public class SingleSourceDataView implements DataView {
     }
 
     public void addEntry(TurnSnapshot ts) {
-        dataSource.addEntry(new KdTreeEntry(ts));
+        dataSource.addEntry(new GunKdTreeEntry(ts, dataSource.getAttributes()));
     }
 
-    private static class DistTimeComparator implements Comparator<KdTree.Entry<KdTreeEntry>> {
+    private static class DistTimeComparator implements Comparator<GunKdTreeEntry> {
 
-        public int compare(KdTree.Entry<KdTreeEntry> o1, KdTree.Entry<KdTreeEntry> o2) {
-            return Double.compare(o1.distance, o2.distance);
+        public int compare(GunKdTreeEntry o1, GunKdTreeEntry o2) {
+            return Double.compare(o1.normalWeightedDistance, o2.normalWeightedDistance);
         }
     }
 
