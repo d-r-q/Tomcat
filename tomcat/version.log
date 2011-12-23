@@ -1,3 +1,7 @@
+v. 3.54
+* filtering out of entries following each other in time in gun fixed
+* hit rates length in AEGM increased to 9, 45 & 5000 correspondly
+
 v. 3.53c
 * heap sort fixed
 
