@@ -190,6 +190,8 @@ public class AdvancedEnemyGunModel {
 
         public int usage = 0;
         private long lastUpdateRoundTime;
+        private ValueInfo totalBosVi = new ValueInfo(5000);
+        private ValueInfo roundBosVi = new ValueInfo(30);
 
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
@@ -204,6 +206,8 @@ public class AdvancedEnemyGunModel {
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
             final DataPoint[] entries = rTree.rangeSearch(range);
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+            totalBosVi.addValue(entries.length);
+            roundBosVi.addValue(entries.length);
 
             final HeapSort heapSort;
             int sortedEntris = BULLETS_PER_LOG;
