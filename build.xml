@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (c) 2011 Zodiac Interactive, LLC. All Rights Reserved.
+  -->
+
+<project name="Tomcat" basedir="."
+         default="release">
+    <property file="excluded\build.properties"/>
+    <property name="robot.version" value="3.54a"/>
+
+    <path id="src.files">
+        <pathelement location="src"/>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${bin.dir}"/>
+    </target>
+
+    <target name="compile" depends="init" description="Compiles source files">
+
+        <javac destdir="${bin.dir}" debug="on" debuglevel="lines,vars,source" optimize="yes" target="1.5">
+            <src refid="src.files"/>
+
+            <classpath>
+                <pathelement location="${robocode.jar}"/>
+            </classpath>
+        </javac>
+
+        <copyfile src="src/lxx/${robot.name}.properties" dest="bin/lxx/${robot.name}.properties"/>
+    </target>
+
+    <target name="clean" description="Deletes all previous build artifacts">
+        <delete dir="${bin.dir}"/>
+    </target>
+
+    <target name="release" depends="clean, compile">
+
+        <tstamp>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
+        </tstamp>
+
+        <tstamp>
+            <format property="NOW" pattern="HH:mm:ss ZZZ"/>
+        </tstamp>
+
+        <copy todir="${bin.dir}">
+            <fileset dir="src"/>
+        </copy>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
+            robot.java.source.included=true
+            robot.version=${robot.version}
+            robot.author.name=Alexey jdev Zhidkov
+            robot.classname=lxx.${robot.name}
+            robot.name=${robot.name}
+            robot.description=Positive killer. Build time: ${TODAY} ${NOW}
+            robot.webpage=http://www.robowiki.net/wiki/${robot.name}
+        </echo>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.${robot.name}.mode=normal
+        </echo>
+
+        <jar destfile="${builds.dir}\lxx.${robot.name}_${robot.version}.jar" compress="true">
+            <fileset dir="${bin.dir}"/>
+        </jar>
+
+        <copy todir="${robocode.dir}\robots\">
+            <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
+        </copy>
+
+        <delete includeEmptyDirs="true">
+            <fileset dir="${bin.dir}" includes="**/*"/>
+        </delete>
+
+    </target>
+
+    <target name="debug" depends="clean, compile">
+
+        <property name="robot.version.dbg" value="${robot.version}.debug"/>
+
+        <tstamp>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
+        </tstamp>
+
+        <tstamp>
+            <format property="NOW" pattern="HH:mm:ss ZZZ"/>
+        </tstamp>
+
+        <copy todir="${bin.dir}">
+            <fileset dir="src"/>
+        </copy>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.properties">robocode.version=1.7.3
+            robot.java.source.included=true
+            robot.version=${robot.version.dbg}
+            robot.author.name=Alexey jdev Zhidkov
+            robot.classname=lxx.${robot.name}
+            robot.name=${robot.name}
+            robot.description=Positive killer. Build time: ${TODAY} ${NOW}
+            robot.webpage=http://www.robowiki.net/wiki/${robot.name}
+        </echo>
+
+        <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.${robot.name}.mode=normal
+            aegm.debug=true
+        </echo>
+
+        <jar destfile="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar" compress="true">
+            <fileset dir="${bin.dir}"/>
+        </jar>
+
+        <copy todir="${robocode.dir}\robots\">
+            <fileset file="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar"/>
+        </copy>
+
+        <delete includeEmptyDirs="true">
+            <fileset dir="${bin.dir}" includes="**/*"/>
+        </delete>
+
+        <delete file="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar"/>
+
+    </target>
+
+    <target name="build-all">
+        <antcall target="release"/>
+        <antcall target="debug"/>
+    </target>
+
+</project>

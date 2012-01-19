@@ -1,0 +1,9 @@
+bin.dir = bin
+builds.dir = builds
+robocode.dir = D:\\my\\rc
+robocode.jar = ${robocode.dir}\\libs\\robocode.jar
+benchmark.dir = benchmark_results
+robot.name = Tomcat
+robot.version = 3.0.2
+bot.benchmark.dir = D:\\projects\\private\\devs-robocode\\trunk\\utilities\\BotBenchmark"/>
+bot.benchmark.classes = ${bot.benchmark.dir}\\bin
