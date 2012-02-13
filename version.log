@@ -1,4 +1,7 @@
 v. 3.55
+* adaptivr views weighting system inplemented in gun
+* anti-surfer #3 view added
+* firstBulletFlight time attribute removed from distance and timeSinceDirChange views
 
 v. 3.54a
 * data analysis refactored
