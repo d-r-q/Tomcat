@@ -5,6 +5,7 @@
 package lxx.utils.wave;
 
 import lxx.LXXRobotState;
+import lxx.bullets.LXXBullet;
 import lxx.utils.APoint;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXPoint;
@@ -32,6 +33,7 @@ public class Wave {
 
     private boolean isPassed = false;
     private IntervalDouble hitBearingOffsetInterval;
+    private LXXBullet carriedBullet;
 
     public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime) {
         this.sourceState = source;
@@ -99,6 +101,14 @@ public class Wave {
 
     public boolean isPassed() {
         return isPassed;
+    }
+
+    public LXXBullet getCarriedBullet() {
+        return carriedBullet;
+    }
+
+    public void setCarriedBullet(LXXBullet carriedBullet) {
+        this.carriedBullet = carriedBullet;
     }
 
     public boolean equals(Object o) {

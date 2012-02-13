@@ -8,6 +8,7 @@ import lxx.data_analysis.kd_tree.GunKdTreeEntry;
 import lxx.data_analysis.kd_tree.KdTreeAdapter;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
+import lxx.utils.AvgValue;
 import lxx.utils.IntervalDouble;
 import lxx.utils.IntervalLong;
 
@@ -23,12 +24,15 @@ public class SingleSourceDataView implements DataView {
 
     private static final DistTimeComparator distTimeComparator = new DistTimeComparator();
 
+    private final AvgValue hitRate = new AvgValue(5000);
+    
     private final KdTreeAdapter<GunKdTreeEntry> dataSource;
-
     private final double[] weights;
+    private final String name;
 
-    public SingleSourceDataView(Attribute[] attributes, double[] weights) {
+    public SingleSourceDataView(Attribute[] attributes, double[] weights, String name) {
         this.weights = weights;
+        this.name = name;
         dataSource = new KdTreeAdapter<GunKdTreeEntry>(attributes, 50000);
     }
 
@@ -64,7 +68,7 @@ public class SingleSourceDataView implements DataView {
                 dataSet.add(e.ts);
                 coveredTimeIntervals.add(new IntervalLong(eRoundTime - 10, eRoundTime + 10));
             }
-            if (dataSet.size() > 10) {
+            if (dataSet.size() > 15) {
                 break;
             }
         }
@@ -74,6 +78,18 @@ public class SingleSourceDataView implements DataView {
 
     public void addEntry(TurnSnapshot ts) {
         dataSource.addEntry(new GunKdTreeEntry(ts, dataSource.getAttributes()));
+    }
+
+    public void addHitRate(double hitRate) {
+        this.hitRate.addValue(hitRate);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public AvgValue getHitRate() {
+        return hitRate;
     }
 
     private static class DistTimeComparator implements Comparator<GunKdTreeEntry> {

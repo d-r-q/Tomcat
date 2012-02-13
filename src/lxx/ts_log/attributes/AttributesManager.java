@@ -11,6 +11,7 @@ import lxx.office.Office;
 import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.DistanceBetweenVE;
+import lxx.ts_log.attributes.attribute_extractors.FireTimeDiff;
 import lxx.ts_log.attributes.attribute_extractors.enemy.*;
 import lxx.ts_log.attributes.attribute_extractors.my.*;
 import lxx.utils.LXXUtils;
@@ -49,6 +50,7 @@ public class AttributesManager {
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAccelerationVE());
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWallVE());
     public static final Attribute myDistLast10Ticks = new Attribute("My dist last 10 ticks", 0, Rules.MAX_VELOCITY * 10 + 1, new MyDistanceLast10Ticks());
+    public static final Attribute fireTimeDiff = new Attribute("Fire time diff", 0, 40, new FireTimeDiff());
 
     public static final Attribute[] attributes = {
             distBetween,
@@ -79,6 +81,7 @@ public class AttributesManager {
             myAcceleration,
             myDistToForwardWall,
             myDistLast10Ticks,
+            fireTimeDiff
     };
 
     private final Office office;

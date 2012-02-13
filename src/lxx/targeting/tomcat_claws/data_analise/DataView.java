@@ -5,6 +5,7 @@
 package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.ts_log.TurnSnapshot;
+import lxx.utils.AvgValue;
 
 import java.util.Collection;
 
@@ -18,4 +19,9 @@ public interface DataView {
 
     void addEntry(TurnSnapshot ts);
 
+    void addHitRate(double hitRate);
+    
+    String getName();
+
+    AvgValue getHitRate();
 }

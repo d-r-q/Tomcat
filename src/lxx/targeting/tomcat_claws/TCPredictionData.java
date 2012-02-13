@@ -7,7 +7,9 @@ package lxx.targeting.tomcat_claws;
 import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
 import lxx.paint.LXXGraphics;
+import lxx.targeting.tomcat_claws.data_analise.DataView;
 import lxx.utils.APoint;
+import lxx.utils.IntervalDouble;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
 
@@ -27,17 +29,23 @@ public class TCPredictionData extends AbstractGFAimingPredictionData {
     private final List<APoint> predictedPoses;
     private final APoint robotPos;
     private final APoint initialPos;
+    private final Map<DataView, List<IntervalDouble>> dataViewsPredictions;
 
-    public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos) {
+    public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos, Map<DataView, List<IntervalDouble>> dataViewsPredictions) {
         super(null, -1);
         this.matches = matches;
         this.predictedPoses = predictedPoses;
         this.robotPos = robotPos;
         this.initialPos = initialPos;
+        this.dataViewsPredictions = dataViewsPredictions;
     }
 
     public Map<Double, Double> getMatches() {
         return matches;
+    }
+
+    public Map<DataView, List<IntervalDouble>> getDataViewsPredictions() {
+        return dataViewsPredictions;
     }
 
     @Override

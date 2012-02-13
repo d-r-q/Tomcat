@@ -5,6 +5,7 @@
 package lxx.targeting.tomcat_claws.data_analise;
 
 import lxx.ts_log.TurnSnapshot;
+import lxx.utils.AvgValue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,5 +36,16 @@ public class CompositeDataView implements DataView {
 
     public void addEntry(TurnSnapshot ts) {
         // data to underlying data views added by DataViewManager
+    }
+
+    public void addHitRate(double hitRate) {
+    }
+
+    public String getName() {
+        return null;
+    }
+
+    public AvgValue getHitRate() {
+        return null;
     }
 }
