@@ -1,20 +1,22 @@
+/*
+ * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
+ */
+
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.LXXRobot;
-import lxx.bullets.LXXBullet;
 import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
+import lxx.bullets.LXXBullet;
 
 import java.util.List;
 
 /**
  * User: jdev
- * Date: 05.08.11
+ * Date: 28.02.2010
  */
-public class EnemyOutgoingWavesCollectedVE implements AttributeValueExtractor {
-
+public class EnemyY implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return office.getStatisticsManager().getEnemyHitRate().getFireCount();
+        return enemy.getY();
     }
-
 }

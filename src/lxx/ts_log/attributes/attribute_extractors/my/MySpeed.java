@@ -8,14 +8,17 @@ import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
 import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-import robocode.util.Utils;
 
 import java.util.List;
 
-import static java.lang.Math.toDegrees;
+/**
+ * User: jdev
+ * Date: 23.09.2010
+ */
+public class MySpeed implements AttributeValueExtractor {
 
-public class MyRelativeHeadingVE implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return toDegrees(Utils.normalRelativeAngle(me.getState().getAbsoluteHeadingRadians() - enemy.angleTo(me)));
+        return (int) me.getState().getSpeed();
     }
+
 }

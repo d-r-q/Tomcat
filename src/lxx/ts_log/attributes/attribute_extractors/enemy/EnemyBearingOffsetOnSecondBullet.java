@@ -15,7 +15,7 @@ import java.util.List;
 
 import static java.lang.Math.toDegrees;
 
-public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtractor {
+public class EnemyBearingOffsetOnSecondBullet implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         if (myBullets.size() < 2) {
             return 0;
