@@ -25,8 +25,6 @@ public interface LXXRobot extends APoint {
 
     LXXRobotState getState();
 
-    LXXRobotState getPrevState();
-
     boolean equals(Object another);
 
     int hashCode();
@@ -34,8 +32,6 @@ public interface LXXRobot extends APoint {
     double getAcceleration();
 
     LXXPoint getPosition();
-
-    double getGunHeat();
 
     double getFirePower();
 

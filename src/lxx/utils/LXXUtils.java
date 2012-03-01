@@ -43,18 +43,6 @@ public class LXXUtils {
         return abs(Utils.normalRelativeAngle(alpha1 - alpha2));
     }
 
-    public static int limit(int minValue, int value, int maxValue) {
-        if (value < minValue) {
-            return minValue;
-        }
-
-        if (value > maxValue) {
-            return maxValue;
-        }
-
-        return value;
-    }
-
     public static double limit(double minValue, double value, double maxValue) {
         if (value < minValue) {
             return minValue;

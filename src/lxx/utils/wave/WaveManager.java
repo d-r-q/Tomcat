@@ -27,19 +27,6 @@ public class WaveManager implements RobotListener {
         return w;
     }
 
-    public Wave launchWaveOnNextTick(LXXRobotState source, LXXRobotState target, double bulletSpeed) {
-        return launchWaveOnTick(source, target, bulletSpeed, source.getRobot().getTime() + 1, null);
-    }
-
-    private Wave launchWaveOnTick(LXXRobotState source, LXXRobotState target, double bulletSpeed,
-                                  long tick, WaveCallback callback) {
-
-        final Wave w = new Wave(source, target, bulletSpeed, tick);
-        addWave(source.getRobot().getName(), w, callback);
-
-        return w;
-    }
-
     private void addWave(String owner, Wave w, WaveCallback callback) {
         final Set<Wave> waves = getWaves(owner);
         waves.add(w);

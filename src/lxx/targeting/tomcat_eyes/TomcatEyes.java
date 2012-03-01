@@ -5,13 +5,10 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.LXXRobot;
-import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.office.PropertiesManager;
 import lxx.targeting.GunType;
-import lxx.targeting.Target;
-import lxx.targeting.TargetManagerListener;
 import lxx.utils.LXXConstants;
 
 import java.util.HashMap;
@@ -22,33 +19,9 @@ import java.util.Map;
  * User: jdev
  * Date: 01.03.2011
  */
-public class TomcatEyes implements TargetManagerListener, BulletManagerListener {
+public class TomcatEyes implements BulletManagerListener {
 
-    private static final Map<LXXRobot, MovementMetaProfile> movementMetaProfiles = new HashMap<LXXRobot, MovementMetaProfile>();
     private static final Map<LXXRobot, TargetingProfile> targetingProfiles = new HashMap<LXXRobot, TargetingProfile>();
-
-    private final Tomcat robot;
-
-    public TomcatEyes(Tomcat robot) {
-        this.robot = robot;
-    }
-
-    public void targetUpdated(Target target) {
-        final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        movementMetaProfile.update(target, robot);
-        PropertiesManager.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
-        PropertiesManager.setDebugProperty("Can enemy ram", String.valueOf(movementMetaProfile.canRam()));
-    }
-
-    private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
-        MovementMetaProfile mmp = movementMetaProfiles.get(t);
-        if (mmp == null) {
-            mmp = new MovementMetaProfile();
-            movementMetaProfiles.put(t, mmp);
-        }
-
-        return mmp;
-    }
 
     public void bulletHit(LXXBullet bullet) {
         processBullet(bullet);
@@ -86,10 +59,6 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         } else {
             return GunType.ADVANCED;
         }
-    }
-
-    public int getEnemyPreferredDistance(LXXRobot enemy) {
-        return getMovementMetaProfile(enemy).getPreferredDistance();
     }
 
     public void bulletPassing(LXXBullet bullet) {

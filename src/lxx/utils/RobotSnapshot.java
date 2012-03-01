@@ -90,11 +90,8 @@ public class RobotSnapshot implements LXXRobotState {
 
         RobotSnapshot that = (RobotSnapshot) o;
 
-        if (time != that.time) return false;
-        if (robot != null ? !robot.equals(that.robot) : that.robot != null)
-            return false;
+        return time == that.time && robot.equals(that.robot);
 
-        return true;
     }
 
     public int hashCode() {
@@ -115,7 +112,6 @@ public class RobotSnapshot implements LXXRobotState {
         return energy;
     }
 
-    @Override
     public LXXPoint getPosition() {
         return position;
     }

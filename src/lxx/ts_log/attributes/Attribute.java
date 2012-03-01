@@ -5,10 +5,7 @@
 package lxx.ts_log.attributes;
 
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-import lxx.utils.Interval;
 import lxx.utils.IntervalDouble;
-
-import static java.lang.StrictMath.round;
 
 /**
  * User: jdev
@@ -32,20 +29,8 @@ public class Attribute {
         this.id = idSequence++;
     }
 
-    public AttributeValueExtractor getExtractor() {
-        return extractor;
-    }
-
-    public int getId() {
-        return id;
-    }
-
     public String toString() {
         return name;
-    }
-
-    public Interval getRoundedRange() {
-        return new Interval((int) round(maxRange.a), (int) round(maxRange.b));
     }
 
     public boolean equals(Object o) {
@@ -54,9 +39,8 @@ public class Attribute {
 
         Attribute attribute = (Attribute) o;
 
-        if (id != attribute.id) return false;
+        return id == attribute.id;
 
-        return true;
     }
 
     public int hashCode() {

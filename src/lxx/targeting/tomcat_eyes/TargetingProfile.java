@@ -5,7 +5,6 @@
 package lxx.targeting.tomcat_eyes;
 
 import lxx.LXXRobotState;
-import lxx.utils.Interval;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXUtils;
 import lxx.utils.Median;

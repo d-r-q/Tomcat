@@ -28,16 +28,10 @@ public class MCChallengerStrategy implements Strategy {
         robot.addListener(new RaikoGun(robot));
     }
 
-    @Override
     public boolean match() {
-        final boolean match = targetManager.hasDuelOpponent() || enemyBulletManager.getBulletsOnAir(1).size() > 0;
-        if (match) {
-            return true;
-        }
-        return false;
+        return targetManager.hasDuelOpponent() || enemyBulletManager.getBulletsOnAir(1).size() > 0;
     }
 
-    @Override
     public TurnDecision makeDecision() {
         return new TurnDecision(movement.getMovementDecision(), null, 0, null, null, null);
     }

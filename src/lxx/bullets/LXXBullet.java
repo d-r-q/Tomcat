@@ -122,17 +122,12 @@ public class LXXBullet {
 
         LXXBullet lxxBullet = (LXXBullet) o;
 
-        if (wave.getLaunchTime() != lxxBullet.wave.getLaunchTime()) return false;
-        if (!wave.getSourceStateAtFireTime().getRobot().getName().equals(lxxBullet.wave.getSourceStateAtFireTime().getRobot().getName()))
-            return false;
+        return wave.equals(lxxBullet.wave);
 
-        return true;
     }
 
     public int hashCode() {
-        int result = wave.getSourceStateAtFireTime().hashCode();
-        result = 31 * result + (int) (wave.getLaunchTime() ^ (wave.getLaunchTime() >>> 32));
-        return result;
+        return wave.hashCode();
     }
 
     public Wave getWave() {

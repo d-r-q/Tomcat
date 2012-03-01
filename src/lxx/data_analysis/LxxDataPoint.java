@@ -18,10 +18,6 @@ public class LxxDataPoint<T> extends DataPoint {
         this.payload = payload;
     }
 
-    public LxxDataPoint(double[] location, TurnSnapshot ts) {
-        this(location, ts, null);
-    }
-
     public static <T> LxxDataPoint createPlainPoint(TurnSnapshot ts, T payload, Attribute... attrs) {
         return new LxxDataPoint<T>(LocationFactory.getPlainLocation(ts, attrs), ts, payload);
     }

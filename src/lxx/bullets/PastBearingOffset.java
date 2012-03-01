@@ -35,10 +35,8 @@ public class PastBearingOffset implements Comparable<PastBearingOffset> {
 
         PastBearingOffset that = (PastBearingOffset) o;
 
-        if (Double.compare(that.bearingOffset, bearingOffset) != 0) return false;
-        if (source != null ? !source.equals(that.source) : that.source != null) return false;
+        return Double.compare(that.bearingOffset, bearingOffset) == 0 && source.equals(that.source);
 
-        return true;
     }
 
     @Override

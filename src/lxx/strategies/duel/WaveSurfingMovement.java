@@ -79,7 +79,6 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
         MovementDirectionPrediction nextPrediction = new MovementDirectionPrediction();
-        nextPrediction.bullets = lxxBullets;
         nextPrediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionRoundTime();
         nextPrediction.enemyVelocitySign = duelOpponent != null ? signum(duelOpponent.getVelocity()) : 0;
         nextPrediction.cwPoints = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE, new RobotImage(robot.getState()), duelOpponent == null ? null : new RobotImage(duelOpponent.getState()));
@@ -190,7 +189,6 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     public class MovementDirectionPrediction {
 
-        public List<LXXBullet> bullets;
         public List<WSPoint> cwPoints;
         public List<WSPoint> ccwPoints;
         public double enemyVelocitySign;

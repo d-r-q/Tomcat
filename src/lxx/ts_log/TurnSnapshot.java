@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import static java.lang.Math.toRadians;
-import static java.lang.StrictMath.round;
 
 /**
  * User: jdev
@@ -40,10 +39,6 @@ public class TurnSnapshot implements Serializable {
         this.roundTime = LXXUtils.getRoundTime(time, round);
     }
 
-    public int getRoundedAttrValue(Attribute a) {
-        return (int) round(attributeValues[a.id]);
-    }
-
     public double getAttrValue(Attribute a) {
         return attributeValues[a.id];
     }
@@ -54,10 +49,6 @@ public class TurnSnapshot implements Serializable {
 
     public int getRound() {
         return round;
-    }
-
-    public double[] toArray() {
-        return attributeValues;
     }
 
     public void setNext(TurnSnapshot next) {
@@ -85,14 +76,6 @@ public class TurnSnapshot implements Serializable {
     @Override
     public int hashCode() {
         return roundTime;
-    }
-
-    public double getMySpeed() {
-        return attributeValues[AttributesManager.mySpeed.id];
-    }
-
-    public double getMyAbsoluteHeadingRadians() {
-        return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.id]);
     }
 
     public double getEnemyAbsoluteHeading() {

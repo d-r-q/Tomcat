@@ -111,30 +111,21 @@ public class Wave {
         this.carriedBullet = carriedBullet;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Wave wave = (Wave) o;
 
-        if (launchTime != wave.launchTime) return false;
-        if (!Utils.isNear(wave.speed, speed)) return false;
-        if (sourceState != null ? !sourceState.equals(wave.sourceState) : wave.sourceState != null)
-            return false;
-        if (targetState != null ? !targetState.equals(wave.targetState) : wave.targetState != null)
-            return false;
+        return launchTime == wave.launchTime && sourceState.equals(wave.sourceState);
 
-        return true;
     }
 
+    @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = sourceState != null ? sourceState.hashCode() : 0;
-        result = 31 * result + (targetState != null ? targetState.hashCode() : 0);
+        int result = sourceState.hashCode();
         result = 31 * result + (int) (launchTime ^ (launchTime >>> 32));
-        temp = (long) (speed * 100);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 }

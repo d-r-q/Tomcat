@@ -426,10 +426,6 @@ public class Target implements EnemySnapshot, Serializable {
             return position.project(dv);
         }
 
-        public Long getTime() {
-            return time;
-        }
-
         public LXXPoint getPosition() {
             return position;
         }
