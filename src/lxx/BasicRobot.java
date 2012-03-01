@@ -13,7 +13,6 @@ import robocode.util.Utils;
 import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.abs;
@@ -23,7 +22,7 @@ import static java.lang.Math.signum;
  * User: jdev
  * Date: 24.10.2009
  */
-public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
+public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot {
 
     static {
         QuickMath.init();
@@ -39,13 +38,8 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private LXXRobotState prevState;
     protected LXXRobotState currentState;
 
-    private long lastStopTime;
-    private long lastTravelTime;
-    private long lastTurnTime;
-    private long lastNotTurnTime;
     private double acceleration;
     private int lastDirection = 1;
-    private long lastDirChangeTime;
 
     protected void init() {
         initialOthers = getOthers();
@@ -178,17 +172,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         prevState = currentState;
         currentState = new RobotSnapshot(this);
 
-        double prevAcceleration = acceleration;
         acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
-        if (signum(prevAcceleration) != signum(acceleration) && getSpeed() > 0.1 && getSpeed() < 7.9) {
-            lastDirChangeTime = e.getTime() - 1;
-        }
-
-        if (Utils.isNear(getVelocity(), 0)) {
-            lastStopTime = e.getTime();
-        } else {
-            lastTravelTime = e.getTime();
-        }
 
         position.x = e.getStatus().getX();
         position.y = e.getStatus().getY();
@@ -201,17 +185,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
             lastDirection = (int) signum(e.getStatus().getVelocity());
         }
 
-        final double prevTurnRateSign = prevState == null ? 0 : signum(prevState.getTurnRateRadians());
-
-        super.onStatus(e);
-
-        final double turnRateSign = signum(getTurnRateRadians());
-        if (turnRateSign == 0 || turnRateSign != prevTurnRateSign) {
-            lastTurnTime = getTime() - 1;
-        } else {
-            lastNotTurnTime = getTime() - 1;
-        }
-
         notifyListeners(e);
     }
 
@@ -221,14 +194,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public double getY() {
         return position.y;
-    }
-
-    public long getLastStopTime() {
-        return lastStopTime;
-    }
-
-    public long getLastTravelTime() {
-        return lastTravelTime;
     }
 
     public double getAcceleration() {
@@ -259,18 +224,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return prevState.getHeadingRadians() - getHeadingRadians();
     }
 
-    public long getLastTurnTime() {
-        return lastTurnTime;
-    }
-
-    public long getLastNotTurnTime() {
-        return lastNotTurnTime;
-    }
-
-    public long getLastDirChangeTime() {
-        return lastDirChangeTime;
-    }
-
     public LXXRobotState getPrevState() {
         return prevState;
     }
@@ -286,11 +239,4 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return last10Positions.getFirst().aDistance(last10Positions.getLast());
     }
 
-    public void addVisit(double guessFactor) {
-        throw new UnsupportedOperationException();
-    }
-
-    public List<Double> getVisitedGuessFactors() {
-        throw new UnsupportedOperationException();
-    }
 }

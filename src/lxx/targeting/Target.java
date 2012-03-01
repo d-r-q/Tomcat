@@ -5,6 +5,7 @@
 package lxx.targeting;
 
 import lxx.BasicRobot;
+import lxx.EnemySnapshot;
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.utils.*;
@@ -13,7 +14,6 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -23,7 +23,7 @@ import static java.lang.Math.*;
  * Date: 25.07.2009
  */
 
-public class Target implements LXXRobot, Serializable {
+public class Target implements EnemySnapshot, Serializable {
 
     private final List<Event> eventsList = new ArrayList<Event>(15);
 
@@ -57,10 +57,6 @@ public class Target implements LXXRobot, Serializable {
         state = mergeEvents();
         state.calculateState(prevState);
 
-        if (prevState != null) {
-            info.update(prevState, state);
-        }
-
         if (prevState != null && prevState.time + 1 != state.time && prevState.time >= 10) {
             // todo (zhidkov): notify listeners
             System.out.println("[WARN]: scans for " + getName() + " skipped: " + (state.time - prevState.time));
@@ -90,14 +86,13 @@ public class Target implements LXXRobot, Serializable {
                 final HitByBulletEvent e = (HitByBulletEvent) event;
                 processHitByBulletEvent(newState, e);
             } else if (event instanceof RobotDeathEvent) {
-                final RobotDeathEvent e = (RobotDeathEvent) event;
-                processRobotDeathEvent(newState, e);
+                processRobotDeathEvent(newState);
             }
         }
         return newState;
     }
 
-    private void processRobotDeathEvent(TargetState newState, RobotDeathEvent e) {
+    private void processRobotDeathEvent(TargetState newState) {
         newState.energy = 0;
     }
 
@@ -229,16 +224,6 @@ public class Target implements LXXRobot, Serializable {
         return state.getAbsoluteHeadingRadians();
     }
 
-    public long getLastStopTime() {
-        ensureValid();
-        return info.lastStopTime;
-    }
-
-    public long getLastTravelTime() {
-        ensureValid();
-        return info.lastTravelTime;
-    }
-
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -324,24 +309,9 @@ public class Target implements LXXRobot, Serializable {
         return abs(state.velocity);
     }
 
-    public long getLastTurnTime() {
-        ensureValid();
-        return info.lastTurnTime;
-    }
-
-    public long getLastNotTurnTime() {
-        ensureValid();
-        return info.lastNotTurnTime;
-    }
-
     public long getLastDirChangeTime() {
         ensureValid();
         return info.lastDirChangeTime;
-    }
-
-    public double getLast10TicksDist() {
-        ensureValid();
-        return info.getLast10TicksDist();
     }
 
     public void addVisit(double guessFactor) {
@@ -508,17 +478,8 @@ public class Target implements LXXRobot, Serializable {
 
     public class TargetInfo {
 
-        private final LinkedList<LXXPoint> last10Positions = new LinkedList<LXXPoint>();
-
-        private long lastStopTime;
-        private long lastTravelTime;
-
-        private APoint lastStopPos;
-
         private long myLastHitTime;
         private double myLastDamage;
-        private long lastTurnTime;
-        private long lastNotTurnTime;
         public long lastDirChangeTime;
 
         private long enemyLastHitTime;
@@ -526,36 +487,6 @@ public class Target implements LXXRobot, Serializable {
         private double enemyLastFirePower;
         private double enemyHitRobotEnergyLoss;
 
-        private void update(TargetState prevState, TargetState curState) {
-            if (lastStopPos == null || curState.velocity == 0) {
-                lastStopPos = curState;
-            }
-
-            if (Utils.isNear(curState.turnRateRadians, 0) || signum(prevState.turnRateRadians) != signum(curState.turnRateRadians)) {
-                lastNotTurnTime = owner.getTime() - 1;
-            } else {
-                lastTurnTime = owner.getTime() - 1;
-            }
-
-            if (Utils.isNear(curState.velocity, 0) || signum(curState.velocity) != signum(prevState.velocity)) {
-                lastStopTime = curState.time;
-            } else {
-                lastTravelTime = curState.time;
-            }
-
-            last10Positions.add(new LXXPoint(prevState));
-            if (last10Positions.size() > 10) {
-                last10Positions.removeFirst();
-            }
-
-        }
-
-        public double getLast10TicksDist() {
-            if (last10Positions.size() == 0) {
-                return 0;
-            }
-            return last10Positions.getFirst().aDistance(last10Positions.getLast());
-        }
     }
 
     public LXXPoint getPosition() {
