@@ -97,8 +97,14 @@ public class AttributesManager {
     public TurnSnapshot getTurnSnapshot(Target t) {
         final double[] attrValues = new double[attributes.length];
         final List<LXXBullet> myBullets = bulletManager.getBullets();
+        // todo(zhidkov): fix me
+        robot.getCurrentSnapshot().setBullets(robot.getBulletsInAir());
         for (final Attribute a : attributes) {
             double av = a.extractor.getAttributeValue(t, robot, myBullets, office);
+            if (av != a.extractor.getAttributeValue(t.getCurrentSnapshot(), robot.getCurrentSnapshot())) {
+                a.extractor.getAttributeValue(t, robot, myBullets, office);
+                a.extractor.getAttributeValue(t.getCurrentSnapshot(), robot.getCurrentSnapshot());
+            }
             if (!a.maxRange.contains(av)) {
                 System.out.println("[WARN]: " + a + " = " + av);
                 av = LXXUtils.limit(a, av);

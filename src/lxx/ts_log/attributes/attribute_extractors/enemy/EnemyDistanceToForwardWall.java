@@ -4,6 +4,8 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
+import lxx.EnemySnapshotImpl;
+import lxx.MySnapshotImpl;
 import lxx.bullets.LXXBullet;
 import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
@@ -17,7 +19,13 @@ import java.util.List;
  * Date: 23.02.2010
  */
 public class EnemyDistanceToForwardWall implements AttributeValueExtractor {
+
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return LXXUtils.limit(0, enemy.getPosition().distanceToWall(enemy.getState().getBattleField(), enemy.getState().getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
     }
+
+    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+        return LXXUtils.limit(0, enemy.getPosition().distanceToWall(enemy.getBattleField(), enemy.getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
+    }
+
 }

@@ -1,24 +1,29 @@
 package lxx;
 
+import lxx.bullets.BulletSnapshot;
 import lxx.utils.LXXPoint;
 import robocode.util.Utils;
 
 import java.util.LinkedList;
+import java.util.List;
 
+import static java.lang.Math.round;
 import static java.lang.Math.signum;
 
 public class MySnapshotImpl extends RobotSnapshot2 {
 
     private final LinkedList<LXXPoint> last10Positions;
-    private final double turnRateRadians;
+    private List<BulletSnapshot> bullets;
+    private final double gunCoolingRate;
 
-    public MySnapshotImpl(LXXRobot2 currentState) {
+    public MySnapshotImpl(BasicRobot currentState) {
         super(currentState);
         last10Positions = new LinkedList<LXXPoint>();
-        turnRateRadians = 0;
+        bullets = currentState.getBulletsInAir();
+        gunCoolingRate = currentState.getGunCoolingRate();
     }
 
-    public MySnapshotImpl(MySnapshotImpl prevState, LXXRobot2 currentState) {
+    public MySnapshotImpl(MySnapshotImpl prevState, BasicRobot currentState) {
         super(prevState, currentState);
         last10Positions = new LinkedList<LXXPoint>(prevState.getLast10Positions());
         last10Positions.add(new LXXPoint(currentState.getPosition()));
@@ -26,13 +31,15 @@ public class MySnapshotImpl extends RobotSnapshot2 {
             last10Positions.removeFirst();
         }
 
-        this.turnRateRadians = prevState.getHeadingRadians() - currentState.getHeadingRadians();
+        bullets = currentState.getBulletsInAir();
+        gunCoolingRate = currentState.getGunCoolingRate();
     }
 
     public MySnapshotImpl(MySnapshotImpl state1, MySnapshotImpl state2, double interpolationK) {
         super(state1, state2, interpolationK);
         last10Positions = state2.getLast10Positions();
-        turnRateRadians = state1.getTurnRateRadians() + (state2.getTurnRateRadians() - state1.getTurnRateRadians()) * interpolationK;
+        bullets = state2.getBulletsInAir();
+        gunCoolingRate = state2.gunCoolingRate;
     }
 
     public double getLast10TicksDist() {
@@ -46,10 +53,6 @@ public class MySnapshotImpl extends RobotSnapshot2 {
         return last10Positions;
     }
 
-    public double getTurnRateRadians() {
-        return turnRateRadians;
-    }
-
     public double getAbsoluteHeadingRadians() {
         if (signum(velocity) == 1) {
             return headingRadians;
@@ -60,5 +63,17 @@ public class MySnapshotImpl extends RobotSnapshot2 {
         } else {
             return Utils.normalAbsoluteAngle(headingRadians + Math.PI);
         }
+    }
+
+    public List<BulletSnapshot> getBulletsInAir() {
+        return bullets;
+    }
+
+    public int getTurnsToGunCool() {
+        return (int) round(gunHeat / gunCoolingRate);
+    }
+
+    public void setBullets(List<BulletSnapshot> bullets) {
+        this.bullets = bullets;
     }
 }

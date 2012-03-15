@@ -4,7 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
+import lxx.EnemySnapshotImpl;
 import lxx.LXXRobot;
+import lxx.MySnapshotImpl;
 import lxx.bullets.LXXBullet;
 import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
@@ -18,6 +20,10 @@ public class EnemyBearingToMe implements AttributeValueExtractor {
 
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return toDegrees(Utils.normalRelativeAngle(enemy.angleTo(me) - enemy.getState().getAbsoluteHeadingRadians()));
+    }
+
+    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+        return toDegrees(Utils.normalRelativeAngle(enemy.angleTo(me) - enemy.getAbsoluteHeadingRadians()));
     }
 
 }

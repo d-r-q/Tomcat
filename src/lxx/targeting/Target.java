@@ -287,11 +287,11 @@ public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
         return isAlive;
     }
 
-    public LXXRobotSnapshot2 getPrevSnapshot() {
+    public EnemySnapshotImpl getPrevSnapshot() {
         return prevSnapshot;
     }
 
-    public LXXRobotSnapshot2 getCurrentSnapshot() {
+    public EnemySnapshotImpl getCurrentSnapshot() {
         return currentSnapshot;
     }
 

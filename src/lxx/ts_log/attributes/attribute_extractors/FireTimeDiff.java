@@ -1,6 +1,9 @@
 package lxx.ts_log.attributes.attribute_extractors;
 
+import lxx.EnemySnapshotImpl;
 import lxx.LXXRobot;
+import lxx.MySnapshotImpl;
+import lxx.bullets.BulletSnapshot;
 import lxx.bullets.LXXBullet;
 import lxx.office.Office;
 
@@ -17,6 +20,13 @@ public class FireTimeDiff implements AttributeValueExtractor {
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         final int timeTillFire = office.getRobot().getTurnsToGunCool();
         final int timeSinceFire = myBullets.size() > 0 ? (int) (me.getTime() - myBullets.get(myBullets.size() - 1).getWave().getLaunchTime()) : Integer.MAX_VALUE;
+        return min(timeTillFire, timeSinceFire);
+    }
+
+    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+        final List<BulletSnapshot> myBullets = me.getBulletsInAir();
+        final int timeTillFire = me.getTurnsToGunCool();
+        final int timeSinceFire = myBullets.size() > 0 ? (int) (me.getSnapshotTime() - myBullets.get(myBullets.size() - 1).getLaunchTime()) : Integer.MAX_VALUE;
         return min(timeTillFire, timeSinceFire);
     }
 

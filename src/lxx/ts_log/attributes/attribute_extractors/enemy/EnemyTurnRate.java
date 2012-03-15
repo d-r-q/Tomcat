@@ -4,6 +4,8 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
+import lxx.EnemySnapshotImpl;
+import lxx.MySnapshotImpl;
 import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.bullets.LXXBullet;
@@ -21,6 +23,10 @@ public class EnemyTurnRate implements AttributeValueExtractor {
 
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
         return toDegrees(enemy.getState().getTurnRateRadians());
+    }
+
+    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+        return toDegrees(enemy.getTurnRateRadians());
     }
 
 }

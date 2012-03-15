@@ -4,6 +4,7 @@
 
 package lxx.utils.wave;
 
+import lxx.LXXRobotSnapshot2;
 import lxx.LXXRobotState;
 import lxx.bullets.LXXBullet;
 import lxx.utils.APoint;
@@ -26,6 +27,9 @@ public class Wave {
     private final LXXRobotState sourceState;
     private final LXXRobotState targetState;
 
+    private final LXXRobotSnapshot2 sourceState2;
+    private final LXXRobotSnapshot2 targetState2;
+
     private final long launchTime;
     private final double speed;
 
@@ -35,12 +39,14 @@ public class Wave {
     private IntervalDouble hitBearingOffsetInterval;
     private LXXBullet carriedBullet;
 
-    public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime) {
+    public Wave(LXXRobotState source, LXXRobotState target, double speed, long launchTime, LXXRobotSnapshot2 sourceState2, LXXRobotSnapshot2 targetState2) {
         this.sourceState = source;
         this.targetState = target;
 
         this.launchTime = launchTime;
         this.speed = speed;
+        this.targetState2 = targetState2;
+        this.sourceState2 = sourceState2;
         this.noBearingOffset = sourceState.angleTo(targetState);
     }
 
@@ -109,6 +115,14 @@ public class Wave {
 
     public void setCarriedBullet(LXXBullet carriedBullet) {
         this.carriedBullet = carriedBullet;
+    }
+
+    public LXXRobotSnapshot2 getSourceState2() {
+        return sourceState2;
+    }
+
+    public LXXRobotSnapshot2 getTargetState2() {
+        return targetState2;
     }
 
     @Override

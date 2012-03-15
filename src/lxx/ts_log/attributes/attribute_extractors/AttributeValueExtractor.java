@@ -4,8 +4,8 @@
 
 package lxx.ts_log.attributes.attribute_extractors;
 
+import lxx.*;
 import lxx.bullets.LXXBullet;
-import lxx.LXXRobot;
 import lxx.office.Office;
 
 import java.util.List;
@@ -17,5 +17,7 @@ import java.util.List;
 public interface AttributeValueExtractor {
 
     public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office);
+
+    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me);
 
 }

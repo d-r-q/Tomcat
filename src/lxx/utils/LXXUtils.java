@@ -4,6 +4,7 @@
 
 package lxx.utils;
 
+import lxx.LXXRobotSnapshot2;
 import lxx.LXXRobotState;
 import lxx.LXXRobotState2;
 import lxx.ts_log.TurnSnapshot;
@@ -64,6 +65,10 @@ public class LXXUtils {
         return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
+    public static double lateralDirection(APoint center, LXXRobotSnapshot2 robotState) {
+        return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
+    }
+
     private static double lateralDirection(APoint center, APoint pos, double velocity, double heading) {
         if (Utils.isNear(0, velocity)) {
             return 1;
@@ -72,6 +77,10 @@ public class LXXUtils {
     }
 
     public static double lateralVelocity(APoint center, LXXRobotState robotState) {
+        return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
+    }
+
+    public static double lateralVelocity(APoint center, LXXRobotSnapshot2 robotState) {
         return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 

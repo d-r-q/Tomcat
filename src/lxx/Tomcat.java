@@ -4,6 +4,7 @@
 
 package lxx;
 
+import lxx.bullets.BulletSnapshot;
 import lxx.bullets.LXXBullet;
 import lxx.events.FireEvent;
 import lxx.events.LXXPaintEvent;
@@ -24,6 +25,8 @@ import robocode.Rules;
 import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -85,7 +88,8 @@ public class Tomcat extends BasicRobot {
     private void notifyListeners() {
         if (isAlive) {
             if (bullet != null && turnDecision.getTarget() != null) {
-                final Wave bulletWave = office.getWaveManager().launchWave(getState(), turnDecision.getTarget().getState(), Rules.getBulletSpeed(turnDecision.getFirePower()), null);
+                final Wave bulletWave = office.getWaveManager().launchWave(getState(), turnDecision.getTarget().getState(),
+                        Rules.getBulletSpeed(turnDecision.getFirePower()), null, getCurrentSnapshot(), turnDecision.getTarget().getCurrentSnapshot());
                 final LXXBullet lxxBullet = new LXXBullet(bullet, bulletWave, turnDecision.getAimAimPredictionData());
 
                 notifyListeners(new FireEvent(lxxBullet));
@@ -123,6 +127,14 @@ public class Tomcat extends BasicRobot {
 
         setColors(new Color(255, 67, 0), new Color(255, 144, 66), new Color(255, 192, 66),
                 new Color(255, 192, 66), new Color(255, 192, 66));
+    }
+
+    @Override
+    public List<BulletSnapshot> getBulletsInAir() {
+        if (office == null) {
+            return new ArrayList<BulletSnapshot>();
+        }
+        return office.getBulletManager().getBulletSnapshots();
     }
 
     private void turnRadar() {

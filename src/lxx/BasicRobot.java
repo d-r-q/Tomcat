@@ -4,6 +4,7 @@
 
 package lxx;
 
+import lxx.bullets.BulletSnapshot;
 import lxx.events.LXXKeyEvent;
 import lxx.paint.LXXGraphics;
 import lxx.utils.*;
@@ -13,6 +14,7 @@ import robocode.util.Utils;
 import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.abs;
@@ -39,7 +41,7 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     protected LXXRobotState currentState;
 
     private MySnapshotImpl prevSnapshot;
-    private MySnapshotImpl currentSnapshot;
+    protected MySnapshotImpl currentSnapshot;
 
     private double acceleration;
     private int lastDirection = 1;
@@ -212,9 +214,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
             assert currentSnapshot.getPosition().equals(getPosition());
         }
         assert currentSnapshot.getSpeed() == currentState.getSpeed();
-        if (currentSnapshot.getTurnRateRadians() != currentState.getTurnRateRadians()) {
-            assert currentSnapshot.getTurnRateRadians() == currentState.getTurnRateRadians();
-        }
         assert currentSnapshot.getVelocity() == currentState.getVelocity();
     }
 
@@ -280,4 +279,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     public BattleField getBattleField() {
         return battleField;
     }
+
+    public abstract List<BulletSnapshot> getBulletsInAir();
 }
