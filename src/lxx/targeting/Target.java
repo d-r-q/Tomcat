@@ -4,10 +4,7 @@
 
 package lxx.targeting;
 
-import lxx.BasicRobot;
-import lxx.EnemySnapshot;
-import lxx.LXXRobot;
-import lxx.LXXRobotState;
+import lxx.*;
 import lxx.utils.*;
 import robocode.*;
 import robocode.util.Utils;
@@ -23,7 +20,7 @@ import static java.lang.Math.*;
  * Date: 25.07.2009
  */
 
-public class Target implements EnemySnapshot, Serializable {
+public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
 
     private final List<Event> eventsList = new ArrayList<Event>(15);
 
@@ -37,6 +34,20 @@ public class Target implements EnemySnapshot, Serializable {
     private final TargetInfo info;
     private TargetData targetData;
     private boolean isRammingNow;
+    private EnemySnapshotImpl prevSnapshot;
+    private EnemySnapshotImpl currentSnapshot;
+
+    private LXXPoint position = new LXXPoint();
+    private double energy = 100;
+    private long enemyLastHitTime;
+    private double enemyLastCollectedEnergy;
+    private long myLastHitTime;
+    private double myLastDamage;
+    private double headingRadians;
+    private double velocity;
+    private int enemyHitRobotEnergyLoss;
+    private double enemyLastFirePower;
+    private double gunHeat;
 
     public Target(BasicRobot owner, String name, TargetData targetData) {
         this.owner = owner;
@@ -53,9 +64,43 @@ public class Target implements EnemySnapshot, Serializable {
     public void update() {
         ensureValid();
         prevState = state;
+        prevSnapshot = currentSnapshot;
 
         state = mergeEvents();
+        if (prevSnapshot == null) {
+            currentSnapshot = new EnemySnapshotImpl(this, targetData.getVisitedGuessFactors());
+        } else {
+            currentSnapshot = new EnemySnapshotImpl(prevSnapshot, this);
+        }
+        if (prevState != null) {
+            if (isFireLastTick() != isFireLastTick2()) {
+                isFireLastTick2();
+            }
+        }
         state.calculateState(prevState);
+        updateState();
+
+        if (abs(currentSnapshot.getGunHeat() - state.gunHeat) > 0.01) {
+            updateState();
+        }
+        if (getExpectedEnergy() != getExpectedEnergy2()) {
+            assert getExpectedEnergy() != getExpectedEnergy2();
+        }
+        if (isHitWall() != isHitWall2()) {
+            assert isHitWall() != isHitWall2();
+        }
+
+
+        if (getExpectedEnergy() != getExpectedEnergy2()) {
+            assert getExpectedEnergy() != getExpectedEnergy2();
+        }
+
+        if (prevState != null) {
+            if (isFireLastTick() != isFireLastTick2()) {
+                assert isFireLastTick() == isFireLastTick2();
+            }
+        }
+
 
         if (prevState != null && prevState.time + 1 != state.time && prevState.time >= 10) {
             // todo (zhidkov): notify listeners
@@ -65,12 +110,50 @@ public class Target implements EnemySnapshot, Serializable {
         isRammingNow = ((LXXUtils.anglesDiff(angleTo(owner), getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_30 &&
                 getSpeed() > 0) || (owner.aDistance(this) < 50));
 
+        if (prevSnapshot != null && prevState != null && (prevSnapshot.getEnergy() != prevState.getEnergy())) {
+            assert prevSnapshot.getEnergy() == prevState.getEnergy();
+        }
+        assert currentSnapshot.getEnergy() == state.getEnergy();
+        if (abs(currentSnapshot.getGunHeat() - state.gunHeat) > 0.01) {
+            assert currentSnapshot.getGunHeat() == state.gunHeat;
+        }
+        assert currentSnapshot.getHeadingRadians() == state.getHeadingRadians();
+        if (currentSnapshot.getLastDirChangeTime() != getLastDirChangeTime()) {
+            assert currentSnapshot.getLastDirChangeTime() == getLastDirChangeTime();
+        }
+        assert currentSnapshot.getPosition().equals(getPosition());
+        assert currentSnapshot.getSpeed() == state.getSpeed();
+        if (currentSnapshot.getTurnRateRadians() != state.getTurnRateRadians()) {
+            prevState.calculateState(state);
+            assert currentSnapshot.getTurnRateRadians() == state.getTurnRateRadians();
+        }
+        assert currentSnapshot.getVelocity() == state.getVelocity();
+
+        if (getFirePower() != enemyLastFirePower) {
+            assert getFirePower() == enemyLastFirePower;
+        }
+
+
         eventsList.clear();
     }
 
+    private void updateState() {
+        enemyHitRobotEnergyLoss = 0;
+        if (prevSnapshot == null) {
+            gunHeat = LXXConstants.INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
+        } else if (isFireLastTick2()) {
+            final double firePower = getExpectedEnergy2() - energy;
+            gunHeat = Rules.getGunHeat(firePower);
+            enemyLastFirePower = firePower;
+        }
+
+        gunHeat = max(0, gunHeat - owner.getGunCoolingRate());
+        currentSnapshot.setGunHeat(gunHeat);
+    }
+
     private TargetState mergeEvents() {
-        info.enemyHitRobotEnergyLoss = 0;
         final TargetState newState = createState();
+        info.enemyHitRobotEnergyLoss = 0;
 
         for (Event event : eventsList) {
             if (event instanceof ScannedRobotEvent) {
@@ -89,11 +172,13 @@ public class Target implements EnemySnapshot, Serializable {
                 processRobotDeathEvent(newState);
             }
         }
+
         return newState;
     }
 
     private void processRobotDeathEvent(TargetState newState) {
         newState.energy = 0;
+        energy = 0;
     }
 
     private TargetState createState() {
@@ -117,23 +202,34 @@ public class Target implements EnemySnapshot, Serializable {
     private void processHitByBulletEvent(TargetState newState, HitByBulletEvent e) {
         final double bulletPower = e.getBullet().getPower();
         newState.energy = prevState.energy + LXXUtils.getReturnedEnergy(bulletPower);
+        energy = prevSnapshot.getEnergy() + LXXUtils.getReturnedEnergy(bulletPower);
         info.enemyLastHitTime = e.getTime();
+        enemyLastHitTime = e.getTime();
         info.enemyLastCollectedEnergy = LXXUtils.getReturnedEnergy(bulletPower);
+        enemyLastCollectedEnergy = LXXUtils.getReturnedEnergy(bulletPower);
     }
 
     private void processBulletHitEvent(TargetState newState, BulletHitEvent e) {
         info.myLastHitTime = e.getTime();
+        myLastHitTime = e.getTime();
         info.myLastDamage = Rules.getBulletDamage(e.getBullet().getPower());
+        myLastDamage = Rules.getBulletDamage(e.getBullet().getPower());
 
-        newState.update(e);
+        newState.position = new LXXPoint(e.getBullet().getX(), e.getBullet().getY());
+        position = new LXXPoint(e.getBullet().getX(), e.getBullet().getY());
+        newState.energy = e.getEnergy();
+        energy = e.getEnergy();
     }
 
     private void processHitRobotEvent(TargetState newState, HitRobotEvent e) {
         double absoluteBearing = owner.getHeadingRadians() + e.getBearingRadians();
 
         newState.position = (LXXPoint) owner.project(absoluteBearing, LXXConstants.ROBOT_SIDE_SIZE);
+        position = newState.position;
         newState.energy = e.getEnergy();
+        energy = e.getEnergy();
         info.enemyHitRobotEnergyLoss += LXXConstants.ROBOT_HIT_DAMAGE;
+        enemyHitRobotEnergyLoss += LXXConstants.ROBOT_HIT_DAMAGE;
     }
 
     private void processScannedRobotEvent(TargetState newState, ScannedRobotEvent e) {
@@ -141,9 +237,13 @@ public class Target implements EnemySnapshot, Serializable {
         final APoint coords = owner.project(absoluteBearing, e.getDistance());
 
         newState.position = (LXXPoint) coords;
+        position = newState.position;
         newState.headingRadians = e.getHeadingRadians();
+        headingRadians = e.getHeadingRadians();
         newState.velocity = e.getVelocity();
+        velocity = e.getVelocity();
         newState.energy = e.getEnergy();
+        energy = e.getEnergy();
         if (state != null && signum(getAcceleration()) != signum(LXXUtils.calculateAcceleration(state, newState)) &&
                 abs(e.getVelocity()) > 0.1 && abs(e.getVelocity()) < 7.9) {
             info.lastDirChangeTime = e.getTime() - 1;
@@ -154,14 +254,14 @@ public class Target implements EnemySnapshot, Serializable {
 
     public long getUpdateTime() {
         ensureValid();
-        return state.time;
+        return currentSnapshot.getSnapshotTime();
     }
 
     // todo(zhidkov): will be used in melee radar
     @SuppressWarnings({"UnusedDeclaration"})
     public int getLatency() {
         ensureValid();
-        return (int) (owner.getTime() - state.time);
+        return (int) (owner.getTime() - currentSnapshot.getSnapshotTime());
     }
 
     public String getName() {
@@ -175,16 +275,24 @@ public class Target implements EnemySnapshot, Serializable {
 
     public double getEnergy() {
         ensureValid();
-        return state.energy;
+        return energy;
     }
 
     public double getVelocity() {
         ensureValid();
-        return state.velocity;
+        return velocity;
     }
 
     public boolean isAlive() {
         return isAlive;
+    }
+
+    public LXXRobotSnapshot2 getPrevSnapshot() {
+        return prevSnapshot;
+    }
+
+    public LXXRobotSnapshot2 getCurrentSnapshot() {
+        return currentSnapshot;
     }
 
     public void setNotAlive() {
@@ -194,34 +302,38 @@ public class Target implements EnemySnapshot, Serializable {
 
     public double getX() {
         ensureValid();
-        return state.position.x;
+        return position.x;
     }
 
     public double getY() {
         ensureValid();
-        return state.position.y;
+        return position.y;
     }
 
     public double aDistance(APoint p) {
         ensureValid();
-        return state.position.aDistance(p);
+        return position.aDistance(p);
     }
 
     public double angleTo(APoint target) {
-        return state.position.angleTo(target);
+        return position.angleTo(target);
     }
 
     public APoint project(double alpha, double distance) {
-        return state.position.project(alpha, distance);
+        return position.project(alpha, distance);
     }
 
     public APoint project(DeltaVector dv) {
-        return state.position.project(dv);
+        return position.project(dv);
     }
 
     public double getAbsoluteHeadingRadians() {
         ensureValid();
-        return state.getAbsoluteHeadingRadians();
+        if (velocity >= 0) {
+            return headingRadians;
+        } else {
+            return Utils.normalAbsoluteAngle(headingRadians + Math.PI);
+        }
     }
 
     public boolean equals(Object o) {
@@ -238,11 +350,11 @@ public class Target implements EnemySnapshot, Serializable {
     }
 
     public double getAcceleration() {
-        return state.acceleration;
+        return currentSnapshot.getAcceleration();
     }
 
     private void ensureValid() {
-        if (!owner.isAlive() && state != null) {
+        if (!owner.isAlive() && currentSnapshot != null) {
             throw new RuntimeException("Something wrong");
         }
     }
@@ -255,6 +367,10 @@ public class Target implements EnemySnapshot, Serializable {
     public double getHeight() {
         ensureValid();
         return owner.getHeight();
+    }
+
+    public double getHeadingRadians() {
+        return headingRadians;
     }
 
     public boolean isFireLastTick() {
@@ -304,9 +420,60 @@ public class Target implements EnemySnapshot, Serializable {
                 prevState.position.aDistance(prevState.position.project(getAbsoluteHeadingRadians(), abs(state.velocity))) < -1.1;
     }
 
+    public boolean isFireLastTick2() {
+        ensureValid();
+        if (prevSnapshot != null && prevSnapshot.getGunHeat() >= owner.getGunCoolingRate()) {
+            return false;
+        }
+        double energyDiff = getExpectedEnergy2() - energy;
+        return energyDiff > 0 && energyDiff < 3.1;
+    }
+
+    public double getExpectedEnergy2() {
+        ensureValid();
+        if (prevSnapshot == null) {
+            return energy;
+        }
+
+        double expectedEnergy = prevSnapshot.getEnergy();
+        if (owner.getTime() == myLastHitTime) {
+            expectedEnergy -= myLastDamage;
+        }
+
+        if (owner.getTime() == enemyLastHitTime) {
+            expectedEnergy += enemyLastCollectedEnergy;
+        }
+
+        if (isHitWall2()) {
+            expectedEnergy -= Rules.getWallHitDamage(abs(prevSnapshot.getVelocity()) + prevSnapshot.getAcceleration());
+        }
+
+        expectedEnergy -= enemyHitRobotEnergyLoss;
+
+        return expectedEnergy;
+    }
+
+    public boolean isHitWall2() {
+        ensureValid();
+        if (prevSnapshot == null) {
+            return false;
+        }
+
+        if (abs(prevSnapshot.getVelocity()) - abs(velocity) > Rules.DECELERATION) {
+            return true;
+        }
+
+        return prevSnapshot.getPosition().aDistance(position) -
+                prevSnapshot.getPosition().aDistance(prevSnapshot.getPosition().project(currentSnapshot.getAbsoluteHeadingRadians(), abs(velocity))) < -1.1;
+    }
+
     public double getSpeed() {
         ensureValid();
-        return abs(state.velocity);
+        return abs(velocity);
+    }
+
+    public BattleField getBattleField() {
+        return owner.getBattleField();
     }
 
     public long getLastDirChangeTime() {
@@ -339,7 +506,7 @@ public class Target implements EnemySnapshot, Serializable {
     }
 
     public double getGunHeat() {
-        return state.gunHeat;
+        return gunHeat;
     }
 
     public boolean isRammingNow() {
@@ -456,11 +623,6 @@ public class Target implements EnemySnapshot, Serializable {
 
         public BattleField getBattleField() {
             return owner.battleField;
-        }
-
-        public void update(BulletHitEvent e) {
-            position = new LXXPoint(e.getBullet().getX(), e.getBullet().getY());
-            energy = e.getEnergy();
         }
 
         public double getTurnRateRadians() {

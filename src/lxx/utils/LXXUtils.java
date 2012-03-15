@@ -5,6 +5,7 @@
 package lxx.utils;
 
 import lxx.LXXRobotState;
+import lxx.LXXRobotState2;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
@@ -159,6 +160,21 @@ public class LXXUtils {
     }
 
     public static double calculateAcceleration(LXXRobotState prevState, LXXRobotState curState) {
+        if (prevState == null) {
+            return 0;
+        }
+
+        double acceleration;
+        if (signum(curState.getVelocity()) == signum(prevState.getVelocity()) || abs(curState.getVelocity()) < 0.001) {
+            acceleration = abs(curState.getVelocity()) - abs(prevState.getVelocity());
+        } else {
+            acceleration = abs(curState.getVelocity());
+        }
+
+        return limit(-Rules.MAX_VELOCITY, acceleration, Rules.ACCELERATION);
+    }
+
+    public static double calculateAcceleration(LXXRobotState2 prevState, LXXRobotState2 curState) {
         if (prevState == null) {
             return 0;
         }

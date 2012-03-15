@@ -35,7 +35,7 @@ public class OfficeImpl implements Office {
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
-        this.tomcatEyes = new TomcatEyes(tomcat);
+        this.tomcatEyes = new TomcatEyes();
 
         timeProfiler = new TimeProfiler();
         tomcat.addListener(timeProfiler);

@@ -223,11 +223,9 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
 
         final Map<DataView, List<IntervalDouble>> dataViewsPredictions = predictionData.getDataViewsPredictions();
         final double bulletFlightTime = w.getSourcePosAtFireTime().aDistance(w.getTargetPosAtFireTime()) / w.getSpeed();
-        System.out.println("Data views hit rates:");
         for (DataView dv : dataViewsPredictions.keySet()) {
             final List<IntervalDouble> intervalDoubles = dataViewsPredictions.get(dv);
             dv.addHitRate(getHitRate(w.getHitBearingOffsetInterval(), intervalDoubles) * bulletFlightTime);
-            System.out.println(dv.getName() + ": " + dv.getHitRate().toString());
         }
     }
 
