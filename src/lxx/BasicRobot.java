@@ -177,20 +177,26 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
         prevState = currentState;
         currentState = new RobotSnapshot(this);
 
-        position.x = e.getStatus().getX();
-        position.y = e.getStatus().getY();
-
         prevSnapshot = currentSnapshot != null
                 ? currentSnapshot
                 : new MySnapshotImpl(this);
 
         currentSnapshot = new MySnapshotImpl(prevSnapshot, this);
 
+        // performance enhancing bug - because some reason using old position gives best results
+
+        position.x = e.getStatus().getX();
+        position.y = e.getStatus().getY();
+
         acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
 
         last10Positions.add(new LXXPoint(position));
         if (last10Positions.size() > 10) {
             last10Positions.removeFirst();
+        }
+        currentSnapshot.getLast10Positions().add(new LXXPoint(position));
+        if (currentSnapshot.getLast10Positions().size() > 10) {
+            currentSnapshot.getLast10Positions().removeFirst();
         }
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
@@ -210,8 +216,8 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
             assert currentSnapshot.getLast10TicksDist() == getLast10TicksDist();
         }
         assert currentSnapshot.getLastDirection() == lastDirection;
-        if (!currentSnapshot.getPosition().equals(getPosition())) {
-            assert currentSnapshot.getPosition().equals(getPosition());
+        if (!currentSnapshot.getPosition().equals(currentState.getPosition())) {
+            assert currentSnapshot.getPosition().equals(currentState.getPosition());
         }
         assert currentSnapshot.getSpeed() == currentState.getSpeed();
         assert currentSnapshot.getVelocity() == currentState.getVelocity();

@@ -26,10 +26,6 @@ public class MySnapshotImpl extends RobotSnapshot2 {
     public MySnapshotImpl(MySnapshotImpl prevState, BasicRobot currentState) {
         super(prevState, currentState);
         last10Positions = new LinkedList<LXXPoint>(prevState.getLast10Positions());
-        last10Positions.add(new LXXPoint(currentState.getPosition()));
-        if (last10Positions.size() > 10) {
-            last10Positions.removeFirst();
-        }
 
         bullets = currentState.getBulletsInAir();
         gunCoolingRate = currentState.getGunCoolingRate();
