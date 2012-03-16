@@ -42,11 +42,7 @@ public class AttributesManager {
     public static final Attribute lastVisitedGF1 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(1));
     public static final Attribute lastVisitedGF2 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(2));
 
-    public static final Attribute myX = new Attribute("My x", 0, 1200, new MyX());
-    public static final Attribute myY = new Attribute("My y", 0, 1200, new MyY());
-    public static final Attribute mySpeed = new Attribute("My speed", 0, 8, new MySpeed());
     public static final Attribute myLateralSpeed = new Attribute("My lateral speed", 0, 8, new MyLateralSpeed());
-    public static final Attribute myAbsoluteHeadingDegrees = new Attribute("My absolute heading", 0, 360, new MyHeading());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAcceleration());
     public static final Attribute myDistToForwardWall = new Attribute("My distance to forward wall", 0, 1700, new MyDistanceToForwardWall());
     public static final Attribute myDistLast10Ticks = new Attribute("My dist last 10 ticks", 0, Rules.MAX_VELOCITY * 10 + 1, new MyDistanceLast10Ticks());
@@ -73,11 +69,7 @@ public class AttributesManager {
             lastVisitedGF1,
             lastVisitedGF2,
 
-            myX,
-            myY,
-            mySpeed,
             myLateralSpeed,
-            myAbsoluteHeadingDegrees,
             myAcceleration,
             myDistToForwardWall,
             myDistLast10Ticks,
