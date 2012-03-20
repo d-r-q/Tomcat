@@ -168,20 +168,17 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
                 ? currentSnapshot
                 : new MySnapshot(this);
 
-        currentSnapshot = new MySnapshot(prevSnapshot, this);
+        currentSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.size() == 0
+                ? 0
+                : last10Positions.getFirst().aDistance(last10Positions.getLast()));
 
         // performance enhancing bug - because some reason using old position gives best results
-
         position.x = e.getStatus().getX();
         position.y = e.getStatus().getY();
 
         last10Positions.add(new LXXPoint(position));
         if (last10Positions.size() > 10) {
             last10Positions.removeFirst();
-        }
-        currentSnapshot.getLast10Positions().add(new LXXPoint(position));
-        if (currentSnapshot.getLast10Positions().size() > 10) {
-            currentSnapshot.getLast10Positions().removeFirst();
         }
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
@@ -216,13 +213,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return getName().equals(basicRobot.getName());
     }
 
-    public double getTurnRateRadians() {
-        if (prevSnapshot == null) {
-            return 0;
-        }
-        return prevSnapshot.getHeadingRadians() - getHeadingRadians();
-    }
-
     public MySnapshot getPrevSnapshot() {
         return prevSnapshot;
     }
@@ -233,13 +223,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public int getRound() {
         return getRoundNum();
-    }
-
-    public double getLast10TicksDist() {
-        if (last10Positions.size() == 0) {
-            return 0;
-        }
-        return last10Positions.getFirst().aDistance(last10Positions.getLast());
     }
 
     public BattleField getBattleField() {

@@ -1,10 +1,8 @@
 package lxx;
 
 import lxx.bullets.BulletSnapshot;
-import lxx.utils.LXXPoint;
 import robocode.util.Utils;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.round;
@@ -12,21 +10,20 @@ import static java.lang.Math.signum;
 
 public class MySnapshot extends RobotSnapshot {
 
-    // todo(zhidkov): store only distance
-    private final LinkedList<LXXPoint> last10Positions;
     private List<BulletSnapshot> bullets;
     private final double gunCoolingRate;
+    private final double last10TicksDist;
 
     public MySnapshot(BasicRobot currentState) {
         super(currentState);
-        last10Positions = new LinkedList<LXXPoint>();
+        last10TicksDist = 0;
         bullets = currentState.getBulletsInAir();
         gunCoolingRate = currentState.getGunCoolingRate();
     }
 
-    public MySnapshot(MySnapshot prevState, BasicRobot currentState) {
+    public MySnapshot(MySnapshot prevState, BasicRobot currentState, double last10TicksDist) {
         super(prevState, currentState);
-        last10Positions = new LinkedList<LXXPoint>(prevState.getLast10Positions());
+        this.last10TicksDist = last10TicksDist;
 
         bullets = currentState.getBulletsInAir();
         gunCoolingRate = currentState.getGunCoolingRate();
@@ -34,20 +31,13 @@ public class MySnapshot extends RobotSnapshot {
 
     public MySnapshot(MySnapshot state1, MySnapshot state2, double interpolationK) {
         super(state1, state2, interpolationK);
-        last10Positions = state2.getLast10Positions();
+        last10TicksDist = state1.getLast10TicksDist() + (state2.getLast10TicksDist() - state1.getLast10TicksDist()) * interpolationK;
         bullets = state2.getBulletsInAir();
         gunCoolingRate = state2.gunCoolingRate;
     }
 
     public double getLast10TicksDist() {
-        if (last10Positions.size() == 0) {
-            return 0;
-        }
-        return last10Positions.getFirst().aDistance(last10Positions.getLast());
-    }
-
-    public LinkedList<LXXPoint> getLast10Positions() {
-        return last10Positions;
+        return last10TicksDist;
     }
 
     public double getAbsoluteHeadingRadians() {
