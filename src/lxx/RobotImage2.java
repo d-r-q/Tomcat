@@ -8,7 +8,7 @@ import robocode.util.Utils;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
-public class RobotImage2 implements LXXRobotState2 {
+public class RobotImage2 implements LXXRobotSnapshot2 {
 
     private LXXPoint position;
     private double velocity;
@@ -18,6 +18,8 @@ public class RobotImage2 implements LXXRobotState2 {
     private double speed;
     private double absoluteHeadingRadians;
     private String name;
+    private double acceleration;
+    private int lastDirection;
 
     public RobotImage2(LXXRobotSnapshot2 original) {
         this.position = new LXXPoint(original.getX(), original.getY());
@@ -28,6 +30,9 @@ public class RobotImage2 implements LXXRobotState2 {
         this.battleField = original.getBattleField();
         this.energy = original.getEnergy();
         name = original.getName();
+        acceleration = original.getAcceleration();
+        absoluteHeadingRadians = original.getAbsoluteHeadingRadians();
+        lastDirection = original.getLastDirection();
     }
 
     public void apply(MovementDecision movementDecision) {
@@ -118,4 +123,19 @@ public class RobotImage2 implements LXXRobotState2 {
         throw new UnsupportedOperationException();
     }
 
+    public double getAcceleration() {
+        return acceleration;
+    }
+
+    public double getAbsoluteHeadingRadians() {
+        return absoluteHeadingRadians;
+    }
+
+    public int getLastDirection() {
+        return lastDirection;
+    }
+
+    public long getSnapshotTime() {
+        throw new UnsupportedOperationException();
+    }
 }

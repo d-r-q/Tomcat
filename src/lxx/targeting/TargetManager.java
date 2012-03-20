@@ -58,7 +58,7 @@ public class TargetManager implements RobotListener {
     public void onPaint(LXXGraphics g) {
         for (Target t : getAliveTargets()) {
             g.setColor(Color.WHITE);
-            final LXXPoint coords = t.getState().getPosition();
+            final LXXPoint coords = t.getCurrentSnapshot().getPosition();
             g.drawSquare(coords, robot.getWidth());
             g.drawRect((int) coords.x - (int) robot.getWidth() / 2,
                     (int) coords.y - (int) robot.getHeight() / 2,
@@ -124,7 +124,7 @@ public class TargetManager implements RobotListener {
         double minDist = Double.MAX_VALUE;
 
         for (Target t : getAliveTargets()) {
-            final double dist = robot.aDistance(t.getState().getPosition());
+            final double dist = robot.aDistance(t.getCurrentSnapshot().getPosition());
             if (dist < minDist) {
                 res = t;
                 minDist = dist;

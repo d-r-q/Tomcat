@@ -364,7 +364,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 final APoint mbFirePos = myBullet.getFirePosition();
 
                 final APoint myBulletCurPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist);
-                if (!robot.getState().getBattleField().contains(myBulletCurPos)) {
+                if (!robot.getBattleField().contains(myBulletCurPos)) {
                     toRemove.add(myBullet);
                     continue;
                 }

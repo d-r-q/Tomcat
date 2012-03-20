@@ -37,13 +37,9 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     private int initialOthers;
     public BattleField battleField;
 
-    private LXXRobotState prevState;
-    protected LXXRobotState currentState;
-
     private MySnapshotImpl prevSnapshot;
     protected MySnapshotImpl currentSnapshot;
 
-    private double acceleration;
     private int lastDirection = 1;
 
     protected void init() {
@@ -54,9 +50,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         setAdjustRadarForRobotTurn(true);
-
-        prevState = new RobotSnapshot(this);
-        currentState = new RobotSnapshot(this);
     }
 
     public double angleTo(APoint point) {
@@ -157,10 +150,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
         return true;
     }
 
-    public LXXRobotState getState() {
-        return currentState;
-    }
-
     public int getInitialOthers() {
         return initialOthers;
     }
@@ -174,8 +163,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     }
 
     public void onStatus(StatusEvent e) {
-        prevState = currentState;
-        currentState = new RobotSnapshot(this);
 
         prevSnapshot = currentSnapshot != null
                 ? currentSnapshot
@@ -187,8 +174,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
 
         position.x = e.getStatus().getX();
         position.y = e.getStatus().getY();
-
-        acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
 
         last10Positions.add(new LXXPoint(position));
         if (last10Positions.size() > 10) {
@@ -204,23 +189,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
         }
 
         notifyListeners(e);
-
-        if (currentSnapshot.getAbsoluteHeadingRadians() != currentState.getAbsoluteHeadingRadians()) {
-            assert currentSnapshot.getAbsoluteHeadingRadians() == currentState.getAbsoluteHeadingRadians();
-        }
-        assert currentSnapshot.getAcceleration() == getAcceleration();
-        assert currentSnapshot.getEnergy() == currentState.getEnergy();
-        assert currentSnapshot.getGunHeat() == getGunHeat();
-        assert currentSnapshot.getHeadingRadians() == currentState.getHeadingRadians();
-        if (currentSnapshot.getLast10TicksDist() != getLast10TicksDist()) {
-            assert currentSnapshot.getLast10TicksDist() == getLast10TicksDist();
-        }
-        assert currentSnapshot.getLastDirection() == lastDirection;
-        if (!currentSnapshot.getPosition().equals(currentState.getPosition())) {
-            assert currentSnapshot.getPosition().equals(currentState.getPosition());
-        }
-        assert currentSnapshot.getSpeed() == currentState.getSpeed();
-        assert currentSnapshot.getVelocity() == currentState.getVelocity();
     }
 
     public double getX() {
@@ -229,10 +197,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
 
     public double getY() {
         return position.y;
-    }
-
-    public double getAcceleration() {
-        return acceleration;
     }
 
     public LXXPoint getPosition() {
@@ -253,14 +217,10 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     }
 
     public double getTurnRateRadians() {
-        if (prevState == null) {
+        if (prevSnapshot == null) {
             return 0;
         }
-        return prevState.getHeadingRadians() - getHeadingRadians();
-    }
-
-    public LXXRobotState getPrevState() {
-        return prevState;
+        return prevSnapshot.getHeadingRadians() - getHeadingRadians();
     }
 
     public MySnapshotImpl getPrevSnapshot() {

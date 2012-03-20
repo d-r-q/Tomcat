@@ -19,17 +19,9 @@ public interface LXXRobot extends APoint {
 
     boolean isAlive();
 
-    double getWidth();
-
-    double getHeight();
-
-    LXXRobotState getState();
-
     boolean equals(Object another);
 
     int hashCode();
-
-    double getAcceleration();
 
     LXXPoint getPosition();
 

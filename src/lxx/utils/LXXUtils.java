@@ -129,7 +129,7 @@ public class LXXUtils {
     }
 
     // from robowiki
-    public static double getMaxEscapeAngle(APoint center, LXXRobotState state, double bulletSpeed) {
+    public static double getMaxEscapeAngle(APoint center, LXXRobotSnapshot2 state, double bulletSpeed) {
         // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
         final double eAbsBearing = center.angleTo(state);
         final double rX = center.getX();
