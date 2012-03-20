@@ -12,6 +12,7 @@ import static java.lang.Math.signum;
 
 public class MySnapshotImpl extends RobotSnapshot2 {
 
+    // todo(zhidkov): store only distance
     private final LinkedList<LXXPoint> last10Positions;
     private List<BulletSnapshot> bullets;
     private final double gunCoolingRate;

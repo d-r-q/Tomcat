@@ -220,7 +220,7 @@ public class AdvancedEnemyGunModel {
                 heapSort = null;
             }
 
-            final double lateralDirection = LXXUtils.lateralDirection(predicate.getEnemyImage(), predicate.getMeImage());
+            final double lateralDirection = LXXUtils.lateralDirection(predicate.enemySnapshot, predicate.mySnapshot);
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
             final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
 
@@ -378,7 +378,7 @@ public class AdvancedEnemyGunModel {
         }
 
         private void fillWithSimpleBOs(TurnSnapshot ts, LXXRobot t, List<PastBearingOffset> bearingOffsets, GunType enemyGunType) {
-            final double lateralDirection = LXXUtils.lateralDirection(ts.getEnemyImage(), ts.getMeImage());
+            final double lateralDirection = LXXUtils.lateralDirection(ts.enemySnapshot, ts.mySnapshot);
             final double bulletSpeed = Rules.getBulletSpeed(t.getFirePower());
             final double maxEscapeAngleAcc = LXXUtils.getMaxEscapeAngle(t, office.getRobot().getState(), bulletSpeed);
             if (enemyGunType != GunType.HEAD_ON) {

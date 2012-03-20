@@ -199,7 +199,7 @@ public class LXXUtils {
     }
 
     public static DeltaVector getEnemyDeltaVector(TurnSnapshot ts1, TurnSnapshot ts2) {
-        final double enemyHeading = ts1.getEnemyAbsoluteHeading();
+        final double enemyHeading = ts1.enemySnapshot.getAbsoluteHeadingRadians();
         final double x1 = ts1.getAttrValue(AttributesManager.enemyX);
         final double y1 = ts1.getAttrValue(AttributesManager.enemyY);
         final double x2 = ts2.getAttrValue(AttributesManager.enemyX);

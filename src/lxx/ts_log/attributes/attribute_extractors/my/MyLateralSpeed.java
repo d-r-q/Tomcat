@@ -18,10 +18,6 @@ import static java.lang.Math.abs;
 
 public class MyLateralSpeed implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return abs(LXXUtils.lateralVelocity(enemy, me.getState()));
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return abs(LXXUtils.lateralVelocity(enemy, me));
     }

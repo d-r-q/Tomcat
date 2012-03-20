@@ -22,19 +22,11 @@ public class LastVisitedGF implements AttributeValueExtractor {
         this.offset = offset;
     }
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        if (((EnemySnapshot)enemy).getVisitedGuessFactors().size() < offset) {
-            return 0;
-        }
-
-        return ((EnemySnapshot)enemy).getVisitedGuessFactors().get(((EnemySnapshot)enemy).getVisitedGuessFactors().size() - offset);
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
-        if ((enemy).getVisitedGuessFactors().size() < offset) {
+        if (enemy.getVisitedGuessFactors().size() < offset) {
             return 0;
         }
 
-        return (enemy).getVisitedGuessFactors().get((enemy).getVisitedGuessFactors().size() - offset);
+        return enemy.getVisitedGuessFactors().get(enemy.getVisitedGuessFactors().size() - offset);
     }
 }

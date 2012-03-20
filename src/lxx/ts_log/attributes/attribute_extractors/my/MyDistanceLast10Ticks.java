@@ -16,10 +16,6 @@ import java.util.List;
 
 public class MyDistanceLast10Ticks implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return ((MySnapshot)me).getLast10TicksDist();
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return me.getLast10TicksDist();
     }

@@ -21,10 +21,6 @@ import static java.lang.Math.toDegrees;
  */
 public class EnemyBearingToHOWall implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return toDegrees(enemy.getState().getBattleField().getBearingOffsetToWall(enemy.getPosition(), enemy.getState().getAbsoluteHeadingRadians()));
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return toDegrees(enemy.getBattleField().getBearingOffsetToWall(enemy.getPosition(), enemy.getAbsoluteHeadingRadians()));
     }

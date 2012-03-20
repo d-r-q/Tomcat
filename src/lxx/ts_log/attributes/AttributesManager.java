@@ -76,36 +76,15 @@ public class AttributesManager {
             fireTimeDiff
     };
 
-    private final Office office;
     private final Tomcat robot;
-    private BulletManager bulletManager;
 
-    public AttributesManager(Office office, Tomcat robot) {
-        this.office = office;
+    public AttributesManager(Tomcat robot) {
         this.robot = robot;
-        this.bulletManager = office.getBulletManager();
     }
 
     public TurnSnapshot getTurnSnapshot(Target t) {
-        final double[] attrValues = new double[attributes.length];
-        final List<LXXBullet> myBullets = bulletManager.getBullets();
-        // todo(zhidkov): fix me
         robot.getCurrentSnapshot().setBullets(robot.getBulletsInAir());
-        for (final Attribute a : attributes) {
-            double av = a.extractor.getAttributeValue(t, robot, myBullets, office);
-            if (av != a.extractor.getAttributeValue(t.getCurrentSnapshot(), robot.getCurrentSnapshot())) {
-                a.extractor.getAttributeValue(t, robot, myBullets, office);
-                a.extractor.getAttributeValue(t.getCurrentSnapshot(), robot.getCurrentSnapshot());
-            }
-            if (!a.maxRange.contains(av)) {
-                System.out.println("[WARN]: " + a + " = " + av);
-                av = LXXUtils.limit(a, av);
-            }
-            a.actualRange.extend(av);
-            attrValues[a.id] = av;
-        }
-
-        return new TurnSnapshot(attrValues, robot.getTime(), robot.getRoundNum(), robot.getState(), t.getState());
+        return new TurnSnapshot(robot.getTime(), robot.getRoundNum(), robot.getCurrentSnapshot(), t.getCurrentSnapshot());
     }
 
     public static int attributesCount() {

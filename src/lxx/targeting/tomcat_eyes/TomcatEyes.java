@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class TomcatEyes implements BulletManagerListener {
 
-    private static final Map<LXXRobot, TargetingProfile> targetingProfiles = new HashMap<LXXRobot, TargetingProfile>();
+    private static final Map<String, TargetingProfile> targetingProfiles = new HashMap<String, TargetingProfile>();
 
     public void bulletHit(LXXBullet bullet) {
         processBullet(bullet);
@@ -39,10 +39,10 @@ public class TomcatEyes implements BulletManagerListener {
     }
 
     private TargetingProfile getTargetingProfile(LXXRobot t) {
-        TargetingProfile tp = targetingProfiles.get(t);
+        TargetingProfile tp = targetingProfiles.get(t.getName());
         if (tp == null) {
             tp = new TargetingProfile();
-            targetingProfiles.put(t, tp);
+            targetingProfiles.put(t.getName(), tp);
         }
 
         return tp;

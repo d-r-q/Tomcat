@@ -17,12 +17,6 @@ import static java.lang.Math.min;
  */
 public class FireTimeDiff implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        final int timeTillFire = office.getRobot().getTurnsToGunCool();
-        final int timeSinceFire = myBullets.size() > 0 ? (int) (me.getTime() - myBullets.get(myBullets.size() - 1).getWave().getLaunchTime()) : Integer.MAX_VALUE;
-        return min(timeTillFire, timeSinceFire);
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         final int timeTillFire = me.getTurnsToGunCool();

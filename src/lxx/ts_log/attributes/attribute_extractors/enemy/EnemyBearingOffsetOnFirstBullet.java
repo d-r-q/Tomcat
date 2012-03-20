@@ -21,28 +21,6 @@ import static java.lang.Math.toDegrees;
  * Date: 30.04.11
  */
 public class EnemyBearingOffsetOnFirstBullet implements AttributeValueExtractor {
-    
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        if (myBullets.size() == 0) {
-            return 0;
-        }
-
-        LXXBullet firstBullet;
-        int idx = 0;
-        double bulletFlightTime;
-        do {
-            if (idx == myBullets.size()) {
-                return 0;
-            }
-            firstBullet = myBullets.get(idx++);
-            bulletFlightTime = firstBullet.getFlightTime(enemy);
-        } while (bulletFlightTime < 1);
-
-        final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
-        final APoint interceptPos = enemy.project(enemy.getState().getAbsoluteHeadingRadians(), enemy.getState().getSpeed() * bulletFlightTime);
-        double lateralDirection = LXXUtils.lateralDirection(firstBullet.getFirePosition(), targetState);
-        return toDegrees(firstBullet.getBearingOffsetRadians(interceptPos)) * lateralDirection;
-    }
 
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         List<BulletSnapshot> myBullets = me.getBulletsInAir();

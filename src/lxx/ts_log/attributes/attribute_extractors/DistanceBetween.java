@@ -18,10 +18,6 @@ import java.util.List;
  */
 public class DistanceBetween implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return me.aDistance(enemy);
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return me.aDistance(enemy);
     }

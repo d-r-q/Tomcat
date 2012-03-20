@@ -16,10 +16,6 @@ import java.util.List;
  */
 public class EnemyTimeSinceDirChange implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return enemy.getTime() - ((EnemySnapshot)enemy).getLastDirChangeTime();
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return enemy.getSnapshotTime() - enemy.getLastDirChangeTime();
     }

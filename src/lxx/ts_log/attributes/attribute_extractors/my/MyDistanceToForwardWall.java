@@ -20,10 +20,6 @@ import java.util.List;
  */
 public class MyDistanceToForwardWall implements AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        return LXXUtils.limit(0, me.getPosition().distanceToWall(me.getState().getBattleField(), me.getState().getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         return LXXUtils.limit(0, me.getPosition().distanceToWall(me.getBattleField(), me.getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
     }

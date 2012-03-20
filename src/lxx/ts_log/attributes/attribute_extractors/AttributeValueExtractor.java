@@ -16,8 +16,6 @@ import java.util.List;
  */
 public interface AttributeValueExtractor {
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office);
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me);
 
 }

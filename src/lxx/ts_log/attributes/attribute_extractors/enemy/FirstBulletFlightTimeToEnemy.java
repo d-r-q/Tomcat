@@ -16,27 +16,6 @@ import java.util.List;
 
 public class FirstBulletFlightTimeToEnemy implements AttributeValueExtractor {
 
-
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
-        if (myBullets.size() == 0) {
-            return 0;
-        }
-
-        LXXBullet firstBullet;
-        int idx = 0;
-        double bulletFlightTime;
-        do {
-            if (idx == myBullets.size()) {
-                return 0;
-            }
-            firstBullet = myBullets.get(idx++);
-            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getTravelledDistance()) /
-                    firstBullet.getSpeed();
-        } while (bulletFlightTime < 1);
-
-        return bulletFlightTime;
-    }
-
     public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
         final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() == 0) {
@@ -57,4 +36,5 @@ public class FirstBulletFlightTimeToEnemy implements AttributeValueExtractor {
 
         return bulletFlightTime;
     }
+
 }
