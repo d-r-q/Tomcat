@@ -43,7 +43,7 @@ public class AdvancedEnemyGunModel {
     }
 
     public void processHit(LXXBullet bullet) {
-        final LogSet logSet = getLogSet(bullet.getOwner().getName());
+        final LogSet logSet = getLogSet(bullet.getSourceState().getName());
 
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         updateEnemyHitRate(logSet, aimPredictionData, true);
@@ -79,11 +79,11 @@ public class AdvancedEnemyGunModel {
     }
 
     public void processIntercept(LXXBullet bullet) {
-        getLogSet(bullet.getOwner().getName()).learn(bullet, true);
+        getLogSet(bullet.getSourceState().getName()).learn(bullet, true);
     }
 
     public void processMiss(LXXBullet bullet) {
-        LogSet logSet = getLogSet(bullet.getOwner().getName());
+        LogSet logSet = getLogSet(bullet.getSourceState().getName());
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         updateEnemyHitRate(logSet, aimPredictionData, false);
         logSet.learn(bullet, false);
@@ -101,12 +101,11 @@ public class AdvancedEnemyGunModel {
     public void processVisit(LXXBullet bullet) {
         final double direction = bullet.getTargetLateralDirection();
         final double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        getLogSet(bullet.getOwner().getName()).learn(bullet.getAimPredictionData().getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
+        getLogSet(bullet.getSourceState().getName()).learn(bullet.getAimPredictionData().getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
     }
 
     public void updateBulletPredictionData(LXXBullet bullet) {
-        final LXXRobot owner = bullet.getOwner();
-        final long roundTime = LXXUtils.getRoundTime(owner.getTime(), owner.getRound());
+        final long roundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRound());
         updateOldData(bullet);
         calculateNewData(bullet, roundTime);
     }
@@ -128,7 +127,7 @@ public class AdvancedEnemyGunModel {
 
     private void calculateNewData(LXXBullet bullet, long roundTime) {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
-        final LogSet logSet = getLogSet(bullet.getOwner().getName());
+        final LogSet logSet = getLogSet(bullet.getSourceState().getName());
         final List<PastBearingOffset> bearingOffsets = new ArrayList<PastBearingOffset>();
         for (Log log : logSet.getBestLogs()) {
             List<PastBearingOffset> logBearingOffsets = aimPredictionData.getBearingOffsets(log);
@@ -329,7 +328,7 @@ public class AdvancedEnemyGunModel {
             }
 
             if (bearingOffsets.size() == 0) {
-                final GunType enemyGunType = office.getTomcatEyes().getEnemyGunType(t);
+                final GunType enemyGunType = office.getTomcatEyes().getEnemyGunType(t.getName());
                 fillWithSimpleBOs(ts, t, bearingOffsets, enemyGunType);
             }
 

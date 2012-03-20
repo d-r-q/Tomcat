@@ -98,7 +98,7 @@ public abstract class AbstractGFAimingPredictionData implements AimingPrediction
 
         final double currentAngle = firePosition.angleTo(bullet.getTarget());
         float currentBearingOffsetDanger = 0;
-        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getWave().getTargetStateAtLaunchTime().getRobot());
+        final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getWave().getTarget());
         for (BearingOffsetDanger danger : dangers) {
             double alpha = baseAlpha + (danger.bearingOffset);
 

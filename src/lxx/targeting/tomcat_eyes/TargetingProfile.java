@@ -4,7 +4,8 @@
 
 package lxx.targeting.tomcat_eyes;
 
-import lxx.LXXRobotState;
+import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobotState2;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXUtils;
 import lxx.utils.Median;
@@ -18,7 +19,7 @@ public class TargetingProfile {
     public IntervalDouble bearingOffsetsInteval = new IntervalDouble(0, 0);
     public int bearingOffsets = 0;
 
-    public void addBearingOffset(LXXRobotState enemy, LXXRobotState me, double bearingOffsetRadians, double bulletSpeed) {
+    public void addBearingOffset(LXXRobotState2 enemy, LXXRobotSnapshot2 me, double bearingOffsetRadians, double bulletSpeed) {
         bearingOffsets++;
         distWithHoBoMedian.addValue(abs(bearingOffsetRadians));
         final double linearBo = abs(LXXUtils.lateralVelocity(enemy, me) / bulletSpeed);

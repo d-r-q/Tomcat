@@ -4,8 +4,8 @@
 
 package lxx.bullets;
 
-import lxx.LXXRobot;
-import lxx.LXXRobotState;
+import lxx.LXXRobot2;
+import lxx.LXXRobotSnapshot2;
 import lxx.bullets.enemy.BulletShadow;
 import lxx.utils.*;
 import lxx.utils.wave.Wave;
@@ -34,7 +34,7 @@ public class LXXBullet {
         this.aimPredictionData = aimPredictionData;
         this.wave = w;
 
-        firePosition = new LXXPoint(wave.getSourcePosAtFireTime());
+        firePosition = new LXXPoint(wave.getSourceState());
         state = LXXBulletState.ON_AIR;
         
         w.setCarriedBullet(this);
@@ -48,8 +48,8 @@ public class LXXBullet {
         return bullet;
     }
 
-    public LXXRobot getTarget() {
-        return wave.getTargetStateAtLaunchTime().getRobot();
+    public LXXRobot2 getTarget() {
+        return wave.getTarget();
     }
 
     public LXXPoint getFirePosition() {
@@ -68,10 +68,6 @@ public class LXXBullet {
         this.aimPredictionData = aimPredictionData;
     }
 
-    public LXXRobot getOwner() {
-        return wave.getSourceStateAtFireTime().getRobot();
-    }
-
     public double getHeadingRadians() {
         return bullet.getHeadingRadians();
     }
@@ -84,12 +80,12 @@ public class LXXBullet {
         return state;
     }
 
-    public LXXRobotState getTargetStateAtFireTime() {
-        return wave.getTargetStateAtLaunchTime();
+    public LXXRobotSnapshot2 getTargetState() {
+        return wave.getTargetState();
     }
 
     public double getDistanceToTarget() {
-        return wave.getSourceStateAtFireTime().aDistance(wave.getTargetStateAtLaunchTime().getRobot());
+        return wave.getSourceState().aDistance(wave.getTarget());
     }
 
     public double noBearingOffset() {
@@ -113,7 +109,7 @@ public class LXXBullet {
     }
 
     public double getTargetLateralDirection() {
-        return LXXUtils.lateralDirection(getFirePosition(), getTargetStateAtFireTime());
+        return LXXUtils.lateralDirection(getFirePosition(), getTargetState());
     }
 
     public boolean equals(Object o) {
@@ -177,5 +173,9 @@ public class LXXBullet {
 
     public List<IntervalDouble> getMergedShadows() {
         return mergedShadows;
+    }
+
+    public LXXRobotSnapshot2 getSourceState() {
+        return wave.getSourceState();
     }
 }

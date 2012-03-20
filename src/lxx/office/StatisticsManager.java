@@ -4,7 +4,6 @@
 
 package lxx.office;
 
-import lxx.LXXRobot;
 import lxx.RobotListener;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
@@ -99,7 +98,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void bulletHit(LXXBullet bullet) {
-        if (bullet.getOwner().getName().equals(tomcat.getName())) {
+        if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myHitRate.hit();
             myRawHitRate.hit();
         } else {
@@ -109,7 +108,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void bulletMiss(LXXBullet bullet) {
-        if (bullet.getOwner().getName().equals(tomcat.getName())) {
+        if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myHitRate.miss();
             myRawHitRate.miss();
         } else {
@@ -119,7 +118,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void bulletIntercepted(LXXBullet bullet) {
-        if (bullet.getOwner().getName().equals(tomcat.getName())) {
+        if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myRawHitRate.miss();
         } else {
             enemyRawHitRate.miss();

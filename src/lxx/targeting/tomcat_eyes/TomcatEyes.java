@@ -4,7 +4,6 @@
 
 package lxx.targeting.tomcat_eyes;
 
-import lxx.LXXRobot;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.office.PropertiesManager;
@@ -33,23 +32,24 @@ public class TomcatEyes implements BulletManagerListener {
 
     private void processBullet(LXXBullet bullet) {
         final double bearingOffset = bullet.getRealBearingOffsetRadians();
-        getTargetingProfile(bullet.getOwner()).addBearingOffset(bullet.getTargetStateAtFireTime(), bullet.getWave().getSourceStateAtFireTime(),
+        // todo: swap targetState & sourceState
+        getTargetingProfile(bullet.getSourceState().getName()).addBearingOffset(bullet.getTargetState(), bullet.getWave().getSourceState(),
                 bearingOffset * bullet.getTargetLateralDirection(), bullet.getSpeed());
-        PropertiesManager.setDebugProperty("Enemy gun type", getEnemyGunType(bullet.getOwner()).toString());
+        PropertiesManager.setDebugProperty("Enemy gun type", getEnemyGunType(bullet.getSourceState().getName()).toString());
     }
 
-    private TargetingProfile getTargetingProfile(LXXRobot t) {
-        TargetingProfile tp = targetingProfiles.get(t.getName());
+    private TargetingProfile getTargetingProfile(String name) {
+        TargetingProfile tp = targetingProfiles.get(name);
         if (tp == null) {
             tp = new TargetingProfile();
-            targetingProfiles.put(t.getName(), tp);
+            targetingProfiles.put(name, tp);
         }
 
         return tp;
     }
 
-    public GunType getEnemyGunType(LXXRobot enemy) {
-        final TargetingProfile tp = getTargetingProfile(enemy);
+    public GunType getEnemyGunType(String name) {
+        final TargetingProfile tp = getTargetingProfile(name);
         if (tp.bearingOffsets == 0) {
             return GunType.UNKNOWN;
         } else if (tp.distWithHoBoMedian.getMedian() < LXXConstants.RADIANS_10 && tp.bearingOffsetsInteval.a > -LXXConstants.RADIANS_15) {
