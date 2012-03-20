@@ -4,8 +4,8 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.EnemySnapshotImpl;
-import lxx.MySnapshotImpl;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
 /**
@@ -14,7 +14,7 @@ import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
  */
 public class EnemyAcceleration implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return enemy.getAcceleration();
     }
 

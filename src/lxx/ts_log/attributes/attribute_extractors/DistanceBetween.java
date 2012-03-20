@@ -4,13 +4,8 @@
 
 package lxx.ts_log.attributes.attribute_extractors;
 
-import lxx.EnemySnapshotImpl;
-import lxx.LXXRobot;
-import lxx.MySnapshotImpl;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
-
-import java.util.List;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 
 /**
  * User: jdev
@@ -18,7 +13,7 @@ import java.util.List;
  */
 public class DistanceBetween implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return me.aDistance(enemy);
     }
 

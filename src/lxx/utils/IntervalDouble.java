@@ -61,10 +61,6 @@ public class IntervalDouble implements Comparable<IntervalDouble> {
         return min(b, another.b) - max(a, another.a);
     }
 
-    public boolean contains(IntervalDouble another) {
-        return a <= another.a && b >= another.b;
-    }
-
     public void merge(IntervalDouble another) {
         a = min(a, another.a);
         b = max(b, another.b);

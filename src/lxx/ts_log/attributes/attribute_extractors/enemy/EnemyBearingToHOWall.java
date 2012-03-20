@@ -4,14 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.EnemySnapshotImpl;
-import lxx.MySnapshotImpl;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-import lxx.bullets.LXXBullet;
-import lxx.LXXRobot;
-
-import java.util.List;
 
 import static java.lang.Math.toDegrees;
 
@@ -21,7 +16,7 @@ import static java.lang.Math.toDegrees;
  */
 public class EnemyBearingToHOWall implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return toDegrees(enemy.getBattleField().getBearingOffsetToWall(enemy.getPosition(), enemy.getAbsoluteHeadingRadians()));
     }
 }

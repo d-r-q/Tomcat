@@ -4,14 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.EnemySnapshotImpl;
-import lxx.LXXRobot;
-import lxx.MySnapshotImpl;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-import lxx.bullets.LXXBullet;
-
-import java.util.List;
 
 /**
  * User: jdev
@@ -19,7 +14,7 @@ import java.util.List;
  */
 public class EnemyY implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return enemy.getY();
     }
 

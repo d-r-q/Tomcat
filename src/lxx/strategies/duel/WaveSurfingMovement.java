@@ -4,8 +4,8 @@
 
 package lxx.strategies.duel;
 
-import lxx.LXXRobotSnapshot2;
-import lxx.RobotImage2;
+import lxx.LXXRobotSnapshot;
+import lxx.RobotImage;
 import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
@@ -16,7 +16,10 @@ import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.utils.*;
+import lxx.utils.APoint;
+import lxx.utils.LXXConstants;
+import lxx.utils.LXXPoint;
+import lxx.utils.LXXUtils;
 import lxx.utils.time_profiling.TimeProfileProperties;
 import lxx.utils.time_profiling.TimeProfiler;
 import robocode.Rules;
@@ -39,7 +42,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     private final TimeProfiler timeProfiler;
     private Target duelOpponent;
     private MovementDirectionPrediction prevPrediction;
-    private RobotImage2 pifImage;
+    private RobotImage pifImage;
     private List<WSPoint> secondCWPoints;
     private List<WSPoint> secondCCWPoints;
 
@@ -61,7 +64,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             timeProfiler.stopAndSaveProperty(TimeProfileProperties.SELECT_ORBIT_DIRECTION_TIME);
         }
 
-        final LXXRobotSnapshot2 opponent = duelOpponent == null ? null : duelOpponent.getCurrentSnapshot();
+        final LXXRobotSnapshot opponent = duelOpponent == null ? null : duelOpponent.getCurrentSnapshot();
         final LXXPoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
 
         return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getCurrentSnapshot(), opponent);
@@ -83,8 +86,8 @@ public class WaveSurfingMovement implements Movement, Painter {
         MovementDirectionPrediction nextPrediction = new MovementDirectionPrediction();
         nextPrediction.firstBulletPredictionTime = lxxBullets.get(0).getAimPredictionData().getPredictionRoundTime();
         nextPrediction.enemyVelocitySign = duelOpponent != null ? signum(duelOpponent.getVelocity()) : 0;
-        nextPrediction.cwPoints = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE, new RobotImage2(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage2(duelOpponent.getCurrentSnapshot()));
-        nextPrediction.ccwPoints = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE, new RobotImage2(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage2(duelOpponent.getCurrentSnapshot()));
+        nextPrediction.cwPoints = predictMovementInDirection(lxxBullets, OrbitDirection.CLOCKWISE, new RobotImage(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage(duelOpponent.getCurrentSnapshot()));
+        nextPrediction.ccwPoints = predictMovementInDirection(lxxBullets, OrbitDirection.COUNTER_CLOCKWISE, new RobotImage(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage(duelOpponent.getCurrentSnapshot()));
         final List<WSPoint> futurePoses = new ArrayList<WSPoint>();
         futurePoses.addAll(nextPrediction.cwPoints);
         futurePoses.addAll(nextPrediction.ccwPoints);
@@ -95,7 +98,7 @@ public class WaveSurfingMovement implements Movement, Painter {
                 if (i > 0 && futurePos.danger.getDanger() > nextPrediction.minDangerPoint.danger.getDanger()) {
                     break;
                 }
-                final PointDanger minDangerOnSecondWave = getMinPointDanger(new RobotImage2(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage2(duelOpponent.getCurrentSnapshot()), lxxBullets, futurePos);
+                final PointDanger minDangerOnSecondWave = getMinPointDanger(new RobotImage(robot.getCurrentSnapshot()), duelOpponent == null ? null : new RobotImage(duelOpponent.getCurrentSnapshot()), lxxBullets, futurePos);
                 futurePos.danger.setMinDangerOnSecondWave(minDangerOnSecondWave);
                 if (nextPrediction.minDangerPoint == null || futurePos.danger.getDanger() < nextPrediction.minDangerPoint.danger.getDanger()) {
                     nextPrediction.minDangerPoint = futurePos;
@@ -110,18 +113,18 @@ public class WaveSurfingMovement implements Movement, Painter {
         prevPrediction = nextPrediction;
     }
 
-    private PointDanger getMinPointDanger(RobotImage2 robotImage, RobotImage2 opponentImg, List<LXXBullet> lxxBullets, APoint dst) {
-        final RobotImage2 meImg = new RobotImage2(robotImage);
-        final RobotImage2 oppImg = opponentImg != null ? new RobotImage2(opponentImg) : opponentImg;
+    private PointDanger getMinPointDanger(RobotImage robotImage, RobotImage opponentImg, List<LXXBullet> lxxBullets, APoint dst) {
+        final RobotImage meImg = new RobotImage(robotImage);
+        final RobotImage oppImg = opponentImg != null ? new RobotImage(opponentImg) : opponentImg;
         int time = pointsGenerator.playForwardWaveSuring(dst, lxxBullets.get(0), meImg, oppImg);
 
         List<LXXBullet> secondBullets = lxxBullets.subList(1, lxxBullets.size());
         final List<WSPoint> secondWavePoints = new ArrayList<WSPoint>();
         final APoint secondSurfPoint = oppImg != null ? oppImg : secondBullets.get(0).getFirePosition();
         final APoint secondDstPointCW = secondSurfPoint.project(Utils.normalAbsoluteAngle(secondSurfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.CLOCKWISE.sign), secondSurfPoint.aDistance(meImg) * 10);
-        secondCWPoints = pointsGenerator.generatePoints(secondDstPointCW, secondBullets.get(0), new RobotImage2(meImg), oppImg != null ? new RobotImage2(oppImg) : oppImg, time);
+        secondCWPoints = pointsGenerator.generatePoints(secondDstPointCW, secondBullets.get(0), new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
         final APoint secondDstPointCCW = secondSurfPoint.project(Utils.normalAbsoluteAngle(secondSurfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * OrbitDirection.COUNTER_CLOCKWISE.sign), secondSurfPoint.aDistance(meImg) * 10);
-        secondCCWPoints = pointsGenerator.generatePoints(secondDstPointCCW, secondBullets.get(0), new RobotImage2(meImg), oppImg != null ? new RobotImage2(oppImg) : oppImg, time);
+        secondCCWPoints = pointsGenerator.generatePoints(secondDstPointCCW, secondBullets.get(0), new RobotImage(meImg), oppImg != null ? new RobotImage(oppImg) : oppImg, time);
         secondWavePoints.addAll(secondCWPoints);
         secondWavePoints.addAll(secondCCWPoints);
         WSPoint minDangerPoint = new WSPoint(robotImage, new PointDanger(null, 10000, 0));
@@ -135,10 +138,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         return minDangerPoint.danger;
     }
 
-    private List<WSPoint> predictMovementInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection, RobotImage2 robotImage, RobotImage2 opponentImg) {
+    private List<WSPoint> predictMovementInDirection(List<LXXBullet> lxxBullets, OrbitDirection orbitDirection, RobotImage robotImage, RobotImage opponentImg) {
         final APoint surfPoint = opponentImg != null ? opponentImg : lxxBullets.get(0).getFirePosition();
         final APoint dstPoint = surfPoint.project(Utils.normalAbsoluteAngle(surfPoint.angleTo(robotImage) + LXXConstants.RADIANS_135 * orbitDirection.sign), surfPoint.aDistance(robotImage) * 10);
-        final List<WSPoint> wsPoints = pointsGenerator.generatePoints(dstPoint, lxxBullets.get(0), new RobotImage2(robotImage), opponentImg != null ? new RobotImage2(opponentImg) : opponentImg, 0);
+        final List<WSPoint> wsPoints = pointsGenerator.generatePoints(dstPoint, lxxBullets.get(0), new RobotImage(robotImage), opponentImg != null ? new RobotImage(opponentImg) : opponentImg, 0);
         for (WSPoint pnt : wsPoints) {
             pnt.orbitDirection = orbitDirection;
             if (prevPrediction != null && pnt.orbitDirection == prevPrediction.minDangerPoint.orbitDirection) {
@@ -196,7 +199,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         public double enemyVelocitySign;
         public long firstBulletPredictionTime;
         public WSPoint minDangerPoint;
-        public RobotImage2 pifImage;
+        public RobotImage pifImage;
         public List<WSPoint> secondCWPoints;
         public List<WSPoint> secondCCWPoints;
     }

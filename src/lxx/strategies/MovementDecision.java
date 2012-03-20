@@ -4,7 +4,7 @@
 
 package lxx.strategies;
 
-import lxx.LXXRobotState2;
+import lxx.LXXRobotState;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
 import robocode.Rules;
@@ -32,7 +32,7 @@ public class MovementDecision implements Serializable {
         return desiredVelocity;
     }
 
-    public static MovementDecision toMovementDecision(LXXRobotState2 robot, double desiredSpeed, double desiredHeading) {
+    public static MovementDecision toMovementDecision(LXXRobotState robot, double desiredSpeed, double desiredHeading) {
         if (desiredSpeed > Rules.MAX_VELOCITY) {
             desiredSpeed = Rules.MAX_VELOCITY;
         }

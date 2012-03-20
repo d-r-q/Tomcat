@@ -24,7 +24,7 @@ import static java.lang.Math.signum;
  * User: jdev
  * Date: 24.10.2009
  */
-public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot, LXXRobot2 {
+public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     static {
         QuickMath.init();
@@ -37,8 +37,8 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
     private int initialOthers;
     public BattleField battleField;
 
-    private MySnapshotImpl prevSnapshot;
-    protected MySnapshotImpl currentSnapshot;
+    private MySnapshot prevSnapshot;
+    protected MySnapshot currentSnapshot;
 
     private int lastDirection = 1;
 
@@ -166,9 +166,9 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
 
         prevSnapshot = currentSnapshot != null
                 ? currentSnapshot
-                : new MySnapshotImpl(this);
+                : new MySnapshot(this);
 
-        currentSnapshot = new MySnapshotImpl(prevSnapshot, this);
+        currentSnapshot = new MySnapshot(prevSnapshot, this);
 
         // performance enhancing bug - because some reason using old position gives best results
 
@@ -223,11 +223,11 @@ public abstract class BasicRobot extends TeamRobot implements APoint, MySnapshot
         return prevSnapshot.getHeadingRadians() - getHeadingRadians();
     }
 
-    public MySnapshotImpl getPrevSnapshot() {
+    public MySnapshot getPrevSnapshot() {
         return prevSnapshot;
     }
 
-    public MySnapshotImpl getCurrentSnapshot() {
+    public MySnapshot getCurrentSnapshot() {
         return currentSnapshot;
     }
 

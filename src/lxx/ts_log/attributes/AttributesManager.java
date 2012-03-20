@@ -5,19 +5,16 @@
 package lxx.ts_log.attributes;
 
 import lxx.Tomcat;
-import lxx.bullets.LXXBullet;
-import lxx.bullets.my.BulletManager;
-import lxx.office.Office;
 import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.DistanceBetween;
 import lxx.ts_log.attributes.attribute_extractors.FireTimeDiff;
 import lxx.ts_log.attributes.attribute_extractors.enemy.*;
-import lxx.ts_log.attributes.attribute_extractors.my.*;
-import lxx.utils.LXXUtils;
+import lxx.ts_log.attributes.attribute_extractors.my.MyAcceleration;
+import lxx.ts_log.attributes.attribute_extractors.my.MyDistanceLast10Ticks;
+import lxx.ts_log.attributes.attribute_extractors.my.MyDistanceToForwardWall;
+import lxx.ts_log.attributes.attribute_extractors.my.MyLateralSpeed;
 import robocode.Rules;
-
-import java.util.List;
 
 public class AttributesManager {
 

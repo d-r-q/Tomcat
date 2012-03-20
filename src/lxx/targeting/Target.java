@@ -4,7 +4,9 @@
 
 package lxx.targeting;
 
-import lxx.*;
+import lxx.BasicRobot;
+import lxx.EnemySnapshot;
+import lxx.LXXRobot;
 import lxx.utils.*;
 import robocode.*;
 import robocode.util.Utils;
@@ -13,14 +15,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 /**
  * User: jdev
  * Date: 25.07.2009
  */
 
-public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
+public class Target implements Serializable, LXXRobot {
 
     private final List<Event> eventsList = new ArrayList<Event>(15);
 
@@ -31,8 +34,8 @@ public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
 
     private TargetData targetData;
     private boolean isRammingNow;
-    private EnemySnapshotImpl prevSnapshot;
-    private EnemySnapshotImpl currentSnapshot;
+    private EnemySnapshot prevSnapshot;
+    private EnemySnapshot currentSnapshot;
 
     private LXXPoint position = new LXXPoint();
     private double energy = 100;
@@ -61,9 +64,9 @@ public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
         prevSnapshot = currentSnapshot;
         updateRobotState();
         if (prevSnapshot == null) {
-            currentSnapshot = new EnemySnapshotImpl(this, targetData.getVisitedGuessFactors());
+            currentSnapshot = new EnemySnapshot(this, targetData.getVisitedGuessFactors());
         } else {
-            currentSnapshot = new EnemySnapshotImpl(prevSnapshot, this);
+            currentSnapshot = new EnemySnapshot(prevSnapshot, this);
         }
         updateState();
 
@@ -180,11 +183,11 @@ public class Target implements EnemySnapshot, Serializable, LXXRobot2 {
         return isAlive;
     }
 
-    public EnemySnapshotImpl getPrevSnapshot() {
+    public EnemySnapshot getPrevSnapshot() {
         return prevSnapshot;
     }
 
-    public EnemySnapshotImpl getCurrentSnapshot() {
+    public EnemySnapshot getCurrentSnapshot() {
         return currentSnapshot;
     }
 

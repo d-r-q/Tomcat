@@ -4,8 +4,8 @@
 
 package lxx.ts_log;
 
-import lxx.EnemySnapshotImpl;
-import lxx.MySnapshotImpl;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.LXXUtils;
 
@@ -19,14 +19,14 @@ public class TurnSnapshot implements Serializable {
     
     private final long time;
     private final int round;
-    public final MySnapshotImpl mySnapshot;
-    public final EnemySnapshotImpl enemySnapshot;
+    public final MySnapshot mySnapshot;
+    public final EnemySnapshot enemySnapshot;
 
     // access optimisation
     public TurnSnapshot next;
     public final int roundTime;
 
-    public TurnSnapshot(long time, int round, MySnapshotImpl mySnapshot, EnemySnapshotImpl enemySnapshot) {
+    public TurnSnapshot(long time, int round, MySnapshot mySnapshot, EnemySnapshot enemySnapshot) {
         this.time = time;
         this.round = round;
         this.mySnapshot = mySnapshot;

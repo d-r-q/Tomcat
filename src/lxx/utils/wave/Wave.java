@@ -4,8 +4,8 @@
 
 package lxx.utils.wave;
 
-import lxx.LXXRobot2;
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobot;
+import lxx.LXXRobotSnapshot;
 import lxx.bullets.LXXBullet;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXPoint;
@@ -23,8 +23,8 @@ import static java.lang.StrictMath.min;
  */
 public class Wave {
 
-    private final LXXRobotSnapshot2 sourceState;
-    private final LXXRobotSnapshot2 targetState;
+    private final LXXRobotSnapshot sourceState;
+    private final LXXRobotSnapshot targetState;
 
     private final long launchTime;
     private final double speed;
@@ -34,9 +34,9 @@ public class Wave {
     private boolean isPassed = false;
     private IntervalDouble hitBearingOffsetInterval;
     private LXXBullet carriedBullet;
-    private LXXRobot2 target;
+    private LXXRobot target;
 
-    public Wave(LXXRobotSnapshot2 sourceState, LXXRobotSnapshot2 targetState, LXXRobot2 target, double speed, long launchTime) {
+    public Wave(LXXRobotSnapshot sourceState, LXXRobotSnapshot targetState, LXXRobot target, double speed, long launchTime) {
         this.target = target;
 
         this.launchTime = launchTime;
@@ -97,11 +97,11 @@ public class Wave {
         this.carriedBullet = carriedBullet;
     }
 
-    public LXXRobotSnapshot2 getSourceState() {
+    public LXXRobotSnapshot getSourceState() {
         return sourceState;
     }
 
-    public LXXRobotSnapshot2 getTargetState() {
+    public LXXRobotSnapshot getTargetState() {
         return targetState;
     }
 
@@ -123,7 +123,7 @@ public class Wave {
         return result;
     }
 
-    public LXXRobot2 getTarget() {
+    public LXXRobot getTarget() {
         return target;
     }
 }

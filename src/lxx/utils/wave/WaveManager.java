@@ -4,8 +4,8 @@
 
 package lxx.utils.wave;
 
-import lxx.LXXRobot2;
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobot;
+import lxx.LXXRobotSnapshot;
 import lxx.RobotListener;
 import lxx.events.TickEvent;
 import robocode.Event;
@@ -21,9 +21,9 @@ public class WaveManager implements RobotListener {
     private final Map<String, Set<Wave>> waves = new HashMap<String, Set<Wave>>();
     private final Map<Wave, Set<WaveCallback>> waveCallbacks = new HashMap<Wave, Set<WaveCallback>>();
 
-    public Wave launchWave(LXXRobotSnapshot2 sourceState2, LXXRobotSnapshot2 targetState2, LXXRobot2 target, double speed, WaveCallback callback) {
-        final Wave w = new Wave(sourceState2, targetState2, target, speed, target.getTime());
-        addWave(sourceState2.getName(), w, callback);
+    public Wave launchWave(LXXRobotSnapshot sourceState, LXXRobotSnapshot targetState, LXXRobot target, double speed, WaveCallback callback) {
+        final Wave w = new Wave(sourceState, targetState, target, speed, target.getTime());
+        addWave(sourceState.getName(), w, callback);
 
         return w;
     }

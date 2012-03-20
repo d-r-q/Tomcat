@@ -4,19 +4,16 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.EnemySnapshotImpl;
-import lxx.LXXRobot;
-import lxx.MySnapshotImpl;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.bullets.BulletSnapshot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
 import java.util.List;
 
 public class FirstBulletFlightTimeToEnemy implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() == 0) {
             return 0;

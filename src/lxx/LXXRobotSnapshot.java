@@ -1,6 +1,6 @@
 package lxx;
 
-public interface LXXRobotSnapshot2 extends LXXRobotState2 {
+public interface LXXRobotSnapshot extends LXXRobotState {
 
     double getAcceleration();
 

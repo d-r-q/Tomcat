@@ -4,19 +4,13 @@
 
 package lxx.ts_log.attributes.attribute_extractors.my;
 
-import lxx.EnemySnapshotImpl;
-import lxx.LXXRobot;
+import lxx.EnemySnapshot;
 import lxx.MySnapshot;
-import lxx.MySnapshotImpl;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-
-import java.util.List;
 
 public class MyDistanceLast10Ticks implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return me.getLast10TicksDist();
     }
 

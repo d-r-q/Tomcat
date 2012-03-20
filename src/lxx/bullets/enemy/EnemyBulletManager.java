@@ -4,13 +4,12 @@
 
 package lxx.bullets.enemy;
 
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobotSnapshot;
 import lxx.RobotListener;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
-import lxx.bullets.PastBearingOffset;
 import lxx.bullets.my.BulletManager;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
@@ -43,7 +42,7 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L, null, null, null);
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<BearingOffsetDanger>(), 0L, null, null, null);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
@@ -74,8 +73,8 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             final double bulletPower = max(0.1, max(0, target.getExpectedEnergy()) - target.getEnergy());
             final double bulletSpeed = Rules.getBulletSpeed(bulletPower);
 
-            final LXXRobotSnapshot2 targetPrevState = target.getPrevSnapshot();
-            final LXXRobotSnapshot2 robotPrevState = robot.getPrevSnapshot();
+            final LXXRobotSnapshot targetPrevState = target.getPrevSnapshot();
+            final LXXRobotSnapshot robotPrevState = robot.getPrevSnapshot();
 
             final double angleToMe = targetPrevState.angleTo(robotPrevState);
 

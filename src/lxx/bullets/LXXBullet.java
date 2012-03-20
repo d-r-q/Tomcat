@@ -4,8 +4,8 @@
 
 package lxx.bullets;
 
-import lxx.LXXRobot2;
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobot;
+import lxx.LXXRobotSnapshot;
 import lxx.bullets.enemy.BulletShadow;
 import lxx.utils.*;
 import lxx.utils.wave.Wave;
@@ -48,7 +48,7 @@ public class LXXBullet {
         return bullet;
     }
 
-    public LXXRobot2 getTarget() {
+    public LXXRobot getTarget() {
         return wave.getTarget();
     }
 
@@ -80,7 +80,7 @@ public class LXXBullet {
         return state;
     }
 
-    public LXXRobotSnapshot2 getTargetState() {
+    public LXXRobotSnapshot getTargetState() {
         return wave.getTargetState();
     }
 
@@ -175,7 +175,7 @@ public class LXXBullet {
         return mergedShadows;
     }
 
-    public LXXRobotSnapshot2 getSourceState() {
+    public LXXRobotSnapshot getSourceState() {
         return wave.getSourceState();
     }
 }

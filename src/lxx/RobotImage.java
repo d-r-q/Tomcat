@@ -8,7 +8,7 @@ import robocode.util.Utils;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
-public class RobotImage2 implements LXXRobotSnapshot2 {
+public class RobotImage implements LXXRobotSnapshot {
 
     private LXXPoint position;
     private double velocity;
@@ -21,7 +21,7 @@ public class RobotImage2 implements LXXRobotSnapshot2 {
     private double acceleration;
     private int lastDirection;
 
-    public RobotImage2(LXXRobotSnapshot2 original) {
+    public RobotImage(LXXRobotSnapshot original) {
         this.position = new LXXPoint(original.getX(), original.getY());
         this.velocity = original.getVelocity();
         this.speed = abs(velocity);

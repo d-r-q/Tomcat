@@ -5,10 +5,10 @@
 package lxx.strategies.find_enemies;
 
 import lxx.Tomcat;
-import lxx.targeting.TargetManager;
 import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.TurnDecision;
+import lxx.targeting.TargetManager;
 import robocode.Rules;
 import robocode.util.Utils;
 

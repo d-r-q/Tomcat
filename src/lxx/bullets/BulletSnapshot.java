@@ -1,19 +1,19 @@
 package lxx.bullets;
 
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobotSnapshot;
 import lxx.utils.APoint;
 import robocode.util.Utils;
 
 public class BulletSnapshot {
 
-    private final LXXRobotSnapshot2 ownerState;
-    private final LXXRobotSnapshot2 targetState;
+    private final LXXRobotSnapshot ownerState;
+    private final LXXRobotSnapshot targetState;
     private final double noBearingOffsetRadians;
     private final double travelledDistance;
     private final double speed;
     private final long launchTime;
 
-    public BulletSnapshot(LXXRobotSnapshot2 ownerState, LXXRobotSnapshot2 targetState, double noBearingOffsetRadians, double travelledDistance,
+    public BulletSnapshot(LXXRobotSnapshot ownerState, LXXRobotSnapshot targetState, double noBearingOffsetRadians, double travelledDistance,
                           double speed, long launchTime) {
         this.ownerState = ownerState;
         this.targetState = targetState;
@@ -27,11 +27,11 @@ public class BulletSnapshot {
         return (ownerState.aDistance(pnt) - travelledDistance) / speed;
     }
 
-    public LXXRobotSnapshot2 getTargetState() {
+    public LXXRobotSnapshot getTargetState() {
         return targetState;
     }
 
-    public LXXRobotSnapshot2 getOwnerState() {
+    public LXXRobotSnapshot getOwnerState() {
         return ownerState;
     }
 

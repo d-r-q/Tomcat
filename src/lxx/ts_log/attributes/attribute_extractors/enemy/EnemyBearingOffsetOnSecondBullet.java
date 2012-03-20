@@ -4,12 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.EnemySnapshotImpl;
-import lxx.LXXRobot;
-import lxx.MySnapshotImpl;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.bullets.BulletSnapshot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.APoint;
 import lxx.utils.LXXUtils;
@@ -20,7 +17,7 @@ import static java.lang.Math.toDegrees;
 
 public class EnemyBearingOffsetOnSecondBullet implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshotImpl enemy, MySnapshotImpl me) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() < 2) {
             return 0;

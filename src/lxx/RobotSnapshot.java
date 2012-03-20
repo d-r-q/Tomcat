@@ -4,7 +4,7 @@ import lxx.utils.*;
 
 import static java.lang.Math.signum;
 
-public abstract class RobotSnapshot2 implements LXXRobotSnapshot2 {
+public abstract class RobotSnapshot implements LXXRobotSnapshot {
 
     private final LXXPoint position;
     private final double speed;
@@ -18,7 +18,7 @@ public abstract class RobotSnapshot2 implements LXXRobotSnapshot2 {
     protected final long snapshotTime;
     protected double gunHeat;
 
-    public RobotSnapshot2(LXXRobot2 currentState) {
+    public RobotSnapshot(LXXRobot currentState) {
         headingRadians = currentState.getHeadingRadians();
         speed = currentState.getSpeed();
         velocity = currentState.getVelocity();
@@ -33,7 +33,7 @@ public abstract class RobotSnapshot2 implements LXXRobotSnapshot2 {
         acceleration = 0;
     }
 
-    public RobotSnapshot2(LXXRobotSnapshot2 prevState, LXXRobot2 currentState) {
+    public RobotSnapshot(LXXRobotSnapshot prevState, LXXRobot currentState) {
         snapshotTime = currentState.getTime();
         headingRadians = currentState.getHeadingRadians();
 
@@ -54,22 +54,22 @@ public abstract class RobotSnapshot2 implements LXXRobotSnapshot2 {
         acceleration = LXXUtils.calculateAcceleration(prevState, currentState);
     }
 
-    public RobotSnapshot2(LXXRobotSnapshot2 state1, LXXRobotSnapshot2 state2, double interpolationK) {
-        snapshotTime = (long) (state1.getSnapshotTime() + (state2.getSnapshotTime() - state1.getSnapshotTime()) * interpolationK);
-        headingRadians = state1.getHeadingRadians() + (state2.getHeadingRadians() - state1.getHeadingRadians()) * interpolationK;
-        speed = state1.getSpeed() + (state2.getSpeed() - state1.getSpeed()) * interpolationK;
-        velocity = state1.getVelocity() + (state2.getVelocity() - state1.getVelocity()) * interpolationK;
-        energy = state1.getEnergy() + (state2.getEnergy() - state1.getEnergy()) * interpolationK;
-        gunHeat = state1.getGunHeat() + (state2.getGunHeat() - state1.getGunHeat()) * interpolationK;
-        position = new LXXPoint(state1.getX() + (state2.getX() - state1.getX()) * interpolationK,
-                state1.getY() + (state2.getY() - state1.getY()) * interpolationK);
+    public RobotSnapshot(LXXRobotSnapshot state1, LXXRobotSnapshot state, double interpolationK) {
+        snapshotTime = (long) (state1.getSnapshotTime() + (state.getSnapshotTime() - state1.getSnapshotTime()) * interpolationK);
+        headingRadians = state1.getHeadingRadians() + (state.getHeadingRadians() - state1.getHeadingRadians()) * interpolationK;
+        speed = state1.getSpeed() + (state.getSpeed() - state1.getSpeed()) * interpolationK;
+        velocity = state1.getVelocity() + (state.getVelocity() - state1.getVelocity()) * interpolationK;
+        energy = state1.getEnergy() + (state.getEnergy() - state1.getEnergy()) * interpolationK;
+        gunHeat = state1.getGunHeat() + (state.getGunHeat() - state1.getGunHeat()) * interpolationK;
+        position = new LXXPoint(state1.getX() + (state.getX() - state1.getX()) * interpolationK,
+                state1.getY() + (state.getY() - state1.getY()) * interpolationK);
 
-        acceleration = state1.getAcceleration() + (state2.getAcceleration() - state1.getAcceleration()) * interpolationK;
+        acceleration = state1.getAcceleration() + (state.getAcceleration() - state1.getAcceleration()) * interpolationK;
 
         battleField = state1.getBattleField();
         name = state1.getName();
 
-        lastDirection = state2.getLastDirection();
+        lastDirection = state.getLastDirection();
     }
 
     public double getVelocity() {
@@ -108,7 +108,7 @@ public abstract class RobotSnapshot2 implements LXXRobotSnapshot2 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RobotSnapshot2 that = (RobotSnapshot2) o;
+        RobotSnapshot that = (RobotSnapshot) o;
 
         return snapshotTime == that.snapshotTime && name.equals(that.name);
     }

@@ -1,29 +1,14 @@
-/*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
- */
-
 package lxx;
 
-import lxx.utils.APoint;
-import lxx.utils.LXXPoint;
-
-/**
- * User: jdev
- * Date: 07.11.2009
- */
-public interface LXXRobot extends APoint {
+public interface LXXRobot extends LXXRobotState {
 
     long getTime();
 
-    String getName();
-
     boolean isAlive();
 
-    boolean equals(Object another);
+    LXXRobotSnapshot getPrevSnapshot();
 
-    int hashCode();
-
-    LXXPoint getPosition();
+    LXXRobotSnapshot getCurrentSnapshot();
 
     double getFirePower();
 

@@ -4,9 +4,8 @@
 
 package lxx.utils;
 
-import lxx.LXXRobotSnapshot2;
+import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
-import lxx.LXXRobotState2;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
@@ -61,11 +60,7 @@ public class LXXUtils {
         return limit(a.actualRange.a, value, a.actualRange.b);
     }
 
-    public static double lateralDirection(APoint center, LXXRobotState robotState) {
-        return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
-    }
-
-    public static double lateralDirection(APoint center, LXXRobotSnapshot2 robotState) {
+    public static double lateralDirection(APoint center, LXXRobotSnapshot robotState) {
         return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
@@ -76,11 +71,7 @@ public class LXXUtils {
         return signum(lateralVelocity(center, pos, velocity, heading));
     }
 
-    public static double lateralVelocity(APoint center, LXXRobotState robotState) {
-        return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
-    }
-
-    public static double lateralVelocity(APoint center, LXXRobotSnapshot2 robotState) {
+    public static double lateralVelocity(APoint center, LXXRobotSnapshot robotState) {
         return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
@@ -129,7 +120,7 @@ public class LXXUtils {
     }
 
     // from robowiki
-    public static double getMaxEscapeAngle(APoint center, LXXRobotSnapshot2 state, double bulletSpeed) {
+    public static double getMaxEscapeAngle(APoint center, LXXRobotSnapshot state, double bulletSpeed) {
         // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
         final double eAbsBearing = center.angleTo(state);
         final double rX = center.getX();
@@ -169,21 +160,6 @@ public class LXXUtils {
     }
 
     public static double calculateAcceleration(LXXRobotState prevState, LXXRobotState curState) {
-        if (prevState == null) {
-            return 0;
-        }
-
-        double acceleration;
-        if (signum(curState.getVelocity()) == signum(prevState.getVelocity()) || abs(curState.getVelocity()) < 0.001) {
-            acceleration = abs(curState.getVelocity()) - abs(prevState.getVelocity());
-        } else {
-            acceleration = abs(curState.getVelocity());
-        }
-
-        return limit(-Rules.MAX_VELOCITY, acceleration, Rules.ACCELERATION);
-    }
-
-    public static double calculateAcceleration(LXXRobotState2 prevState, LXXRobotState2 curState) {
         if (prevState == null) {
             return 0;
         }

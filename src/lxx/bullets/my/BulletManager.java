@@ -4,7 +4,6 @@
 
 package lxx.bullets.my;
 
-import lxx.EnemySnapshot;
 import lxx.RobotListener;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.BulletSnapshot;
@@ -14,6 +13,7 @@ import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.paint.LXXGraphics;
+import lxx.targeting.Target;
 import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
@@ -173,7 +173,7 @@ public class BulletManager implements RobotListener, WaveCallback {
         final LXXBullet b = bulletsByWaves.remove(w);
         final double lateralDirection = LXXUtils.lateralDirection(w.getSourceState(), w.getTargetState());
         final double guessFactor = w.getHitBearingOffsetInterval().center() * lateralDirection / LXXUtils.getMaxEscapeAngle(w.getSpeed());
-        ((EnemySnapshot)b.getTarget()).addVisit(guessFactor);
+        ((Target)b.getTarget()).addVisit(guessFactor);
     }
 
     public List<BulletSnapshot> getBulletSnapshots() {
