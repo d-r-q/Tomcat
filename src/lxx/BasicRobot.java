@@ -168,18 +168,16 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
                 ? currentSnapshot
                 : new MySnapshot(this);
 
-        currentSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.size() == 0
-                ? 0
-                : last10Positions.getFirst().aDistance(last10Positions.getLast()));
-
-        // performance enhancing bug - because some reason using old position gives best results
-        position.x = e.getStatus().getX();
-        position.y = e.getStatus().getY();
-
-        last10Positions.add(new LXXPoint(position));
+        last10Positions.add(new LXXPoint(e.getStatus().getX(), e.getStatus().getY()));
         if (last10Positions.size() > 10) {
             last10Positions.removeFirst();
         }
+        
+        currentSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.getFirst().aDistance(last10Positions.getLast()));
+
+        // performance enhancing bug - because some reason using old position gives best results
+        position.x = e.getStatus().getX();
+        position.y = e.getStatus().getY();        
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
             lastDirection = (int) signum(e.getStatus().getVelocity());
