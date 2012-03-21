@@ -73,8 +73,6 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyTurnRate
     }, new double[]{0.5, 0.5}, "Time since dir change");
 
-    private static final CompositeDataView duelCompositeDataView = new CompositeDataView(mainDataView, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView);
-
     private DataView[] duelViews = {mainDataView, asDataView, asDataView2, asDataView3, distanceDataView, timeSinceDirChangeDataView};
 
     private final TargetManager targetManager;
@@ -94,10 +92,6 @@ public class DataViewManager implements RobotListener {
                 }
             }
         }
-    }
-
-    public DataView getDuelDataView() {
-        return duelCompositeDataView;
     }
 
     public DataView[] getDuelDataViews() {

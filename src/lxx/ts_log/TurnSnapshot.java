@@ -4,48 +4,41 @@
 
 package lxx.ts_log;
 
-import lxx.LXXRobotState;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.Attribute;
-import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.LXXUtils;
 
 import java.io.Serializable;
-import java.util.Arrays;
-
-import static java.lang.Math.toRadians;
-import static java.lang.StrictMath.round;
 
 /**
  * User: jdev
  * Date: 10.03.2010
  */
 public class TurnSnapshot implements Serializable {
-
-    private final double[] attributeValues;
+    
     private final long time;
     private final int round;
-    private final LXXRobotState meImage;
-    private final LXXRobotState enemyImage;
+    public final MySnapshot mySnapshot;
+    public final EnemySnapshot enemySnapshot;
 
     // access optimisation
     public TurnSnapshot next;
     public final int roundTime;
 
-    public TurnSnapshot(double[] attributeValues, long time, int round, LXXRobotState meImage, LXXRobotState enemyImage) {
-        this.attributeValues = attributeValues;
+    public TurnSnapshot(long time, int round, MySnapshot mySnapshot, EnemySnapshot enemySnapshot) {
         this.time = time;
         this.round = round;
-        this.meImage = meImage;
-        this.enemyImage = enemyImage;
+        this.mySnapshot = mySnapshot;
+        this.enemySnapshot = enemySnapshot;
         this.roundTime = LXXUtils.getRoundTime(time, round);
     }
 
-    public int getRoundedAttrValue(Attribute a) {
-        return (int) round(attributeValues[a.id]);
-    }
-
     public double getAttrValue(Attribute a) {
-        return attributeValues[a.id];
+        // todo: fix me!
+        final double res = a.extractor.getAttributeValue(enemySnapshot, mySnapshot);
+        a.actualRange.extend(res);
+        return res;
     }
 
     public long getTime() {
@@ -56,19 +49,11 @@ public class TurnSnapshot implements Serializable {
         return round;
     }
 
-    public double[] toArray() {
-        return attributeValues;
-    }
-
     public void setNext(TurnSnapshot next) {
         if (time + 1 != next.time) {
             throw new RuntimeException("Snapshot skipped");
         }
         this.next = next;
-    }
-
-    public String toString() {
-        return Arrays.toString(attributeValues);
     }
 
     @Override
@@ -87,23 +72,4 @@ public class TurnSnapshot implements Serializable {
         return roundTime;
     }
 
-    public double getMySpeed() {
-        return attributeValues[AttributesManager.mySpeed.id];
-    }
-
-    public double getMyAbsoluteHeadingRadians() {
-        return toRadians(attributeValues[AttributesManager.myAbsoluteHeadingDegrees.id]);
-    }
-
-    public double getEnemyAbsoluteHeading() {
-        return toRadians(attributeValues[AttributesManager.enemyAbsoluteHeading.id]);
-    }
-
-    public LXXRobotState getMeImage() {
-        return meImage;
-    }
-
-    public LXXRobotState getEnemyImage() {
-        return enemyImage;
-    }
 }

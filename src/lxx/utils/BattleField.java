@@ -6,7 +6,6 @@ package lxx.utils;
 
 import robocode.util.Utils;
 
-import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 import static java.lang.Math.max;
@@ -38,12 +37,10 @@ public class BattleField {
     public final int availableLeftX;
     public final int availableRightX;
 
-    public final Rectangle battleField;
     public final Rectangle2D.Double availableBattleFieldRectangle;
-    public final Rectangle2D.Double exactAvailableBattleFieldRectangle;
 
-    public final Interval noSmoothX;
-    public final Interval noSmoothY;
+    public final IntervalDouble noSmoothX;
+    public final IntervalDouble noSmoothY;
 
     public final LXXPoint center;
 
@@ -83,17 +80,15 @@ public class BattleField {
         right.clockwiseWall = bottom;
         right.counterClockwiseWall = top;
 
-        battleField = new Rectangle(0, 0, width + x * 2, height + y * 2);
         availableBattleFieldRectangle = new Rectangle2D.Double(x - 1, y - 1, width + 2, height + 2);
-        exactAvailableBattleFieldRectangle = new Rectangle2D.Double(x, y, width, height);
 
         center = new LXXPoint(rightX / 2, topY / 2);
 
         this.width = width;
         this.height = height;
 
-        noSmoothX = new Interval((int) WALL_STICK, width - (int) WALL_STICK);
-        noSmoothY = new Interval((int) WALL_STICK, height - (int) WALL_STICK);
+        noSmoothX = new IntervalDouble(WALL_STICK, width - WALL_STICK);
+        noSmoothY = new IntervalDouble(WALL_STICK, height - WALL_STICK);
     }
 
     // this method is called very often, so keep it optimal

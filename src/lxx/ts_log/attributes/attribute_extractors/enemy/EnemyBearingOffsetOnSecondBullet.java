@@ -4,9 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
+import lxx.bullets.BulletSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.APoint;
 import lxx.utils.LXXUtils;
@@ -15,13 +15,15 @@ import java.util.List;
 
 import static java.lang.Math.toDegrees;
 
-public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtractor {
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
+public class EnemyBearingOffsetOnSecondBullet implements AttributeValueExtractor {
+
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
+        final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() < 2) {
             return 0;
         }
 
-        LXXBullet firstBullet;
+        BulletSnapshot firstBullet;
         int idx = 0;
         double bulletFlightTime;
         do {
@@ -34,10 +36,11 @@ public class EnemyBearingOffsetOnSecondBulletVE implements AttributeValueExtract
         if (idx == myBullets.size()) {
             return 0;
         }
-        final LXXBullet secondBullet = myBullets.get(idx);
+        final BulletSnapshot secondBullet = myBullets.get(idx);
 
-        final APoint interceptPos = enemy.project(enemy.getState().getAbsoluteHeadingRadians(), enemy.getState().getSpeed() * bulletFlightTime);
-        double lateralDirection = LXXUtils.lateralDirection(secondBullet.getFirePosition(), secondBullet.getTargetStateAtFireTime());
+        final APoint interceptPos = enemy.project(enemy.getAbsoluteHeadingRadians(), enemy.getSpeed() * bulletFlightTime);
+        double lateralDirection = LXXUtils.lateralDirection(secondBullet.getOwnerState(), secondBullet.getTargetState());
         return toDegrees(secondBullet.getBearingOffsetRadians(interceptPos)) * lateralDirection;
     }
+
 }

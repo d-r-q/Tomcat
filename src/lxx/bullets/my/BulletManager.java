@@ -6,12 +6,14 @@ package lxx.bullets.my;
 
 import lxx.RobotListener;
 import lxx.bullets.BulletManagerListener;
+import lxx.bullets.BulletSnapshot;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.paint.LXXGraphics;
+import lxx.targeting.Target;
 import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
 import lxx.utils.wave.Wave;
@@ -169,8 +171,17 @@ public class BulletManager implements RobotListener, WaveCallback {
 
     public void waveBroken(Wave w) {
         final LXXBullet b = bulletsByWaves.remove(w);
-        final double lateralDirection = LXXUtils.lateralDirection(w.getSourceStateAtFireTime(), w.getTargetStateAtLaunchTime());
+        final double lateralDirection = LXXUtils.lateralDirection(w.getSourceState(), w.getTargetState());
         final double guessFactor = w.getHitBearingOffsetInterval().center() * lateralDirection / LXXUtils.getMaxEscapeAngle(w.getSpeed());
-        b.getTarget().addVisit(guessFactor);
+        ((Target)b.getTarget()).addVisit(guessFactor);
+    }
+
+    public List<BulletSnapshot> getBulletSnapshots() {
+        final List<BulletSnapshot> bulletSnapshots = new ArrayList<BulletSnapshot>();
+        for (LXXBullet bullet : getBullets()) {
+            bulletSnapshots.add(new BulletSnapshot(bullet.getWave().getSourceState(), bullet.getWave().getTargetState(),
+                    bullet.noBearingOffset(), bullet.getTravelledDistance(), bullet.getSpeed(), bullet.getWave().getLaunchTime()));
+        }
+        return bulletSnapshots;
     }
 }

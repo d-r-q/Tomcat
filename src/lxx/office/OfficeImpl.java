@@ -35,7 +35,7 @@ public class OfficeImpl implements Office {
 
     public OfficeImpl(Tomcat tomcat) {
         this.tomcat = tomcat;
-        this.tomcatEyes = new TomcatEyes(tomcat);
+        this.tomcatEyes = new TomcatEyes();
 
         timeProfiler = new TimeProfiler();
         tomcat.addListener(timeProfiler);
@@ -49,7 +49,7 @@ public class OfficeImpl implements Office {
         bulletManager = new BulletManager(waveManager);
         tomcat.addListener(bulletManager);
 
-        attributesManager = new AttributesManager(this, tomcat);
+        attributesManager = new AttributesManager(tomcat);
 
         turnSnapshotsLog = new TurnSnapshotsLog(this);
         targetManager.addListener(turnSnapshotsLog);

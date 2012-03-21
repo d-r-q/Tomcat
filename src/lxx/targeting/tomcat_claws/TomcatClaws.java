@@ -161,7 +161,7 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
 
         TurnSnapshot currentSnapshot = start.next;
         currentSnapshot = skip(currentSnapshot, AIMING_TIME);
-        final BattleField battleField = robot.getState().getBattleField();
+        final BattleField battleField = robot.getCurrentSnapshot().getBattleField();
         final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
         BulletState bs;
         final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;
@@ -222,12 +222,10 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
         final TCPredictionData predictionData = (TCPredictionData) w.getCarriedBullet().getAimPredictionData();
 
         final Map<DataView, List<IntervalDouble>> dataViewsPredictions = predictionData.getDataViewsPredictions();
-        final double bulletFlightTime = w.getSourcePosAtFireTime().aDistance(w.getTargetPosAtFireTime()) / w.getSpeed();
-        System.out.println("Data views hit rates:");
+        final double bulletFlightTime = w.getSourceState().aDistance(w.getTargetState()) / w.getSpeed();
         for (DataView dv : dataViewsPredictions.keySet()) {
             final List<IntervalDouble> intervalDoubles = dataViewsPredictions.get(dv);
             dv.addHitRate(getHitRate(w.getHitBearingOffsetInterval(), intervalDoubles) * bulletFlightTime);
-            System.out.println(dv.getName() + ": " + dv.getHitRate().toString());
         }
     }
 

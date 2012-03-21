@@ -4,13 +4,12 @@
 
 package lxx.bullets.enemy;
 
-import lxx.LXXRobotState;
+import lxx.LXXRobotSnapshot;
 import lxx.RobotListener;
 import lxx.Tomcat;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.LXXBulletState;
-import lxx.bullets.PastBearingOffset;
 import lxx.bullets.my.BulletManager;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
@@ -43,7 +42,7 @@ import static java.lang.Math.*;
  */
 public class EnemyBulletManager implements WaveCallback, TargetManagerListener, RobotListener {
 
-    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<PastBearingOffset>(), 0L, null, null, null);
+    private static final EnemyBulletPredictionData EMPTY_PREDICTION_DATA = new EnemyBulletPredictionData(new ArrayList<BearingOffsetDanger>(), 0L, null, null, null);
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
@@ -74,16 +73,15 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             final double bulletPower = max(0.1, max(0, target.getExpectedEnergy()) - target.getEnergy());
             final double bulletSpeed = Rules.getBulletSpeed(bulletPower);
 
-            final LXXRobotState targetPrevState = target.getPrevState();
-            final LXXRobotState robotPrevState = robot.getPrevState();
+            final LXXRobotSnapshot targetPrevState = target.getPrevSnapshot();
+            final LXXRobotSnapshot robotPrevState = robot.getPrevSnapshot();
 
             final double angleToMe = targetPrevState.angleTo(robotPrevState);
 
             final Bullet fakeBullet = new Bullet(angleToMe, targetPrevState.getX(), targetPrevState.getY(),
                     bulletPower, target.getName(), robot.getName(), true, -1);
 
-            final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState,
-                    bulletSpeed, this);
+            final Wave wave = waveManager.launchWave(targetPrevState, robotPrevState, robot, bulletSpeed, this);
 
             final LXXBullet lxxBullet = new LXXBullet(fakeBullet, wave);
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
@@ -180,7 +178,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private Wave getWave(Bullet b) {
         for (Wave w : predictedBullets.keySet()) {
             if (abs(w.getSpeed() - Rules.getBulletSpeed(b.getPower())) < 0.1 &&
-                    abs(w.getTraveledDistance() - (w.getSourcePosAtFireTime().aDistance(new LXXPoint(b.getX(), b.getY())) + b.getVelocity())) < w.getSpeed() + 1) {
+                    abs(w.getTraveledDistance() - (w.getSourceState().aDistance(new LXXPoint(b.getX(), b.getY())) + b.getVelocity())) < w.getSpeed() + 1) {
                 return w;
             }
         }
@@ -193,10 +191,10 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     private Bullet getFakeBullet(Wave wave) {
-        final double bulletHeading = wave.getSourcePosAtFireTime().angleTo(wave.getTargetPosAtFireTime());
-        final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
+        final double bulletHeading = wave.getSourceState().angleTo(wave.getTargetState());
+        final APoint bulletPos = wave.getSourceState().project(bulletHeading, wave.getTraveledDistance());
         return new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
+                wave.getSourceState().getName(), wave.getTargetState().getName(), true, -1);
     }
 
     private LXXBullet getLXXBullet(Wave wave, Bullet bullet) {
@@ -299,9 +297,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             nextFireTime = robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate());
         }
         final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        final Wave wave = new Wave(target.getState(), robot.getState(), Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
+        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCurrentSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
+                wave.getSourceState().getName(), wave.getTargetState().getName(), true, -1);
 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
         AimingPredictionData futureBulletAimingPredictionData;
@@ -365,7 +363,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
                 final APoint mbFirePos = myBullet.getFirePosition();
 
                 final APoint myBulletCurPos = mbFirePos.project(myBullet.getHeadingRadians(), myBulletCurDist);
-                if (!robot.getState().getBattleField().contains(myBulletCurPos)) {
+                if (!robot.getBattleField().contains(myBulletCurPos)) {
                     toRemove.add(myBullet);
                     continue;
                 }

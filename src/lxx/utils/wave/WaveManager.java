@@ -4,7 +4,8 @@
 
 package lxx.utils.wave;
 
-import lxx.LXXRobotState;
+import lxx.LXXRobot;
+import lxx.LXXRobotSnapshot;
 import lxx.RobotListener;
 import lxx.events.TickEvent;
 import robocode.Event;
@@ -20,22 +21,9 @@ public class WaveManager implements RobotListener {
     private final Map<String, Set<Wave>> waves = new HashMap<String, Set<Wave>>();
     private final Map<Wave, Set<WaveCallback>> waveCallbacks = new HashMap<Wave, Set<WaveCallback>>();
 
-    public Wave launchWave(LXXRobotState source, LXXRobotState target, double speed, WaveCallback callback) {
-        final Wave w = new Wave(source, target, speed, source.getRobot().getTime());
-        addWave(source.getRobot().getName(), w, callback);
-
-        return w;
-    }
-
-    public Wave launchWaveOnNextTick(LXXRobotState source, LXXRobotState target, double bulletSpeed) {
-        return launchWaveOnTick(source, target, bulletSpeed, source.getRobot().getTime() + 1, null);
-    }
-
-    private Wave launchWaveOnTick(LXXRobotState source, LXXRobotState target, double bulletSpeed,
-                                  long tick, WaveCallback callback) {
-
-        final Wave w = new Wave(source, target, bulletSpeed, tick);
-        addWave(source.getRobot().getName(), w, callback);
+    public Wave launchWave(LXXRobotSnapshot sourceState, LXXRobotSnapshot targetState, LXXRobot target, double speed, WaveCallback callback) {
+        final Wave w = new Wave(sourceState, targetState, target, speed, target.getTime());
+        addWave(sourceState.getName(), w, callback);
 
         return w;
     }
@@ -71,7 +59,7 @@ public class WaveManager implements RobotListener {
             for (Set<Wave> ws : waves.values()) {
                 List<Wave> toRemove = new LinkedList<Wave>();
                 for (Wave w : ws) {
-                    if (!w.getTargetStateAtLaunchTime().getRobot().isAlive() || !w.getSourceStateAtFireTime().getRobot().isAlive()) {
+                    if (!w.getTarget().isAlive()) {
                         toRemove.add(w);
                         continue;
                     }

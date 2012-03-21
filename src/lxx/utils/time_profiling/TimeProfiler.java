@@ -22,8 +22,6 @@ import static java.lang.Math.max;
  */
 public class TimeProfiler implements RobotListener {
 
-    private static final TimeProfileProperties[] registeredProperties = TimeProfileProperties.values();
-
     private static int maxPropertyNameLength = 0;
 
     private static final ValueInfo[] battleProfile = new ValueInfo[TimeProfileProperties.values().length];
@@ -50,7 +48,6 @@ public class TimeProfiler implements RobotListener {
         roundProfiles.add(roundProfile);
     }
 
-    @Override
     public void onEvent(Event event) {
         if (event instanceof TickEvent) {
             for (int i = 0; i < TimeProfileProperties.values().length; i++) {

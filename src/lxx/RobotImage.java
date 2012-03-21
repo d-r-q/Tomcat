@@ -1,53 +1,38 @@
-/*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
- */
+package lxx;
 
-package lxx.utils;
-
-import lxx.LXXRobot;
-import lxx.LXXRobotState;
 import lxx.strategies.MovementDecision;
+import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
-/**
- * User: jdev
- * Date: 19.02.11
- */
-public final class RobotImage implements LXXRobotState {
+public class RobotImage implements LXXRobotSnapshot {
 
     private LXXPoint position;
     private double velocity;
     private double heading;
     private BattleField battleField;
-    private double turnRateRadians;
     private double energy;
     private double speed;
     private double absoluteHeadingRadians;
+    private String name;
+    private double acceleration;
+    private int lastDirection;
 
-    public RobotImage(LXXPoint position, double velocity, double heading, BattleField battleField, double turnRateRadians, double energy) {
-        this.position = position;
-        this.velocity = velocity;
-        this.speed = abs(velocity);
-        this.heading = heading;
-        absoluteHeadingRadians = velocity >= 0 ? heading : Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_180);
-        this.battleField = battleField;
-        this.turnRateRadians = turnRateRadians;
-        this.energy = energy;
-    }
-
-    public RobotImage(LXXRobotState original) {
+    public RobotImage(LXXRobotSnapshot original) {
         this.position = new LXXPoint(original.getX(), original.getY());
         this.velocity = original.getVelocity();
         this.speed = abs(velocity);
         this.heading = original.getHeadingRadians();
         absoluteHeadingRadians = velocity >= 0 ? heading : Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_180);
         this.battleField = original.getBattleField();
-        this.turnRateRadians = original.getTurnRateRadians();
         this.energy = original.getEnergy();
+        name = original.getName();
+        acceleration = original.getAcceleration();
+        absoluteHeadingRadians = original.getAbsoluteHeadingRadians();
+        lastDirection = original.getLastDirection();
     }
 
     public void apply(MovementDecision movementDecision) {
@@ -98,20 +83,12 @@ public final class RobotImage implements LXXRobotState {
         return position.project(dv);
     }
 
-    public double getAbsoluteHeadingRadians() {
-        return absoluteHeadingRadians;
-    }
-
-    public double getTurnRateRadians() {
-        return turnRateRadians;
-    }
-
     public double getSpeed() {
         return speed;
     }
 
-    public LXXRobot getRobot() {
-        throw new UnsupportedOperationException();
+    public String getName() {
+        return name;
     }
 
     public double getHeadingRadians() {
@@ -132,5 +109,33 @@ public final class RobotImage implements LXXRobotState {
 
     public LXXPoint getPosition() {
         return position;
+    }
+
+    public double getGunHeat() {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getWidth() {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getHeight() {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getAcceleration() {
+        return acceleration;
+    }
+
+    public double getAbsoluteHeadingRadians() {
+        return absoluteHeadingRadians;
+    }
+
+    public int getLastDirection() {
+        return lastDirection;
+    }
+
+    public long getSnapshotTime() {
+        throw new UnsupportedOperationException();
     }
 }

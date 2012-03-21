@@ -4,9 +4,11 @@
 
 package lxx.strategies.duel;
 
+import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
+import lxx.RobotImage;
 import lxx.bullets.LXXBullet;
-import lxx.bullets.PastBearingOffset;
+import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.EnemyBulletPredictionData;
 import lxx.strategies.MovementDecision;
 import lxx.utils.*;
@@ -34,7 +36,7 @@ public class PointsGenerator {
 
     private double getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
-        final List<PastBearingOffset> predictedBearingOffsets = aimPredictionData.getPredictedBearingOffsets();
+        final List<BearingOffsetDanger> predictedBearingOffsets = aimPredictionData.getPredictedBearingOffsets();
         if (predictedBearingOffsets.size() == 0) {
             return 0;
         }
@@ -46,7 +48,7 @@ public class PointsGenerator {
         double bulletsDanger = 0;
         final double hiEffectDist = robotWidthInRadians * 0.75;
         final double lowEffectDist = robotWidthInRadians * 2.55;
-        for (PastBearingOffset bo : predictedBearingOffsets) {
+        for (BearingOffsetDanger bo : predictedBearingOffsets) {
             if (bo.bearingOffset < bearingOffset - lowEffectDist) {
                 continue;
             } else if (bo.bearingOffset > bearingOffset + lowEffectDist) {
@@ -120,7 +122,7 @@ public class PointsGenerator {
         return generatePoints(dstPoint, bullet, robotImg, opponentImg, 0, null);
     }
 
-    public MovementDecision getMovementDecision(LXXPoint surfPoint, APoint dstPoint, LXXRobotState robot, LXXRobotState opponent) {
+    public MovementDecision getMovementDecision(LXXPoint surfPoint, APoint dstPoint, LXXRobotSnapshot robot, LXXRobotSnapshot opponent) {
         final double alphaToRobot = surfPoint.angleTo(robot);
         final double alphaToDst = surfPoint.angleTo(dstPoint);
         final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + Rules.ACCELERATION);
@@ -160,7 +162,7 @@ public class PointsGenerator {
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);
     }
 
-    public LXXPoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
+    public LXXPoint getSurfPoint(LXXRobotSnapshot duelOpponent, LXXBullet bullet) {
         if (duelOpponent == null) {
             return bullet.getFirePosition();
         }

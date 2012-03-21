@@ -9,12 +9,14 @@ import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.LXXUtils;
 
-import static java.lang.Math.abs;
-
-public class MyLateralSpeed implements AttributeValueExtractor {
+/**
+ * User: jdev
+ * Date: 08.08.2010
+ */
+public class MyDistanceToForwardWall implements AttributeValueExtractor {
 
     public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
-        return abs(LXXUtils.lateralVelocity(enemy, me));
+        return LXXUtils.limit(0, me.getPosition().distanceToWall(me.getBattleField(), me.getAbsoluteHeadingRadians()), Integer.MAX_VALUE);
     }
 
 }

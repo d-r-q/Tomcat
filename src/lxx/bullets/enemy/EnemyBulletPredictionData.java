@@ -6,7 +6,6 @@ package lxx.bullets.enemy;
 
 import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
-import lxx.bullets.PastBearingOffset;
 import lxx.paint.LXXGraphics;
 import lxx.ts_log.TurnSnapshot;
 import lxx.utils.APoint;
@@ -23,12 +22,12 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_1;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
-    private final Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions;
+    private final Map<AdvancedEnemyGunModel.Log, List<BearingOffsetDanger>> allLogsPredictions;
     private Collection<BulletShadow> bulletShadows;
-    private List<PastBearingOffset> predictedBearingOffsets;
+    private List<BearingOffsetDanger> predictedBearingOffsets;
 
-    public EnemyBulletPredictionData(List<PastBearingOffset> predictedBearingOffsets, long predictionRoundTime,
-                                     Map<AdvancedEnemyGunModel.Log, List<PastBearingOffset>> allLogsPredictions,
+    public EnemyBulletPredictionData(List<BearingOffsetDanger> predictedBearingOffsets, long predictionRoundTime,
+                                     Map<AdvancedEnemyGunModel.Log, List<BearingOffsetDanger>> allLogsPredictions,
                                      TurnSnapshot ts, Collection<BulletShadow> bulletShadows) {
         super(ts, predictionRoundTime);
         this.allLogsPredictions = allLogsPredictions;
@@ -37,7 +36,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         Collections.sort(predictedBearingOffsets);
     }
 
-    public List<PastBearingOffset> getBearingOffsets(AdvancedEnemyGunModel.Log log) {
+    public List<BearingOffsetDanger> getBearingOffsets(AdvancedEnemyGunModel.Log log) {
         return allLogsPredictions.get(log);
     }
 
@@ -45,12 +44,12 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         return allLogsPredictions.keySet();
     }
 
-    public void setPredictedBearingOffsets(List<PastBearingOffset> predictedBearingOffsets) {
+    public void setPredictedBearingOffsets(List<BearingOffsetDanger> predictedBearingOffsets) {
         this.predictedBearingOffsets = predictedBearingOffsets;
         Collections.sort(predictedBearingOffsets);
     }
 
-    public void addLogPrediction(AdvancedEnemyGunModel.Log log, List<PastBearingOffset> bearingOffsets) {
+    public void addLogPrediction(AdvancedEnemyGunModel.Log log, List<BearingOffsetDanger> bearingOffsets) {
         allLogsPredictions.put(log, bearingOffsets);
     }
 
@@ -68,7 +67,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
 
         final double dist = bullet.getTravelledDistance() - 15;
         g.setColor(Color.WHITE);
-        for (PastBearingOffset bo : predictedBearingOffsets) {
+        for (BearingOffsetDanger bo : predictedBearingOffsets) {
             final double alpha = bullet.noBearingOffset() + bo.bearingOffset;
             final APoint bulletPos = bullet.getFirePosition().project(alpha, dist);
             g.fillCircle(bulletPos, 3);
@@ -82,7 +81,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
             double bearingOffsetDanger = 0;
             if (bearingOffsetsCount > 0) {
-                for (PastBearingOffset bulletBearingOffset : predictedBearingOffsets) {
+                for (BearingOffsetDanger bulletBearingOffset : predictedBearingOffsets) {
                     // this is empirical selected formula, which
                     // produce smooth peaks for bearing offsets
                     final double difference = bulletBearingOffset.bearingOffset - wavePointBearingOffset;
@@ -97,7 +96,7 @@ public class EnemyBulletPredictionData extends AbstractGFAimingPredictionData {
         return bearingOffsetDangers;
     }
 
-    public List<PastBearingOffset> getPredictedBearingOffsets() {
+    public List<BearingOffsetDanger> getPredictedBearingOffsets() {
         return predictedBearingOffsets;
     }
 }

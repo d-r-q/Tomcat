@@ -4,10 +4,10 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
-import lxx.LXXRobotState;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.LXXRobotSnapshot;
+import lxx.MySnapshot;
+import lxx.bullets.BulletSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 import lxx.utils.APoint;
 import lxx.utils.LXXUtils;
@@ -20,13 +20,15 @@ import static java.lang.Math.toDegrees;
  * User: jdev
  * Date: 30.04.11
  */
-public class EnemyBearingOffsetOnFirstBulletVE implements AttributeValueExtractor {
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
+public class EnemyBearingOffsetOnFirstBullet implements AttributeValueExtractor {
+
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
+        List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() == 0) {
             return 0;
         }
 
-        LXXBullet firstBullet;
+        BulletSnapshot firstBullet;
         int idx = 0;
         double bulletFlightTime;
         do {
@@ -37,9 +39,10 @@ public class EnemyBearingOffsetOnFirstBulletVE implements AttributeValueExtracto
             bulletFlightTime = firstBullet.getFlightTime(enemy);
         } while (bulletFlightTime < 1);
 
-        final LXXRobotState targetState = firstBullet.getTargetStateAtFireTime();
-        final APoint interceptPos = enemy.project(enemy.getState().getAbsoluteHeadingRadians(), enemy.getState().getSpeed() * bulletFlightTime);
-        double lateralDirection = LXXUtils.lateralDirection(firstBullet.getFirePosition(), targetState);
+        final LXXRobotSnapshot targetState = firstBullet.getTargetState();
+        final APoint interceptPos = enemy.project(enemy.getAbsoluteHeadingRadians(), enemy.getSpeed() * bulletFlightTime);
+        double lateralDirection = LXXUtils.lateralDirection(firstBullet.getOwnerState(), targetState);
         return toDegrees(firstBullet.getBearingOffsetRadians(interceptPos)) * lateralDirection;
     }
+
 }

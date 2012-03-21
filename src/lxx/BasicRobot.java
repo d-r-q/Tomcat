@@ -4,6 +4,7 @@
 
 package lxx;
 
+import lxx.bullets.BulletSnapshot;
 import lxx.events.LXXKeyEvent;
 import lxx.paint.LXXGraphics;
 import lxx.utils.*;
@@ -36,16 +37,10 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private int initialOthers;
     public BattleField battleField;
 
-    private LXXRobotState prevState;
-    protected LXXRobotState currentState;
+    private MySnapshot prevSnapshot;
+    protected MySnapshot currentSnapshot;
 
-    private long lastStopTime;
-    private long lastTravelTime;
-    private long lastTurnTime;
-    private long lastNotTurnTime;
-    private double acceleration;
     private int lastDirection = 1;
-    private long lastDirChangeTime;
 
     protected void init() {
         initialOthers = getOthers();
@@ -55,9 +50,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         setAdjustRadarForRobotTurn(true);
-
-        prevState = new RobotSnapshot(this);
-        currentState = new RobotSnapshot(this);
     }
 
     public double angleTo(APoint point) {
@@ -158,10 +150,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return true;
     }
 
-    public LXXRobotState getState() {
-        return currentState;
-    }
-
     public int getInitialOthers() {
         return initialOthers;
     }
@@ -175,41 +163,24 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     }
 
     public void onStatus(StatusEvent e) {
-        prevState = currentState;
-        currentState = new RobotSnapshot(this);
 
-        double prevAcceleration = acceleration;
-        acceleration = LXXUtils.limit(-Rules.DECELERATION, LXXUtils.calculateAcceleration(prevState, currentState), Rules.ACCELERATION);
-        if (signum(prevAcceleration) != signum(acceleration) && getSpeed() > 0.1 && getSpeed() < 7.9) {
-            lastDirChangeTime = e.getTime() - 1;
-        }
+        prevSnapshot = currentSnapshot != null
+                ? currentSnapshot
+                : new MySnapshot(this);
 
-        if (Utils.isNear(getVelocity(), 0)) {
-            lastStopTime = e.getTime();
-        } else {
-            lastTravelTime = e.getTime();
-        }
-
-        position.x = e.getStatus().getX();
-        position.y = e.getStatus().getY();
-        last10Positions.add(new LXXPoint(position));
+        last10Positions.add(new LXXPoint(e.getStatus().getX(), e.getStatus().getY()));
         if (last10Positions.size() > 10) {
             last10Positions.removeFirst();
         }
+        
+        currentSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.getFirst().aDistance(last10Positions.getLast()));
+
+        // performance enhancing bug - because some reason using old position gives best results
+        position.x = e.getStatus().getX();
+        position.y = e.getStatus().getY();        
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
             lastDirection = (int) signum(e.getStatus().getVelocity());
-        }
-
-        final double prevTurnRateSign = prevState == null ? 0 : signum(prevState.getTurnRateRadians());
-
-        super.onStatus(e);
-
-        final double turnRateSign = signum(getTurnRateRadians());
-        if (turnRateSign == 0 || turnRateSign != prevTurnRateSign) {
-            lastTurnTime = getTime() - 1;
-        } else {
-            lastNotTurnTime = getTime() - 1;
         }
 
         notifyListeners(e);
@@ -221,18 +192,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public double getY() {
         return position.y;
-    }
-
-    public long getLastStopTime() {
-        return lastStopTime;
-    }
-
-    public long getLastTravelTime() {
-        return lastTravelTime;
-    }
-
-    public double getAcceleration() {
-        return acceleration;
     }
 
     public LXXPoint getPosition() {
@@ -252,45 +211,21 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         return getName().equals(basicRobot.getName());
     }
 
-    public double getTurnRateRadians() {
-        if (prevState == null) {
-            return 0;
-        }
-        return prevState.getHeadingRadians() - getHeadingRadians();
+    public MySnapshot getPrevSnapshot() {
+        return prevSnapshot;
     }
 
-    public long getLastTurnTime() {
-        return lastTurnTime;
-    }
-
-    public long getLastNotTurnTime() {
-        return lastNotTurnTime;
-    }
-
-    public long getLastDirChangeTime() {
-        return lastDirChangeTime;
-    }
-
-    public LXXRobotState getPrevState() {
-        return prevState;
+    public MySnapshot getCurrentSnapshot() {
+        return currentSnapshot;
     }
 
     public int getRound() {
         return getRoundNum();
     }
 
-    public double getLast10TicksDist() {
-        if (last10Positions.size() == 0) {
-            return 0;
-        }
-        return last10Positions.getFirst().aDistance(last10Positions.getLast());
+    public BattleField getBattleField() {
+        return battleField;
     }
 
-    public void addVisit(double guessFactor) {
-        throw new UnsupportedOperationException();
-    }
-
-    public List<Double> getVisitedGuessFactors() {
-        throw new UnsupportedOperationException();
-    }
+    public abstract List<BulletSnapshot> getBulletsInAir();
 }

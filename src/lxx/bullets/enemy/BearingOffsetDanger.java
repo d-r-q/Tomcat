@@ -4,11 +4,13 @@
 
 package lxx.bullets.enemy;
 
+import static java.lang.Math.signum;
+
 /**
  * User: jdev
  * Date: 07.09.2010
  */
-public class BearingOffsetDanger {
+public class BearingOffsetDanger implements Comparable<BearingOffsetDanger> {
 
     public final double bearingOffset;
     public final double danger;
@@ -17,4 +19,9 @@ public class BearingOffsetDanger {
         this.bearingOffset = bearingOffset;
         this.danger = match;
     }
+
+    public int compareTo(BearingOffsetDanger o) {
+        return (int) signum(bearingOffset - o.bearingOffset);
+    }
+
 }

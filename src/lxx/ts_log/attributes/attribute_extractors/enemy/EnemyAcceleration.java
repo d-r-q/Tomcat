@@ -4,19 +4,18 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-
-import java.util.List;
 
 /**
  * User: jdev
  * Date: 02.03.2010
  */
-public class EnemyAccelerationVE implements AttributeValueExtractor {
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
+public class EnemyAcceleration implements AttributeValueExtractor {
+
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         return enemy.getAcceleration();
     }
+
 }

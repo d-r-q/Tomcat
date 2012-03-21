@@ -4,6 +4,7 @@
 
 package lxx.utils;
 
+import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
@@ -43,18 +44,6 @@ public class LXXUtils {
         return abs(Utils.normalRelativeAngle(alpha1 - alpha2));
     }
 
-    public static int limit(int minValue, int value, int maxValue) {
-        if (value < minValue) {
-            return minValue;
-        }
-
-        if (value > maxValue) {
-            return maxValue;
-        }
-
-        return value;
-    }
-
     public static double limit(double minValue, double value, double maxValue) {
         if (value < minValue) {
             return minValue;
@@ -71,7 +60,7 @@ public class LXXUtils {
         return limit(a.actualRange.a, value, a.actualRange.b);
     }
 
-    public static double lateralDirection(APoint center, LXXRobotState robotState) {
+    public static double lateralDirection(APoint center, LXXRobotSnapshot robotState) {
         return lateralDirection(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
@@ -82,7 +71,7 @@ public class LXXUtils {
         return signum(lateralVelocity(center, pos, velocity, heading));
     }
 
-    public static double lateralVelocity(APoint center, LXXRobotState robotState) {
+    public static double lateralVelocity(APoint center, LXXRobotSnapshot robotState) {
         return lateralVelocity(center, robotState, robotState.getSpeed(), robotState.getAbsoluteHeadingRadians());
     }
 
@@ -131,7 +120,7 @@ public class LXXUtils {
     }
 
     // from robowiki
-    public static double getMaxEscapeAngle(APoint center, LXXRobotState state, double bulletSpeed) {
+    public static double getMaxEscapeAngle(APoint center, LXXRobotSnapshot state, double bulletSpeed) {
         // Variables prefixed with e- refer to enemy, b- refer to bullet and r- refer to robot
         final double eAbsBearing = center.angleTo(state);
         final double rX = center.getX();
@@ -186,7 +175,7 @@ public class LXXUtils {
     }
 
     public static DeltaVector getEnemyDeltaVector(TurnSnapshot ts1, TurnSnapshot ts2) {
-        final double enemyHeading = ts1.getEnemyAbsoluteHeading();
+        final double enemyHeading = ts1.enemySnapshot.getAbsoluteHeadingRadians();
         final double x1 = ts1.getAttrValue(AttributesManager.enemyX);
         final double y1 = ts1.getAttrValue(AttributesManager.enemyY);
         final double x2 = ts2.getAttrValue(AttributesManager.enemyX);

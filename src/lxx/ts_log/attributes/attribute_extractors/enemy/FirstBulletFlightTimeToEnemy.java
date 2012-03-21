@@ -4,22 +4,22 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
+import lxx.bullets.BulletSnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
 import java.util.List;
 
-public class FirstBulletFlightTimeToEnemyVE implements AttributeValueExtractor {
+public class FirstBulletFlightTimeToEnemy implements AttributeValueExtractor {
 
-
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
+        final List<BulletSnapshot> myBullets = me.getBulletsInAir();
         if (myBullets.size() == 0) {
             return 0;
         }
 
-        LXXBullet firstBullet;
+        BulletSnapshot firstBullet;
         int idx = 0;
         double bulletFlightTime;
         do {
@@ -27,10 +27,11 @@ public class FirstBulletFlightTimeToEnemyVE implements AttributeValueExtractor {
                 return 0;
             }
             firstBullet = myBullets.get(idx++);
-            bulletFlightTime = (firstBullet.getFirePosition().aDistance(enemy) - firstBullet.getTravelledDistance()) /
+            bulletFlightTime = (firstBullet.getOwnerState().aDistance(enemy) - firstBullet.getTravelledDistance()) /
                     firstBullet.getSpeed();
         } while (bulletFlightTime < 1);
 
         return bulletFlightTime;
     }
+
 }

@@ -4,12 +4,9 @@
 
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
-import lxx.LXXRobot;
-import lxx.bullets.LXXBullet;
-import lxx.office.Office;
+import lxx.EnemySnapshot;
+import lxx.MySnapshot;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
-
-import java.util.List;
 
 public class LastVisitedGF implements AttributeValueExtractor {
 
@@ -19,7 +16,7 @@ public class LastVisitedGF implements AttributeValueExtractor {
         this.offset = offset;
     }
 
-    public double getAttributeValue(LXXRobot enemy, LXXRobot me, List<LXXBullet> myBullets, Office office) {
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
         if (enemy.getVisitedGuessFactors().size() < offset) {
             return 0;
         }

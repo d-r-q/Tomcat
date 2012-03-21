@@ -11,8 +11,10 @@ import lxx.MySnapshot;
  * User: jdev
  * Date: 23.02.2010
  */
-public interface AttributeValueExtractor {
+public class DistanceBetween implements AttributeValueExtractor {
 
-    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me);
+    public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
+        return me.aDistance(enemy);
+    }
 
 }

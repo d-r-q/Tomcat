@@ -33,10 +33,8 @@ public class DeltaVector implements Serializable {
 
         DeltaVector that = (DeltaVector) o;
 
-        if (alphaRadians != that.alphaRadians) return false;
-        if (round(length) != round(that.length)) return false;
+        return alphaRadians == that.alphaRadians && round(length) == round(that.length);
 
-        return true;
     }
 
     public int hashCode() {
