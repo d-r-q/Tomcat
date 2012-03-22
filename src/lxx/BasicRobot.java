@@ -38,7 +38,8 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     public BattleField battleField;
 
     private MySnapshot prevSnapshot;
-    protected MySnapshot currentSnapshot;
+    private MySnapshot currentSnapshot;
+    private MySnapshot correctSnapshot;
 
     private int lastDirection = 1;
 
@@ -177,7 +178,9 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
         // performance enhancing bug - because some reason using old position gives best results
         position.x = e.getStatus().getX();
-        position.y = e.getStatus().getY();        
+        position.y = e.getStatus().getY();
+
+        correctSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.getFirst().aDistance(last10Positions.getLast()));
 
         if (abs(e.getStatus().getVelocity()) >= 0.1) {
             lastDirection = (int) signum(e.getStatus().getVelocity());
@@ -217,6 +220,10 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
 
     public MySnapshot getCurrentSnapshot() {
         return currentSnapshot;
+    }
+
+    public MySnapshot getCorrectSnapshot() {
+        return correctSnapshot;
     }
 
     public int getRound() {
