@@ -161,7 +161,7 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
 
         TurnSnapshot currentSnapshot = start.next;
         currentSnapshot = skip(currentSnapshot, AIMING_TIME);
-        final BattleField battleField = robot.getCurrentSnapshot().getBattleField();
+        final BattleField battleField = robot.getBattleField();
         final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
         BulletState bs;
         final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;

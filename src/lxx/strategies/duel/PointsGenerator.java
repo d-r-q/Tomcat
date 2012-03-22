@@ -152,7 +152,7 @@ public class PointsGenerator {
             final LXXPoint oppPos = opponent.getPosition();
             final double distToOpponent = robot.aDistance(oppPos);
             if (distToOpponent < 100) {
-                double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
+                final double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
                 if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, distToOpponent) * 1.01))) {
                     desiredSpeed = 0;
                 }

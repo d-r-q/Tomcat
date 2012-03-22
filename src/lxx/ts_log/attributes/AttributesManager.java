@@ -80,11 +80,8 @@ public class AttributesManager {
     }
 
     public TurnSnapshot getTurnSnapshot(Target t) {
-        robot.getCurrentSnapshot().setBullets(robot.getBulletsInAir());
-        return new TurnSnapshot(robot.getTime(), robot.getRoundNum(), robot.getCurrentSnapshot(), t.getCurrentSnapshot());
+        robot.getCorrectSnapshot().setBullets(robot.getBulletsInAir());
+        return new TurnSnapshot(robot.getTime(), robot.getRoundNum(), robot.getCorrectSnapshot(), t.getCurrentSnapshot());
     }
 
-    public static int attributesCount() {
-        return attributes.length;
-    }
 }

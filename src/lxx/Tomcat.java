@@ -88,7 +88,7 @@ public class Tomcat extends BasicRobot {
     private void notifyListeners() {
         if (isAlive) {
             if (bullet != null && turnDecision.getTarget() != null) {
-                final Wave bulletWave = office.getWaveManager().launchWave(getCurrentSnapshot(), turnDecision.getTarget().getCurrentSnapshot(), turnDecision.getTarget(),
+                final Wave bulletWave = office.getWaveManager().launchWave(getPrevSnapshot(), turnDecision.getTarget().getCurrentSnapshot(), turnDecision.getTarget(),
                         Rules.getBulletSpeed(turnDecision.getFirePower()), null);
                 final LXXBullet lxxBullet = new LXXBullet(bullet, bulletWave, turnDecision.getAimAimPredictionData());
 
