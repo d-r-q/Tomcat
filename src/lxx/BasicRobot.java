@@ -9,7 +9,6 @@ import lxx.events.LXXKeyEvent;
 import lxx.paint.LXXGraphics;
 import lxx.utils.*;
 import robocode.*;
-import robocode.util.Utils;
 
 import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.signum;
 
 /**
  * User: jdev
@@ -40,8 +38,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
     private MySnapshot prevSnapshot;
     private MySnapshot currentSnapshot;
     private MySnapshot correctSnapshot;
-
-    private int lastDirection = 1;
 
     protected void init() {
         initialOthers = getOthers();
@@ -131,18 +127,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         notifyListeners(event);
     }
 
-    public double getAbsoluteHeadingRadians() {
-        if (signum(getVelocity()) == 1) {
-            return getHeadingRadians();
-        } else if (signum(getVelocity()) == -1) {
-            return Utils.normalAbsoluteAngle(getHeadingRadians() + Math.PI);
-        } else if (lastDirection == 1) {
-            return getHeadingRadians();
-        } else {
-            return Utils.normalAbsoluteAngle(getHeadingRadians() + Math.PI);
-        }
-    }
-
     public double getSpeed() {
         return abs(getVelocity());
     }
@@ -181,10 +165,6 @@ public abstract class BasicRobot extends TeamRobot implements APoint, LXXRobot {
         position.y = e.getStatus().getY();
 
         correctSnapshot = new MySnapshot(prevSnapshot, this, last10Positions.getFirst().aDistance(last10Positions.getLast()));
-
-        if (abs(e.getStatus().getVelocity()) >= 0.1) {
-            lastDirection = (int) signum(e.getStatus().getVelocity());
-        }
 
         notifyListeners(e);
     }

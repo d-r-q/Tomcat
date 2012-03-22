@@ -55,7 +55,7 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
     public GunDecision getGunDecision(Target t, double firePower) {
         final double angleToTarget = robot.angleTo(t);
         final APoint initialPos = t.getPosition();
-        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
+        robotPosAtFireTime = robot.project(robot.getCurrentSnapshot().getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
 
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
             futurePoses = null;

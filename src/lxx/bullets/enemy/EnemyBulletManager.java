@@ -297,7 +297,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             nextFireTime = robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate());
         }
         final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCurrentSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
+        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCorrectSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceState().getName(), wave.getTargetState().getName(), true, -1);
 
