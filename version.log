@@ -1,5 +1,14 @@
+v. 3.57
+* Bug with using outdated position fixed in TSes, future bullet creation & simple BOs calculation.
+  But fixing this bug in movement decrease performance because some reason...
+
+v. 3.56
+* Major code clean up
+* LXXRobot* hierarhy rewrited
+* TurnSnapshots rewrited
+
 v. 3.55
-* adaptivr views weighting system inplemented in gun
+* adaptive views weighting system implemented in gun
 * anti-surfer #3 view added
 * firstBulletFlight time attribute removed from distance and timeSinceDirChange views
 
