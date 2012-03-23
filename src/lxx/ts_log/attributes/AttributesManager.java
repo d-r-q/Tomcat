@@ -80,8 +80,8 @@ public class AttributesManager {
     }
 
     public TurnSnapshot getTurnSnapshot(Target t) {
-        robot.getCorrectSnapshot().setBullets(robot.getBulletsInAir());
-        return new TurnSnapshot(robot.getTime(), robot.getRoundNum(), robot.getCorrectSnapshot(), t.getCurrentSnapshot());
+        robot.getCurrentSnapshot().setBullets(robot.getBulletsInAir());
+        return new TurnSnapshot(robot.getTime(), robot.getRoundNum(), robot.getCurrentSnapshot(), t.getCurrentSnapshot());
     }
 
 }

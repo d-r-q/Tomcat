@@ -12,6 +12,7 @@ import lxx.bullets.LXXBulletState;
 import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
+import lxx.events.TickEvent;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.Target;
 import lxx.utils.LXXPoint;
@@ -23,6 +24,8 @@ import robocode.*;
 import robocode.util.Utils;
 
 import java.util.*;
+
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -158,6 +161,12 @@ public class BulletManager implements RobotListener, WaveCallback {
         } else if (event instanceof LXXKeyEvent) {
             if (Character.toUpperCase(((LXXKeyEvent) event).getKeyChar()) == 'G') {
                 paintEnabled = !paintEnabled;
+            }
+        } else if (event instanceof TickEvent) {
+            for (LXXBullet b : bullets) {
+                final LXXPoint calculatedPos = b.getFirePosition().project(b.getHeadingRadians(), b.getTravelledDistance());
+                assert abs(b.getBullet().getX() - calculatedPos.x) < 0.5;
+                assert abs(b.getBullet().getY() - calculatedPos.y) < 0.5;
             }
         }
     }

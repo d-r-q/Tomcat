@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.List;
 
 import static java.lang.Math.*;
+import static java.lang.Math.abs;
 
 /**
  * User: jdev
@@ -154,6 +155,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
         enemyGunModel.processIntercept(lxxBullet);
         updateBulletsOnAir();
+
+        // todo(zhidkov): fix me
+        /*final LXXPoint calculatedPos = lxxBullet.getFirePosition().project(lxxBullet.getHeadingRadians(), lxxBullet.getTravelledDistance() - lxxBullet.getSpeed());
+        if (abs(e.getHitBullet().getX() - calculatedPos.x) > 0.5 || abs(e.getHitBullet().getY() - calculatedPos.y) > 0.5) {
+            assert abs(e.getHitBullet().getX() - calculatedPos.x) < 0.5;
+            assert abs(e.getHitBullet().getY() - calculatedPos.y) < 0.5;
+        }*/
     }
 
     public void onHitByBullet(HitByBulletEvent e) {
@@ -173,6 +181,13 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
         enemyGunModel.processHit(lxxBullet);
         updateBulletsOnAir();
+
+        // todo(zhidkov): fix me
+        /*final LXXPoint calculatedPos = lxxBullet.getFirePosition().project(lxxBullet.getHeadingRadians(), lxxBullet.getTravelledDistance());
+        if (abs(e.getBullet().getX() - calculatedPos.x) > 0.5 || abs(e.getBullet().getY() - calculatedPos.y) > 0.5) {
+            assert abs(e.getBullet().getX() - calculatedPos.x) < 0.5;
+            assert abs(e.getBullet().getY() - calculatedPos.y) < 0.5;
+        }*/
     }
 
     private Wave getWave(Bullet b) {
@@ -297,7 +312,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             nextFireTime = robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate());
         }
         final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCorrectSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
+        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCurrentSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceState().getName(), wave.getTargetState().getName(), true, -1);
 

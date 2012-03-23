@@ -1,3 +1,8 @@
+v. 3.57a
+* My bullets launch position calculation bug fixed
+* Use correct snapshot in movement
+* Some assertions added
+
 v. 3.57
 * Bug with using outdated position fixed in TSes, future bullet creation & simple BOs calculation.
   But fixing this bug in movement decrease performance because some reason...
