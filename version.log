@@ -1,3 +1,6 @@
+v. 3.57b
+* Normalize log efficiencies by bullet flight time in movement
+
 v. 3.57a
 * My bullets launch position calculation bug fixed
 * Use correct snapshot in movement

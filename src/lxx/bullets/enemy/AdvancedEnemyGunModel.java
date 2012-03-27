@@ -407,13 +407,14 @@ public class AdvancedEnemyGunModel {
         }
 
         private void recalculateLogSetEfficiency(LXXBullet bullet, List<Log> logSet, boolean isHit) {
+            final double bulletFlightTime = bullet.getFirePosition().aDistance(bullet.getTargetState()) / bullet.getSpeed();
             for (Log log : logSet) {
                 final EnemyBulletPredictionData ebpd = (EnemyBulletPredictionData) bullet.getAimPredictionData();
                 List<BearingOffsetDanger> bearingOffsets = ebpd.getBearingOffsets(log);
                 if (bearingOffsets == null) {
                     bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
                 }
-                double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
+                final double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit)* bulletFlightTime;
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
                     log.midAvgHitRate.addValue(logEfficiency);
