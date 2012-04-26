@@ -67,12 +67,20 @@ public class WaveManager implements RobotListener {
                     final Set<WaveCallback> callbacks = waveCallbacks.get(w);
                     if (w.check()) {
                         for (WaveCallback callback : callbacks) {
-                            callback.wavePassing(w);
+                            try {
+                                callback.wavePassing(w);
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
                         }
                     } else if (w.isPassed()) {
                         toRemove.add(w);
                         for (WaveCallback callback : callbacks) {
-                            callback.waveBroken(w);
+                            try {
+                                callback.waveBroken(w);
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
                         }
                         waveCallbacks.remove(w);
                     }
