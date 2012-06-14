@@ -1,3 +1,7 @@
+v. 3.57d
+* adaptive data views weighting in gun removed
+* anti-surefer dataview #3 removed
+
 v. 3.57c
 * Bug with using incorrect danger for BO in gun because caching fixed
 

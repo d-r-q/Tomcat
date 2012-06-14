@@ -47,14 +47,6 @@ public class DataViewManager implements RobotListener {
             AttributesManager.lastVisitedGF2,
     }, new double[]{0.75, 0.25}, "Anti-surfer #2");
 
-    private static final DataView asDataView3 = new SingleSourceDataView(new Attribute[]{
-            AttributesManager.enemyAcceleration,
-            AttributesManager.enemySpeed,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.fireTimeDiff
-    }, new double[]{0.8, 0.2}, "Anti-surfer #3");
-
     private static final DataView distanceDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
@@ -73,7 +65,7 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyTurnRate
     }, new double[]{0.5, 0.5}, "Time since dir change");
 
-    private DataView[] duelViews = {mainDataView, asDataView, asDataView2, asDataView3, distanceDataView, timeSinceDirChangeDataView};
+    private DataView[] duelViews = {mainDataView, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView};
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotLog;

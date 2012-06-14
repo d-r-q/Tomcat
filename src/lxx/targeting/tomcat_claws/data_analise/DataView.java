@@ -18,10 +18,6 @@ public interface DataView {
     Collection<TurnSnapshot> getDataSet(TurnSnapshot ts);
 
     void addEntry(TurnSnapshot ts);
-
-    void addHitRate(double hitRate);
     
     String getName();
-
-    AvgValue getHitRate();
 }

@@ -5,8 +5,6 @@
 package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
-import lxx.bullets.BulletManagerListener;
-import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
@@ -16,9 +14,6 @@ import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
-import lxx.utils.wave.Wave;
-import lxx.utils.wave.WaveCallback;
-import lxx.utils.wave.WaveManager;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -27,7 +22,7 @@ import java.util.*;
 
 import static java.lang.Math.*;
 
-public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
+public class TomcatClaws implements Gun {
 
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_0_5;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
@@ -37,7 +32,6 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
     private final Tomcat robot;
     private final TurnSnapshotsLog log;
     private final DataViewManager dataViewManager;
-    private final WaveManager waveManager;
 
     private APoint robotPosAtFireTime;
     private List<APoint> futurePoses;
@@ -45,11 +39,10 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
     private double bestBearingOffset;
     private Map<DataView, List<IntervalDouble>> dataViewsPredictions;
 
-    public TomcatClaws(Tomcat robot, TurnSnapshotsLog log, DataViewManager dataViewManager, WaveManager waveManager) {
+    public TomcatClaws(Tomcat robot, TurnSnapshotsLog log, DataViewManager dataViewManager) {
         this.robot = robot;
         this.log = log;
         this.dataViewManager = dataViewManager;
-        this.waveManager = waveManager;
     }
 
     public GunDecision getGunDecision(Target t, double firePower) {
@@ -63,7 +56,7 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
         }
 
         if (futurePoses == null) {
-            bestBearingOffset = getBearingOffset(t, Rules.getBulletSpeed(firePower));
+            bestBearingOffset = getBearingOffset(t, Rules.getBulletSpeed(firePower), log.getLastSnapshot(t));
         }
 
         return new GunDecision(getGunTurnAngle(Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(t) + bestBearingOffset)),
@@ -75,7 +68,7 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
         return Utils.normalRelativeAngle(angleToPredictedPos - robot.getGunHeadingRadians());
     }
 
-    private double getBearingOffset(Target t, double bulletSpeed) {
+    private double getBearingOffset(Target t, double bulletSpeed, final TurnSnapshot snapshot) {
         dataViewsPredictions = new HashMap<DataView, List<IntervalDouble>>();
         futurePoses = new ArrayList<APoint>();
         final List<IntervalDoubleDanger> botIntervalsRadians = new ArrayList<IntervalDoubleDanger>();
@@ -83,17 +76,8 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
         final HashMap<TurnSnapshot, APoint> futurePosesCache = new HashMap<TurnSnapshot, APoint>();
         final double angleToTarget = robotPosAtFireTime.angleTo(t);
 
-        double minHitRate = Integer.MAX_VALUE;
-        double maxHitRate = Integer.MIN_VALUE;
-
         for (DataView dv : dataViewManager.getDuelDataViews()) {
-            minHitRate = min(minHitRate, dv.getHitRate().getCurrentValue());
-            maxHitRate = max(maxHitRate, dv.getHitRate().getCurrentValue());
-        }
-        
-        for (DataView dv : dataViewManager.getDuelDataViews()) {            
-            final double dataViewDanger = pow((dv.getHitRate().getCurrentValue() - minHitRate) / (maxHitRate - minHitRate), 3);
-            final List<APoint> viewFuturePoses = getFuturePoses(t, dv.getDataSet(log.getLastSnapshot(t)), bulletSpeed, futurePosesCache);
+            final List<APoint> viewFuturePoses = getFuturePoses(t, dv.getDataSet(snapshot), bulletSpeed, futurePosesCache);
             final List<IntervalDouble> viewIvals = new ArrayList<IntervalDouble>();
             for (APoint pnt : viewFuturePoses) {
                 IntervalDoubleDanger cachedIval = ivalCache.get(pnt);
@@ -103,14 +87,11 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
                     final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.75;
                     final double bo1 = bearingOffset - botWidth;
                     final double bo2 = bearingOffset + botWidth;
-                    cachedIval = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), 0);
+                    cachedIval = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), 1);
                     ivalCache.put(pnt, cachedIval);
                 }
-                final IntervalDoubleDanger ival = new IntervalDoubleDanger(cachedIval.a, cachedIval.b, dataViewDanger);
-                if (dataViewDanger > 0) {
-                    botIntervalsRadians.add(ival);
-                }
-                viewIvals.add(ival);
+                botIntervalsRadians.add(cachedIval);
+                viewIvals.add(cachedIval);
             }
             dataViewsPredictions.put(dv, viewIvals);
         }
@@ -214,60 +195,6 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
         }
         return BulletState.COMING;
     }
-
-    public void bulletFired(LXXBullet bullet) {
-        waveManager.addCallback(this, bullet.getWave());
-    }
-
-    public void waveBroken(Wave w) {
-        final TCPredictionData predictionData = (TCPredictionData) w.getCarriedBullet().getAimPredictionData();
-
-        final Map<DataView, List<IntervalDouble>> dataViewsPredictions = predictionData.getDataViewsPredictions();
-        final double bulletFlightTime = w.getSourceState().aDistance(w.getTargetState()) / w.getSpeed();
-        for (DataView dv : dataViewsPredictions.keySet()) {
-            final List<IntervalDouble> intervalDoubles = dataViewsPredictions.get(dv);
-            dv.addHitRate(getHitRate(w.getHitBearingOffsetInterval(), intervalDoubles) * bulletFlightTime);
-        }
-    }
-
-    private double getHitRate(IntervalDouble hitInterval, List<IntervalDouble> predictedIntervals) {
-        if (predictedIntervals.size() == 0) {
-            return 0;
-        }
-
-        double hitCount = 0;
-        double maxHitCount = 0;
-        for (IntervalDouble ival : predictedIntervals) {
-            final double intersection = hitInterval.intersection(ival);
-            final double minIvalLength = min(ival.getLength(), hitInterval.getLength());
-            maxHitCount++;
-            if (intersection > 0) {
-                hitCount += intersection / minIvalLength;
-            }
-        }
-
-        if (maxHitCount == 0) {
-            return 0;
-        }
-
-        return hitCount / maxHitCount;
-    }
-
-    public void bulletHit(LXXBullet bullet) {
-    }
-
-    public void bulletMiss(LXXBullet bullet) {
-    }
-
-    public void bulletIntercepted(LXXBullet bullet) {
-    }
-
-    public void bulletPassing(LXXBullet bullet) {
-    }
-
-    public void wavePassing(Wave w) {
-    }
-
     private enum BulletState {
         COMING,
         HITTING,

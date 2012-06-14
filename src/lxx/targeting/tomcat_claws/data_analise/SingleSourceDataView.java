@@ -12,6 +12,7 @@ import lxx.utils.AvgValue;
 import lxx.utils.IntervalDouble;
 import lxx.utils.IntervalLong;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static java.lang.Math.sqrt;
@@ -23,8 +24,6 @@ import static java.lang.Math.sqrt;
 public class SingleSourceDataView implements DataView {
 
     private static final DistTimeComparator distTimeComparator = new DistTimeComparator();
-
-    private final AvgValue hitRate = new AvgValue(5000);
     
     private final KdTreeAdapter<GunKdTreeEntry> dataSource;
     private final double[] weights;
@@ -80,16 +79,8 @@ public class SingleSourceDataView implements DataView {
         dataSource.addEntry(new GunKdTreeEntry(ts, dataSource.getAttributes()));
     }
 
-    public void addHitRate(double hitRate) {
-        this.hitRate.addValue(hitRate);
-    }
-
     public String getName() {
         return name;
-    }
-
-    public AvgValue getHitRate() {
-        return hitRate;
     }
 
     private static class DistTimeComparator implements Comparator<GunKdTreeEntry> {

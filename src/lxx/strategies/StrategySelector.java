@@ -32,8 +32,7 @@ public class StrategySelector {
         final TomcatEyes tomcatEyes = office.getTomcatEyes();
         enemyBulletManager.addListener(tomcatEyes);
 
-        final TomcatClaws tomcatClaws = new TomcatClaws(robot, office.getTurnSnapshotsLog(), office.getDataViewManager(), office.getWaveManager());
-        office.getBulletManager().addListener(tomcatClaws);
+        final TomcatClaws tomcatClaws = new TomcatClaws(robot, office.getTurnSnapshotsLog(), office.getDataViewManager());
         final WaveSurfingMovement wsm = new WaveSurfingMovement(office);
         office.getPaintManager().addPainter(wsm);
 
