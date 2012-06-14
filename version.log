@@ -1,3 +1,6 @@
+v. 3.57c
+* Bug with using incorrect danger for BO in gun because caching fixed
+
 v. 3.57b
 * Normalize log efficiencies by bullet flight time in movement
 

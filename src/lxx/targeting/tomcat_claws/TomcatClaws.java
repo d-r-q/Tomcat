@@ -96,16 +96,17 @@ public class TomcatClaws implements Gun, WaveCallback, BulletManagerListener {
             final List<APoint> viewFuturePoses = getFuturePoses(t, dv.getDataSet(log.getLastSnapshot(t)), bulletSpeed, futurePosesCache);
             final List<IntervalDouble> viewIvals = new ArrayList<IntervalDouble>();
             for (APoint pnt : viewFuturePoses) {
-                IntervalDoubleDanger ival = ivalCache.get(pnt);
-                if (ival == null) {
+                IntervalDoubleDanger cachedIval = ivalCache.get(pnt);
+                if (cachedIval == null) {
                     final double angleToPnt = robotPosAtFireTime.angleTo(pnt);
                     final double bearingOffset = Utils.normalRelativeAngle(angleToPnt - angleToTarget);
                     final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.75;
                     final double bo1 = bearingOffset - botWidth;
                     final double bo2 = bearingOffset + botWidth;
-                    ival = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), dataViewDanger);
-                    ivalCache.put(pnt, ival);
+                    cachedIval = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), 0);
+                    ivalCache.put(pnt, cachedIval);
                 }
+                final IntervalDoubleDanger ival = new IntervalDoubleDanger(cachedIval.a, cachedIval.b, dataViewDanger);
                 if (dataViewDanger > 0) {
                     botIntervalsRadians.add(ival);
                 }

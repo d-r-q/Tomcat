@@ -29,6 +29,7 @@ public class PluginManager implements RobotListener {
         if ("true".equals(PropertiesManager.getDebugProperty("show_hit_n_visit_stats"))) {
             plugins.add(new HitVisitStat());
         }
+        //plugins.add(new GfPatternDumper());
         if (office.isDebugMode()) {
             for (Plugin plugin : plugins) {
                 plugin.roundStarted(office);
