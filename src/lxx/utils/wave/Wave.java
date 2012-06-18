@@ -61,7 +61,7 @@ public class Wave {
         if (contains) {
             isPassed = true;
             final double bo = Utils.normalRelativeAngle(angleToTarget - noBearingOffset);
-            final double targetWidth = LXXUtils.getRobotWidthInRadians(angleToTarget, sourceState.aDistance(targetState));
+            final double targetWidth = LXXUtils.getRobotWidthInRadians(angleToTarget, sourceState.aDistance(target));
             final IntervalDouble currentInterval = new IntervalDouble(bo - targetWidth / 2, bo + targetWidth / 2);
             if (hitBearingOffsetInterval == null) {
                 hitBearingOffsetInterval = currentInterval;

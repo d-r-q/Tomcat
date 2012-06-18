@@ -48,12 +48,6 @@ public class AdvancedEnemyGunModel {
         updateEnemyHitRate(logSet, aimPredictionData, true);
 
         logSet.learn(bullet, true);
-        if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
-            logSet.shortLogs.addAll(logSet.visitLogsSet);
-            logSet.midLogs.addAll(logSet.visitLogsSet);
-            logSet.longLogs.addAll(logSet.visitLogsSet);
-            logSet.enemyHitRateLogs.addAll(logSet.visitLogsSet);
-        }
     }
 
     private void updateEnemyHitRate(LogSet logSet, EnemyBulletPredictionData aimPredictionData, boolean isHit) {
@@ -337,18 +331,39 @@ public class AdvancedEnemyGunModel {
         private void updateBestLogs() {
             Collections.sort(shortLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
+                            return 1;
+                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
+                            return -1;
+                        }
+                    }
                     return (int) signum((o2.shortAvgHitRate.getCurrentValue() - o2.shortAvgMissRate.getCurrentValue()) -
                             (o1.shortAvgHitRate.getCurrentValue() - o1.shortAvgMissRate.getCurrentValue()));
                 }
             });
             Collections.sort(midLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
+                            return 1;
+                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
+                            return -1;
+                        }
+                    }
                     return (int) signum((o2.midAvgHitRate.getCurrentValue() - o2.midAvgMissRate.getCurrentValue()) -
                             (o1.midAvgHitRate.getCurrentValue() - o1.midAvgMissRate.getCurrentValue()));
                 }
             });
             Collections.sort(longLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
+                            return 1;
+                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
+                            return -1;
+                        }
+                    }
                     return (int) signum((o2.longAvgHitRate.getCurrentValue() - o2.longAvgMissRate.getCurrentValue()) -
                             (o1.longAvgHitRate.getCurrentValue() - o1.longAvgMissRate.getCurrentValue()));
                 }
@@ -359,6 +374,13 @@ public class AdvancedEnemyGunModel {
                         return 1;
                     } else if (o2.enemyHitRate.getFireCount() == 0) {
                         return -1;
+                    }
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
+                            return 1;
+                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
+                            return -1;
+                        }
                     }
                     return (int) signum(o1.enemyHitRate.getHitRate() - o2.enemyHitRate.getHitRate());
                 }
@@ -467,6 +489,11 @@ public class AdvancedEnemyGunModel {
         res.midLogs.addAll(res.hitLogsSet);
         res.longLogs.addAll(res.hitLogsSet);
         res.enemyHitRateLogs.addAll(res.hitLogsSet);
+
+        res.shortLogs.addAll(res.visitLogsSet);
+        res.midLogs.addAll(res.visitLogsSet);
+        res.longLogs.addAll(res.visitLogsSet);
+        res.enemyHitRateLogs.addAll(res.visitLogsSet);
 
         res.updateBestLogs();
 

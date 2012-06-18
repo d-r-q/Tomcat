@@ -1,3 +1,8 @@
+V. 3.57e
+* bug in wave hit interval fixed
+* bug with using incorrect enemy pos for my waves launching fixed
+* calculate visit logs efficiency from start of battle (earlier, visit logs are added to processing only after enemy's 4 hits)
+
 v. 3.57d
 * adaptive data views weighting in gun removed
 * anti-surefer dataview #3 removed
