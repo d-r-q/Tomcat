@@ -331,39 +331,18 @@ public class AdvancedEnemyGunModel {
         private void updateBestLogs() {
             Collections.sort(shortLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
-                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
-                            return 1;
-                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
-                            return -1;
-                        }
-                    }
                     return (int) signum((o2.shortAvgHitRate.getCurrentValue() - o2.shortAvgMissRate.getCurrentValue()) -
                             (o1.shortAvgHitRate.getCurrentValue() - o1.shortAvgMissRate.getCurrentValue()));
                 }
             });
             Collections.sort(midLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
-                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
-                            return 1;
-                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
-                            return -1;
-                        }
-                    }
                     return (int) signum((o2.midAvgHitRate.getCurrentValue() - o2.midAvgMissRate.getCurrentValue()) -
                             (o1.midAvgHitRate.getCurrentValue() - o1.midAvgMissRate.getCurrentValue()));
                 }
             });
             Collections.sort(longLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
-                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
-                            return 1;
-                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
-                            return -1;
-                        }
-                    }
                     return (int) signum((o2.longAvgHitRate.getCurrentValue() - o2.longAvgMissRate.getCurrentValue()) -
                             (o1.longAvgHitRate.getCurrentValue() - o1.longAvgMissRate.getCurrentValue()));
                 }
@@ -375,13 +354,6 @@ public class AdvancedEnemyGunModel {
                     } else if (o2.enemyHitRate.getFireCount() == 0) {
                         return -1;
                     }
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
-                        if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
-                            return 1;
-                        } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
-                            return -1;
-                        }
-                    }
                     return (int) signum(o1.enemyHitRate.getHitRate() - o2.enemyHitRate.getHitRate());
                 }
             });
@@ -389,9 +361,17 @@ public class AdvancedEnemyGunModel {
 
         private Set<Log> getBestLogs() {
             final Set<Log> bestLogs = new HashSet<Log>();
+            final double hitRate = office.getStatisticsManager().getEnemyHitRate().getHitRate();
             for (List<Log> logs : this.bestLogs) {
-                for (int i = 0; i < BEST_LOGS_COUNT; i++) {
-                    bestLogs.add(logs.get(i));
+                int addedLogs = 0;
+                for (Log log : logs) {
+                    if (log.type == LogType.VISIT_LOG && hitRate < 0.05) {
+                        continue;
+                    }
+                    bestLogs.add(log);
+                    if (addedLogs++ == BEST_LOGS_COUNT) {
+                        break;
+                    }
                 }
             }
             return bestLogs;
@@ -436,7 +416,7 @@ public class AdvancedEnemyGunModel {
                 if (bearingOffsets == null) {
                     bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
                 }
-                final double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit)* bulletFlightTime;
+                final double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit) * bulletFlightTime;
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
                     log.midAvgHitRate.addValue(logEfficiency);

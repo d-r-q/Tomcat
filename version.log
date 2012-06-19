@@ -1,3 +1,6 @@
+v. 3.58
+* Flattener enabling algorithm changed - now flattener enabled only if enemy hit rate > 5%
+
 v. 3.57f
 * bug introduced in version 3.57e with visit logs processing fixed
 
