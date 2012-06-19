@@ -1,4 +1,7 @@
-V. 3.57e
+v. 3.57f
+* bug introduced in version 3.57e with visit logs processing fixed
+
+v. 3.57e
 * bug in wave hit interval fixed
 * bug with using incorrect enemy pos for my waves launching fixed
 * calculate visit logs efficiency from start of battle (earlier, visit logs are added to processing only after enemy's 4 hits)

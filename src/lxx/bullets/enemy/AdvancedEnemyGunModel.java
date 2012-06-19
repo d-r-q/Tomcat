@@ -331,7 +331,7 @@ public class AdvancedEnemyGunModel {
         private void updateBestLogs() {
             Collections.sort(shortLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
                         if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
                             return 1;
                         } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
@@ -344,7 +344,7 @@ public class AdvancedEnemyGunModel {
             });
             Collections.sort(midLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
                         if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
                             return 1;
                         } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
@@ -357,7 +357,7 @@ public class AdvancedEnemyGunModel {
             });
             Collections.sort(longLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
                         if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
                             return 1;
                         } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
@@ -375,7 +375,7 @@ public class AdvancedEnemyGunModel {
                     } else if (o2.enemyHitRate.getFireCount() == 0) {
                         return -1;
                     }
-                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() == 4) {
+                    if (office.getStatisticsManager().getEnemyHitRate().getHitCount() <= 4) {
                         if (o1.type == LogType.VISIT_LOG && o2.type == LogType.HIT_LOG) {
                             return 1;
                         } else if (o2.type == LogType.VISIT_LOG && o1.type == LogType.HIT_LOG) {
