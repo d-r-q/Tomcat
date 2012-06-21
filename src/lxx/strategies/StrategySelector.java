@@ -8,6 +8,7 @@ import lxx.Tomcat;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.office.Office;
 import lxx.office.PropertiesManager;
+import lxx.strategies.bullet_shielding.BulletShieldingStrategy;
 import lxx.strategies.challenges.MCChallengerStrategy;
 import lxx.strategies.challenges.TCChallengerStrategy;
 import lxx.strategies.duel.DuelFirePowerSelector;
@@ -43,6 +44,12 @@ public class StrategySelector {
         if ("MCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode"))) {
             strategies.add(new MCChallengerStrategy(robot, wsm, targetManager, enemyBulletManager));
         }
+
+        final BulletShieldingStrategy bsStrategy = new BulletShieldingStrategy(robot,
+                wsm,
+                tomcatClaws,
+                new DuelFirePowerSelector(office.getStatisticsManager()), targetManager, enemyBulletManager, office);
+        strategies.add(bsStrategy);
 
         final DuelStrategy duelStrategy = new DuelStrategy(robot,
                 wsm,

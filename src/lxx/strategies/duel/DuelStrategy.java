@@ -18,12 +18,12 @@ import static java.lang.Math.signum;
 public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelector {
 
     private final TargetManager targetManager;
-    private final EnemyBulletManager enemyBulletManager;
+    protected final EnemyBulletManager enemyBulletManager;
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
     private final Movement withBulletsMovement;
 
-    private Target target;
+    protected Target target;
 
     public DuelStrategy(Tomcat robot,
                         Movement withBulletsMovement,

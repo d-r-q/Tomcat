@@ -6,6 +6,7 @@ package lxx.utils;
 
 import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
+import lxx.paint.LXXGraphics;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
@@ -256,6 +257,24 @@ public class LXXUtils {
         }
 
         return res.toArray(new APoint[res.size()]);
+    }
+
+    public static APoint[] intersection(APoint center1, double r1, APoint center2, double r2) {
+        final double d = center1.aDistance(center2);
+        if (d > r1 + r2 || r1 > d || r2 > d) {
+            return new LXXPoint[0];
+        } else if (Utils.isNear(d, r1 + r2)) {
+            return new APoint[]{center1.project(center1.angleTo(center2), r1)};
+        }
+
+        final double a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+        final double alpha = QuickMath.acos(a / r1);
+        final double baseAlpha = center1.angleTo(center2);
+
+        return new APoint[]{
+                center1.project(baseAlpha - alpha, r1),
+                center1.project(baseAlpha + alpha, r1)
+        };
     }
 
     public static int getRoundTime(long time, int round) {

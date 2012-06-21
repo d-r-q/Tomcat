@@ -163,6 +163,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         return bulletsOnAir;
     }
 
+    public APoint getDestination() {
+        return prevPrediction.minDangerPoint;
+    }
+
     public void paint(LXXGraphics g) {
         if (prevPrediction == null) {
             return;
