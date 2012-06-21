@@ -71,27 +71,15 @@ public class TomcatClaws implements Gun {
     private double getBearingOffset(Target t, double bulletSpeed, final TurnSnapshot snapshot) {
         dataViewsPredictions = new HashMap<DataView, List<IntervalDouble>>();
         futurePoses = new ArrayList<APoint>();
-        final List<IntervalDoubleDanger> botIntervalsRadians = new ArrayList<IntervalDoubleDanger>();
-        final Map<APoint, IntervalDoubleDanger> ivalCache = new HashMap<APoint, IntervalDoubleDanger>();
-        final HashMap<TurnSnapshot, APoint> futurePosesCache = new HashMap<TurnSnapshot, APoint>();
-        final double angleToTarget = robotPosAtFireTime.angleTo(t);
+        final List<IntervalDouble> botIntervalsRadians = new ArrayList<IntervalDouble>();
 
+        final HashMap<TurnSnapshot, IntervalDouble> hitIvalsCache = new HashMap<TurnSnapshot, IntervalDouble>();
         for (DataView dv : dataViewManager.getDuelDataViews()) {
-            final List<APoint> viewFuturePoses = getFuturePoses(t, dv.getDataSet(snapshot), bulletSpeed, futurePosesCache);
+            final List<IntervalDouble> viewFuturePoses = getHitIvals(t, dv.getDataSet(snapshot), bulletSpeed, hitIvalsCache);
             final List<IntervalDouble> viewIvals = new ArrayList<IntervalDouble>();
-            for (APoint pnt : viewFuturePoses) {
-                IntervalDoubleDanger cachedIval = ivalCache.get(pnt);
-                if (cachedIval == null) {
-                    final double angleToPnt = robotPosAtFireTime.angleTo(pnt);
-                    final double bearingOffset = Utils.normalRelativeAngle(angleToPnt - angleToTarget);
-                    final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.75;
-                    final double bo1 = bearingOffset - botWidth;
-                    final double bo2 = bearingOffset + botWidth;
-                    cachedIval = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), 1);
-                    ivalCache.put(pnt, cachedIval);
-                }
-                botIntervalsRadians.add(cachedIval);
-                viewIvals.add(cachedIval);
+            for (IntervalDouble ival : viewFuturePoses) {
+                botIntervalsRadians.add(ival);
+                viewIvals.add(ival);
             }
             dataViewsPredictions.put(dv, viewIvals);
         }
@@ -101,14 +89,14 @@ public class TomcatClaws implements Gun {
         BearingOffsetDanger maxDangerBo = new BearingOffsetDanger(0, 0);
         for (double wavePointBearingOffset = -MAX_BEARING_OFFSET; wavePointBearingOffset <= MAX_BEARING_OFFSET + LXXConstants.RADIANS_0_1; wavePointBearingOffset += BEARING_OFFSET_STEP) {
             double bearingOffsetDanger = 0;
-            for (IntervalDoubleDanger ival : botIntervalsRadians) {
+            for (IntervalDouble ival : botIntervalsRadians) {
                 if (ival.a > wavePointBearingOffset) {
                     break;
                 } else if (ival.b < wavePointBearingOffset) {
                 } else if (abs(wavePointBearingOffset - ival.center()) < ival.getLength() / 4) {
-                    bearingOffsetDanger += ival.danger;
+                    bearingOffsetDanger += 1;
                 } else {
-                    bearingOffsetDanger += (ival.getLength() / 4) / abs(wavePointBearingOffset - ival.center()) * ival.danger;
+                    bearingOffsetDanger += (ival.getLength() / 4) / abs(wavePointBearingOffset - ival.center());
                 }
             }
 
@@ -121,25 +109,26 @@ public class TomcatClaws implements Gun {
         return maxDangerBo.bearingOffset;
     }
 
-    private List<APoint> getFuturePoses(Target t, Collection<TurnSnapshot> starts, double bulletSpeed, Map<TurnSnapshot, APoint> futurePosesCache) {
-        final List<APoint> futurePoses = new ArrayList<APoint>();
+    private List<IntervalDouble> getHitIvals(Target t, Collection<TurnSnapshot> starts, double bulletSpeed, Map<TurnSnapshot, IntervalDouble> hitIvalsCache) {
+        final List<IntervalDouble> hitIvals = new ArrayList<IntervalDouble>();
         for (TurnSnapshot start : starts) {
-            APoint futurePos = futurePosesCache.get(start);
-            if (futurePos == null) {
-                futurePos = getFuturePos(t, start, bulletSpeed);
-                futurePosesCache.put(start, futurePos);
+            IntervalDouble hitIvalPos = hitIvalsCache.get(start);
+            if (hitIvalPos == null) {
+                hitIvalPos = getHitIval(t, start, bulletSpeed);
+                hitIvalsCache.put(start, hitIvalPos);
             }
 
-            if (futurePos != null) {
-                futurePoses.add(futurePos);
+            if (hitIvalPos != null) {
+                hitIvals.add(hitIvalPos);
             }
         }
-        return futurePoses;
+        return hitIvals;
     }
 
-    private APoint getFuturePos(Target t, TurnSnapshot start, double bulletSpeed) {
+    private IntervalDouble getHitIval(Target t, TurnSnapshot start, double bulletSpeed) {
         final LXXPoint targetPos = t.getPosition();
         APoint futurePos = new LXXPoint(targetPos);
+        final IntervalDouble hitIval = new IntervalDouble();
 
         TurnSnapshot currentSnapshot = start.next;
         currentSnapshot = skip(currentSnapshot, AIMING_TIME);
@@ -149,27 +138,31 @@ public class TomcatClaws implements Gun {
         final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;
         long timeDelta;
         double bulletTravelledDistance = bulletSpeed;
-        while ((bs = isBulletHitEnemy(futurePos, bulletTravelledDistance)) == BulletState.COMING) {
+        while ((bs = isBulletHitEnemy(futurePos, bulletTravelledDistance)) != BulletState.PASSED) {
             if (currentSnapshot == null) {
                 return null;
             }
             final DeltaVector dv = LXXUtils.getEnemyDeltaVector(start, currentSnapshot);
             final double alpha = absoluteHeadingRadians + dv.getAlphaRadians();
             futurePos = targetPos.project(alpha, dv.getLength());
+
+            if (bs == BulletState.HITTING) {
+                final double botWidth = LXXUtils.getRobotWidthInRadians(robotPosAtFireTime, futurePos) / 2;
+                final double bo = LXXUtils.bearingOffset(robotPosAtFireTime, t, futurePos);
+                hitIval.extend(bo - botWidth);
+                hitIval.extend(bo + botWidth);
+            }
+
             if (!battleField.contains(futurePos)) {
                 return null;
             }
             timeDelta = currentSnapshot.getTime() - start.getTime() - AIMING_TIME;
             bulletTravelledDistance = timeDelta * bulletSpeed;
-            int minBulletFlightTime = max((int) ((robotPosAtFireTime.aDistance(futurePos) - bulletTravelledDistance) / speedSum) - 1, 1);
+            int minBulletFlightTime = max((int) ((robotPosAtFireTime.aDistance(futurePos) - bulletTravelledDistance - LXXConstants.ROBOT_SIDE_HALF_SIZE) / speedSum) - 1, 1);
             currentSnapshot = skip(currentSnapshot, minBulletFlightTime);
         }
 
-        if (bs == BulletState.PASSED) {
-            System.out.println("[WARN] Future pos calculation error");
-        }
-
-        return futurePos;
+        return hitIval;
     }
 
     private TurnSnapshot skip(TurnSnapshot start, int count) {

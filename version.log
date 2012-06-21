@@ -1,3 +1,6 @@
+v. 3.58a
+* Precise intersection added to gun
+
 v. 3.58
 * Flattener enabling algorithm changed - now flattener enabled only if enemy hit rate > 5%
 
