@@ -33,7 +33,6 @@ public class Wave {
 
     private boolean isPassed = false;
     private IntervalDouble hitBearingOffsetInterval;
-    private LXXBullet carriedBullet;
     private LXXRobot target;
 
     public Wave(LXXRobotSnapshot sourceState, LXXRobotSnapshot targetState, LXXRobot target, double speed, long launchTime) {
@@ -50,7 +49,7 @@ public class Wave {
         return (target.getTime() - launchTime + 1) * speed;
     }
 
-    public boolean check() {
+    public void check() {
         final double width = target.getWidth();
         final double height = target.getHeight();
         final Rectangle targetRect = new Rectangle((int) (target.getX() - width / 2), (int) (target.getY() - height / 2),
@@ -59,7 +58,6 @@ public class Wave {
         final LXXPoint bulletPos = (LXXPoint) sourceState.project(angleToTarget, getTraveledDistance());
         final boolean contains = targetRect.contains(bulletPos);
         if (contains) {
-            isPassed = true;
             final double bo = Utils.normalRelativeAngle(angleToTarget - noBearingOffset);
             final double targetWidth = LXXUtils.getRobotWidthInRadians(angleToTarget, sourceState.aDistance(target));
             final IntervalDouble currentInterval = new IntervalDouble(bo - targetWidth / 2, bo + targetWidth / 2);
@@ -69,8 +67,9 @@ public class Wave {
                 hitBearingOffsetInterval.a = min(hitBearingOffsetInterval.a, currentInterval.a);
                 hitBearingOffsetInterval.b = max(hitBearingOffsetInterval.b, currentInterval.b);
             }
+        } else if (getTraveledDistance() > sourceState.aDistance(target)) {
+            isPassed = true;
         }
-        return contains;
     }
 
     public long getLaunchTime() {
@@ -87,14 +86,6 @@ public class Wave {
 
     public boolean isPassed() {
         return isPassed;
-    }
-
-    public LXXBullet getCarriedBullet() {
-        return carriedBullet;
-    }
-
-    public void setCarriedBullet(LXXBullet carriedBullet) {
-        this.carriedBullet = carriedBullet;
     }
 
     public LXXRobotSnapshot getSourceState() {

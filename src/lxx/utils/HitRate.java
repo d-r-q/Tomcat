@@ -21,8 +21,8 @@ public class HitRate {
         format.setMaximumIntegerDigits(3);
     }
 
-    private int hitCount = 0;
-    private int missCount = 0;
+    private double hitCount = 0;
+    private double missCount = 0;
 
     public void hit() {
         hitCount++;
@@ -32,7 +32,15 @@ public class HitRate {
         missCount++;
     }
 
-    public int getMissCount() {
+    public void hit(double hit) {
+        hitCount += hit;
+    }
+
+    public void miss(double miss) {
+        missCount += miss;
+    }
+
+    public double getMissCount() {
         return missCount;
     }
 
@@ -44,14 +52,11 @@ public class HitRate {
         if (hitCount == 0 && missCount == 0) {
             return 0;
         }
-        return (double) hitCount / (double) (hitCount + missCount);
+        return hitCount / (hitCount + missCount);
     }
 
     public int getFireCount() {
-        return hitCount + missCount;
+        return (int) (hitCount + missCount);
     }
 
-    public int getHitCount() {
-        return hitCount;
-    }
 }

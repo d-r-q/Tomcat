@@ -26,9 +26,10 @@ public class AttributesManager {
     public static final Attribute enemySpeed = new Attribute("Enemy speed", 0, 8, new EnemySpeed());
     public static final Attribute enemyAbsoluteHeading = new Attribute("Enemy heading", 0, 360, new EnemyHeading());
     public static final Attribute enemyAcceleration = new Attribute("Enemy acceleration", -8, 1, new EnemyAcceleration());
-    public static final Attribute enemyTurnRate = new Attribute("Enemy turn rate", -10.2, 10.2, new EnemyTurnRate());
+    public static final Attribute enemyTurnSign = new Attribute("Enemy turn sign", -1, 1, new EnemyTurnSign());
 
     public static final Attribute enemyDistanceToForwardWall = new Attribute("Enemy forward wall distance", 0, 1700, new EnemyDistanceToForwardWall());
+    public static final Attribute enemyDistanceToReverseWall = new Attribute("Enemy reverse wall distance", 0, 1700, new EnemyDistanceToReverseWall());
     public static final Attribute enemyBearingToForwardWall = new Attribute("Enemy bearing to head on wall", -90, 90, new EnemyBearingToHOWall());
 
     public static final Attribute firstBulletFlightTimeToEnemy = new Attribute("First bullet flight time", 0, 75, new FirstBulletFlightTimeToEnemy());
@@ -36,8 +37,12 @@ public class AttributesManager {
     public static final Attribute enemyBearingOffsetOnSecondBullet = new Attribute("Enemy bearing offset on second bullet", -50, 50, new EnemyBearingOffsetOnSecondBullet());
     public static final Attribute enemyTimeSinceLastDirChange = new Attribute("Enemy time since last direction change", 0, 2000, new EnemyTimeSinceDirChange());
     public static final Attribute enemyBearingToMe = new Attribute("Enemy bearing to me", -180, 180, new EnemyBearingToMe());
-    public static final Attribute lastVisitedGF1 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(1));
-    public static final Attribute lastVisitedGF2 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(2));
+    public static final Attribute lastVisitedGF1 = new Attribute("Enemy last visited gf 1", -1.1, 1.1, new LastVisitedGF(1));
+    public static final Attribute lastVisitedGF2 = new Attribute("Enemy last visited gf 2", -1.1, 1.1, new LastVisitedGF(2));
+    public static final Attribute enemyHitsCollected = new Attribute("Enemy hits collected", 0, 600, new EnemyHitsCollected());
+    public static final Attribute enemyWavesCollected = new Attribute("Enemy waves collected", 0, 5000, new EnemyWavesCollected());
+    public static final Attribute enemyLateralDirection = new Attribute("Enemy lateral direction", -1, 1, new EnemyLateralDirection());
+    public static final Attribute enemyLast10TicksDist = new Attribute("Enemy last 10 ticks dist", 0, Rules.MAX_VELOCITY * 10 + 1, new EnemyLateralDirection());
 
     public static final Attribute myLateralSpeed = new Attribute("My lateral speed", 0, 8, new MyLateralSpeed());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAcceleration());
@@ -53,7 +58,7 @@ public class AttributesManager {
             enemySpeed,
             enemyAbsoluteHeading,
             enemyAcceleration,
-            enemyTurnRate,
+            enemyTurnSign,
 
             enemyDistanceToForwardWall,
             enemyBearingToForwardWall,
@@ -65,6 +70,10 @@ public class AttributesManager {
             enemyBearingToMe,
             lastVisitedGF1,
             lastVisitedGF2,
+            enemyHitsCollected,
+            enemyWavesCollected,
+            enemyLateralDirection,
+            enemyLast10TicksDist,
 
             myLateralSpeed,
             myAcceleration,

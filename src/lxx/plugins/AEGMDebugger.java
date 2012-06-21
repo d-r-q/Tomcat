@@ -42,6 +42,4 @@ public class AEGMDebugger implements Plugin, BulletManagerListener {
     public void bulletIntercepted(LXXBullet bullet) {
     }
 
-    public void bulletPassing(LXXBullet bullet) {
-    }
 }

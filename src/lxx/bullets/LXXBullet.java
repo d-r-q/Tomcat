@@ -36,8 +36,6 @@ public class LXXBullet {
 
         firePosition = new LXXPoint(wave.getSourceState());
         state = LXXBulletState.ON_AIR;
-        
-        w.setCarriedBullet(this);
     }
 
     public LXXBullet(Bullet bullet, Wave w) {

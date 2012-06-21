@@ -40,9 +40,8 @@ public class EnemyBearingOffsetOnFirstBullet implements AttributeValueExtractor 
         } while (bulletFlightTime < 1);
 
         final LXXRobotSnapshot targetState = firstBullet.getTargetState();
-        final APoint interceptPos = enemy.project(enemy.getAbsoluteHeadingRadians(), enemy.getSpeed() * bulletFlightTime);
         double lateralDirection = LXXUtils.lateralDirection(firstBullet.getOwnerState(), targetState);
-        return toDegrees(firstBullet.getBearingOffsetRadians(interceptPos)) * lateralDirection;
+        return toDegrees(firstBullet.getBearingOffsetRadians(targetState)) * lateralDirection;
     }
 
 }

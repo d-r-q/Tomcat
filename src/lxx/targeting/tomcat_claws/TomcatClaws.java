@@ -6,6 +6,7 @@ package lxx.targeting.tomcat_claws;
 
 import lxx.Tomcat;
 import lxx.bullets.enemy.BearingOffsetDanger;
+import lxx.office.PropertiesManager;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;
@@ -27,6 +28,8 @@ public class TomcatClaws implements Gun {
     private static final double BEARING_OFFSET_STEP = LXXConstants.RADIANS_0_5;
     private static final double MAX_BEARING_OFFSET = LXXConstants.RADIANS_45;
 
+    private static AvgValue avgMinDiff = new AvgValue(5000);
+
     private static final int AIMING_TIME = 2;
 
     private final Tomcat robot;
@@ -37,7 +40,7 @@ public class TomcatClaws implements Gun {
     private List<APoint> futurePoses;
     private Map<Double, Double> bearingOffsetDangers;
     private double bestBearingOffset;
-    private Map<DataView, List<IntervalDouble>> dataViewsPredictions;
+    private Map<DataView, List<IntervalDoubleDanger>> dataViewsPredictions;
 
     public TomcatClaws(Tomcat robot, TurnSnapshotsLog log, DataViewManager dataViewManager) {
         this.robot = robot;
@@ -52,7 +55,7 @@ public class TomcatClaws implements Gun {
 
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
             futurePoses = null;
-            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos, new HashMap<DataView, List<IntervalDouble>>()));
+            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos, new HashMap<DataView, List<IntervalDoubleDanger>>()));
         }
 
         if (futurePoses == null) {
@@ -69,32 +72,66 @@ public class TomcatClaws implements Gun {
     }
 
     private double getBearingOffset(Target t, double bulletSpeed, final TurnSnapshot snapshot) {
-        dataViewsPredictions = new HashMap<DataView, List<IntervalDouble>>();
+        dataViewsPredictions = new HashMap<DataView, List<IntervalDoubleDanger>>();
         futurePoses = new ArrayList<APoint>();
         final List<IntervalDoubleDanger> botIntervalsRadians = new ArrayList<IntervalDoubleDanger>();
         final Map<APoint, IntervalDoubleDanger> ivalCache = new HashMap<APoint, IntervalDoubleDanger>();
         final HashMap<TurnSnapshot, APoint> futurePosesCache = new HashMap<TurnSnapshot, APoint>();
         final double angleToTarget = robotPosAtFireTime.angleTo(t);
 
+        final AvgValue[] avgValues = new AvgValue[dataViewManager.getDuelDataViews().length];
+        int avgValueIdx = 0;
         for (DataView dv : dataViewManager.getDuelDataViews()) {
             final List<APoint> viewFuturePoses = getFuturePoses(t, dv.getDataSet(snapshot), bulletSpeed, futurePosesCache);
-            final List<IntervalDouble> viewIvals = new ArrayList<IntervalDouble>();
+
+            avgValues[avgValueIdx] = new AvgValue(viewFuturePoses.size());
+
+            final List<IntervalDoubleDanger> viewIvals = new ArrayList<IntervalDoubleDanger>();
             for (APoint pnt : viewFuturePoses) {
                 IntervalDoubleDanger cachedIval = ivalCache.get(pnt);
                 if (cachedIval == null) {
                     final double angleToPnt = robotPosAtFireTime.angleTo(pnt);
                     final double bearingOffset = Utils.normalRelativeAngle(angleToPnt - angleToTarget);
-                    final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.75;
+                    final double botWidth = LXXUtils.getRobotWidthInRadians(angleToPnt, robotPosAtFireTime.aDistance(pnt)) * 0.4;
                     final double bo1 = bearingOffset - botWidth;
                     final double bo2 = bearingOffset + botWidth;
                     cachedIval = new IntervalDoubleDanger(min(bo1, bo2), max(bo1, bo2), 1);
                     ivalCache.put(pnt, cachedIval);
                 }
-                botIntervalsRadians.add(cachedIval);
                 viewIvals.add(cachedIval);
+                avgValues[avgValueIdx].addValue(cachedIval.center());
             }
+
+            avgValueIdx++;
+
             dataViewsPredictions.put(dv, viewIvals);
         }
+
+        final AvgValue[] avgDiffSquares = new AvgValue[dataViewManager.getDuelDataViews().length];
+        int avgDiffSquaresIdx = 0;
+        double minDiff = Integer.MAX_VALUE;
+        DataView bestView = null;
+        for (DataView dv : dataViewManager.getDuelDataViews()) {
+            avgDiffSquares[avgDiffSquaresIdx] = new AvgValue(dataViewsPredictions.get(dv).size());
+            for (IntervalDouble ival : dataViewsPredictions.get(dv)) {
+                avgDiffSquares[avgDiffSquaresIdx].addValue(Math.pow(ival.center() - avgValues[avgDiffSquaresIdx].getCurrentValue(), 2));
+            }
+
+            final double avgDiff = Math.sqrt(avgDiffSquares[avgDiffSquaresIdx].getCurrentValue());
+            if (avgDiff < minDiff) {
+                minDiff = avgDiff;
+                bestView = dv;
+            }
+
+            avgDiffSquaresIdx++;
+        }
+        avgMinDiff.addValue(minDiff);
+        PropertiesManager.setDebugProperty("Avg min diff", avgMinDiff.toString());
+
+        for (IntervalDoubleDanger ival : dataViewsPredictions.get(bestView)) {
+            botIntervalsRadians.add(ival);
+        }
+
         Collections.sort(botIntervalsRadians);
 
         bearingOffsetDangers = new LinkedHashMap<Double, Double>();
@@ -105,10 +142,10 @@ public class TomcatClaws implements Gun {
                 if (ival.a > wavePointBearingOffset) {
                     break;
                 } else if (ival.b < wavePointBearingOffset) {
-                } else if (abs(wavePointBearingOffset - ival.center()) < ival.getLength() / 4) {
+                } else if (abs(wavePointBearingOffset - ival.center()) < ival.getLength() / 2) {
                     bearingOffsetDanger += ival.danger;
                 } else {
-                    bearingOffsetDanger += (ival.getLength() / 4) / abs(wavePointBearingOffset - ival.center()) * ival.danger;
+                    bearingOffsetDanger += (ival.getLength() / 2) / abs(wavePointBearingOffset - ival.center()) * ival.danger;
                 }
             }
 

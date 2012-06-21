@@ -138,4 +138,8 @@ public class RobotImage implements LXXRobotSnapshot {
     public long getSnapshotTime() {
         throw new UnsupportedOperationException();
     }
+
+    public double getLast10TicksDist() {
+        throw new UnsupportedOperationException();
+    }
 }

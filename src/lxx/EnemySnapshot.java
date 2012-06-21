@@ -1,5 +1,6 @@
 package lxx;
 
+import lxx.office.StatisticsManager;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -13,15 +14,20 @@ public class EnemySnapshot extends RobotSnapshot {
     private final List<Double> visits;
     private final double turnRateRadians;
 
+    private final int hitsCollected;
+    private final int wavesCollected;
+
     public EnemySnapshot(LXXRobot currentState, List<Double> visits) {
         super(currentState);
         this.visits = visits;
         lastDirChangeTime = 0;
         turnRateRadians = 0;
+        hitsCollected = StatisticsManager.enemyHitsDataCount;
+        wavesCollected = StatisticsManager.enemyWavesDataCount;
     }
 
-    public EnemySnapshot(EnemySnapshot prevState, LXXRobot currentState) {
-        super(prevState, currentState);
+    public EnemySnapshot(EnemySnapshot prevState, LXXRobot currentState, double last10TicksDist) {
+        super(prevState, currentState, last10TicksDist);
 
         if (currentState.isAlive() && signum(prevState.getAcceleration()) != signum(getAcceleration()) &&
                 getSpeed() > 0.1 && getSpeed() < 7.9) {
@@ -46,6 +52,8 @@ public class EnemySnapshot extends RobotSnapshot {
         this.turnRateRadians = turnRateRadians;
 
         visits = prevState.getVisitedGuessFactors();
+        hitsCollected = StatisticsManager.enemyHitsDataCount;
+        wavesCollected = StatisticsManager.enemyWavesDataCount;
     }
 
     public EnemySnapshot(EnemySnapshot state1, EnemySnapshot state2, double interpolationK) {
@@ -53,6 +61,8 @@ public class EnemySnapshot extends RobotSnapshot {
         lastDirChangeTime = (long) (state1.getLastDirChangeTime() + (state2.getLastDirChangeTime() - state1.getLastDirChangeTime()) * interpolationK);
         visits = state2.getVisitedGuessFactors();
         turnRateRadians = state1.getTurnRateRadians() + (state2.getTurnRateRadians() - state1.getTurnRateRadians()) * interpolationK;
+        hitsCollected = (int) round(state1.getHitsCollected() + (state2.getHitsCollected() - state1.getHitsCollected()) * interpolationK);
+        wavesCollected = (int) round(state1.getWavesCollected() + (state2.getWavesCollected() - state1.getWavesCollected()) * interpolationK);
     }
 
     public long getLastDirChangeTime() {
@@ -81,5 +91,13 @@ public class EnemySnapshot extends RobotSnapshot {
 
     public void setGunHeat(double gunHeat) {
         this.gunHeat = gunHeat;
+    }
+
+    public int getHitsCollected() {
+        return hitsCollected;
+    }
+
+    public int getWavesCollected() {
+        return wavesCollected;
     }
 }

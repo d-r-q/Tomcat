@@ -175,9 +175,6 @@ public class BulletManager implements RobotListener, WaveCallback {
         return new LinkedList<LXXBullet>(bullets);
     }
 
-    public void wavePassing(Wave w) {
-    }
-
     public void waveBroken(Wave w) {
         final LXXBullet b = bulletsByWaves.remove(w);
         final double lateralDirection = LXXUtils.lateralDirection(w.getSourceState(), w.getTargetState());

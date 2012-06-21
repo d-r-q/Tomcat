@@ -18,6 +18,4 @@ public interface BulletManagerListener {
 
     void bulletIntercepted(LXXBullet bullet);
 
-    void bulletPassing(LXXBullet bullet);
-
 }

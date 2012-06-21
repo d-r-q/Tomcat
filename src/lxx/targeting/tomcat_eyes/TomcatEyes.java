@@ -61,9 +61,6 @@ public class TomcatEyes implements BulletManagerListener {
         }
     }
 
-    public void bulletPassing(LXXBullet bullet) {
-    }
-
     public void bulletMiss(LXXBullet bullet) {
     }
 

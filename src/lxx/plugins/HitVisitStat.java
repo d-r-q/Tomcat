@@ -111,12 +111,6 @@ public class HitVisitStat implements Plugin, BulletManagerListener, WaveCallback
     public void battleEnded() {
     }
 
-    public void wavePassing(Wave w) {
-    }
-
     public void bulletMiss(LXXBullet bullet) {
-    }
-
-    public void bulletPassing(LXXBullet bullet) {
     }
 }

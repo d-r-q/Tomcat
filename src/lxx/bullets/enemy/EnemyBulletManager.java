@@ -98,13 +98,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
     }
 
-    public void wavePassing(Wave w) {
-        final LXXBullet lxxBullet = getLXXBullet(w);
-        for (BulletManagerListener listener : listeners) {
-            listener.bulletPassing(lxxBullet);
-        }
-    }
-
     public void waveBroken(Wave w) {
         TimeProfileProperties.EBM_WAVE_TIME.start();
         final LXXBullet lxxBullet = getLXXBullet(w);

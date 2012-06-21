@@ -10,8 +10,6 @@ package lxx.utils.wave;
  */
 public interface WaveCallback {
 
-    void wavePassing(Wave w);
-
     void waveBroken(Wave w);
 
 }

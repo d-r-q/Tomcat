@@ -17,6 +17,8 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
     protected final double acceleration;
     protected final long snapshotTime;
     protected double gunHeat;
+    private final double last10TicksDist;
+
 
     public RobotSnapshot(LXXRobot currentState) {
         headingRadians = currentState.getHeadingRadians();
@@ -31,9 +33,10 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
 
         lastDirection = 1;
         acceleration = 0;
+        last10TicksDist = 0;
     }
 
-    public RobotSnapshot(LXXRobotSnapshot prevState, LXXRobot currentState) {
+    public RobotSnapshot(LXXRobotSnapshot prevState, LXXRobot currentState, double last10TicksDist) {
         snapshotTime = currentState.getTime();
         headingRadians = currentState.getHeadingRadians();
 
@@ -52,6 +55,7 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
         }
 
         acceleration = LXXUtils.calculateAcceleration(prevState, currentState);
+        this.last10TicksDist = last10TicksDist;
     }
 
     public RobotSnapshot(LXXRobotSnapshot state1, LXXRobotSnapshot state, double interpolationK) {
@@ -65,12 +69,15 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
                 state1.getY() + (state.getY() - state1.getY()) * interpolationK);
 
         acceleration = state1.getAcceleration() + (state.getAcceleration() - state1.getAcceleration()) * interpolationK;
+        last10TicksDist = state1.getLast10TicksDist() + (state.getLast10TicksDist() - state1.getLast10TicksDist()) * interpolationK;
 
         battleField = state1.getBattleField();
         name = state1.getName();
 
         lastDirection = state.getLastDirection();
     }
+
+
 
     public double getVelocity() {
         return velocity;
@@ -161,6 +168,10 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
 
     public long getSnapshotTime() {
         return snapshotTime;
+    }
+
+    public double getLast10TicksDist() {
+        return last10TicksDist;
     }
 
 }

@@ -1,3 +1,6 @@
+v. 3.59
+* New gun data management: 3 views (main with no time dependency, anti-surfer with direct hits count dependency and anti-flattener with reverse visit dependency) and for each bullet used data only from view with minimum of standard deviation
+
 v. 3.58
 * Flattener enabling algorithm changed - now flattener enabled only if enemy hit rate > 5%
 

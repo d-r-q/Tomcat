@@ -13,6 +13,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -26,6 +27,7 @@ import static java.lang.Math.max;
 public class Target implements Serializable, LXXRobot {
 
     private final List<Event> eventsList = new ArrayList<Event>(15);
+    private final LinkedList<LXXPoint> last10Positions = new LinkedList<LXXPoint>();
 
     private final String name;
     private transient final BasicRobot owner;
@@ -66,7 +68,11 @@ public class Target implements Serializable, LXXRobot {
         if (prevSnapshot == null) {
             currentSnapshot = new EnemySnapshot(this, targetData.getVisitedGuessFactors());
         } else {
-            currentSnapshot = new EnemySnapshot(prevSnapshot, this);
+            last10Positions.add(new LXXPoint(getX(), getY()));
+            if (last10Positions.size() > 10) {
+                last10Positions.removeFirst();
+            }
+            currentSnapshot = new EnemySnapshot(prevSnapshot, this, last10Positions.getFirst().aDistance(last10Positions.getLast()));
         }
         updateState();
 

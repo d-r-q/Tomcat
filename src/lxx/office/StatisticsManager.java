@@ -10,13 +10,16 @@ import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.events.TickEvent;
 import lxx.utils.HitRate;
+import lxx.utils.LXXUtils;
+import lxx.utils.wave.Wave;
+import lxx.utils.wave.WaveCallback;
 import robocode.*;
 
 /**
  * User: jdev
  * Date: 16.06.2010
  */
-public class StatisticsManager implements RobotListener, BulletManagerListener {
+public class StatisticsManager implements RobotListener, BulletManagerListener, WaveCallback {
 
     private static final int[] placeDeathCount = new int[11];
     private static final double[] placeEnergyCount = new double[11];
@@ -28,8 +31,14 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     private static HitRate myRawHitRate;
     private static HitRate enemyRawHitRate;
 
+    private static HitRate myEnergyHitRate;
+    private static HitRate enemyEnergyHitRate;
+
     private static int wallHits;
     private static int skippedTurns;
+
+    public static int enemyHitsDataCount;
+    public static int enemyWavesDataCount;
 
     private final Office office;
     private final Tomcat tomcat;
@@ -40,6 +49,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         if (myHitRate == null) {
             myHitRate = new HitRate();
             enemyHitRate = new HitRate();
+
+            myEnergyHitRate = new HitRate();
+            enemyEnergyHitRate = new HitRate();
 
             myRawHitRate = new HitRate();
             enemyRawHitRate = new HitRate();
@@ -52,10 +64,12 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
 
     public void onTick() {
         PropertiesManager.setDebugProperty(tomcat.getName() + " static hit rate", String.valueOf(myHitRate));
+        PropertiesManager.setDebugProperty(tomcat.getName() + " static energy hit rate", String.valueOf(myEnergyHitRate));
         PropertiesManager.setDebugProperty(tomcat.getName() + " miss count", String.valueOf(myHitRate.getMissCount()));
 
         if (tomcat.isDuel() && office.getTargetManager().hasDuelOpponent()) {
             PropertiesManager.setDebugProperty(office.getTargetManager().getDuelOpponentName() + " static hit rate", String.valueOf(enemyHitRate));
+            PropertiesManager.setDebugProperty(office.getTargetManager().getDuelOpponentName() + " static energy hit rate", String.valueOf(enemyEnergyHitRate));
         }
     }
 
@@ -95,14 +109,21 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     }
 
     public void bulletFired(LXXBullet bullet) {
+        if (bullet.getSourceState().getName().equals(tomcat.getName())) {
+            office.getWaveManager().addCallback(this, bullet.getWave());
+        }
     }
 
     public void bulletHit(LXXBullet bullet) {
         if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myHitRate.hit();
             myRawHitRate.hit();
+            myEnergyHitRate.hit(bullet.getBullet().getPower());
+
+            enemyHitsDataCount++;
         } else {
             enemyHitRate.hit();
+            enemyEnergyHitRate.hit(bullet.getBullet().getPower());
             enemyRawHitRate.hit();
         }
     }
@@ -110,9 +131,11 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     public void bulletMiss(LXXBullet bullet) {
         if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myHitRate.miss();
+            myEnergyHitRate.miss(bullet.getBullet().getPower());
             myRawHitRate.miss();
         } else {
             enemyHitRate.miss();
+            enemyEnergyHitRate.miss(LXXUtils.getBulletPower(bullet.getSpeed()));
             enemyRawHitRate.miss();
         }
     }
@@ -120,12 +143,12 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
     public void bulletIntercepted(LXXBullet bullet) {
         if (bullet.getSourceState().getName().equals(tomcat.getName())) {
             myRawHitRate.miss();
+            myEnergyHitRate.miss(bullet.getBullet().getPower());
+            enemyHitsDataCount++;
         } else {
+            enemyEnergyHitRate.miss(bullet.getBullet().getPower());
             enemyRawHitRate.miss();
         }
-    }
-
-    public void bulletPassing(LXXBullet bullet) {
     }
 
     public double getMyRawHitRate() {
@@ -134,5 +157,9 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
 
     public HitRate getEnemyHitRate() {
         return enemyHitRate;
+    }
+
+    public void waveBroken(Wave w) {
+        enemyWavesDataCount++;
     }
 }

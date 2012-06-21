@@ -10,4 +10,6 @@ public interface LXXRobotSnapshot extends LXXRobotState {
 
     long getSnapshotTime();
 
+    double getLast10TicksDist();
+
 }

@@ -24,48 +24,36 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
-    }, new double[]{0.25, 0.75}, "Main");
+            AttributesManager.enemyDistanceToReverseWall,
+            AttributesManager.enemyTimeSinceLastDirChange,
+            AttributesManager.enemyTurnSign,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyLast10TicksDist
+    }, "Main", SingleSourceDataView.TimeDependencyType.NO, 50000);
 
     private static final DataView asDataView = new SingleSourceDataView(new Attribute[]{
-            AttributesManager.enemyAcceleration,
-            AttributesManager.enemySpeed,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.firstBulletFlightTimeToEnemy,
-            AttributesManager.enemyBearingOffsetOnFirstBullet,
-            AttributesManager.enemyBearingOffsetOnSecondBullet,
-    }, new double[]{0.75, 0.25}, "Anti-surfer #1");
-
-    private static final DataView asDataView2 = new SingleSourceDataView(new Attribute[]{
-            AttributesManager.enemyAcceleration,
-            AttributesManager.enemySpeed,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToMe,
-            AttributesManager.firstBulletFlightTimeToEnemy,
-            AttributesManager.lastVisitedGF1,
-            AttributesManager.lastVisitedGF2,
-    }, new double[]{0.75, 0.25}, "Anti-surfer #2");
-
-    private static final DataView distanceDataView = new SingleSourceDataView(new Attribute[]{
-            AttributesManager.enemyAcceleration,
-            AttributesManager.enemySpeed,
-            AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToMe,
             AttributesManager.distBetween,
-            AttributesManager.enemyTurnRate
-    }, new double[]{0.5, 0.5}, "Distance");
-
-    private static final DataView timeSinceDirChangeDataView = new SingleSourceDataView(new Attribute[]{
-            AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
-            AttributesManager.enemyDistanceToForwardWall,
             AttributesManager.enemyBearingToMe,
-            AttributesManager.enemyTimeSinceLastDirChange,
-            AttributesManager.enemyTurnRate
-    }, new double[]{0.5, 0.5}, "Time since dir change");
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyDistanceToReverseWall,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.fireTimeDiff,
+            AttributesManager.enemyLateralDirection
+    }, "Anti-surfer", SingleSourceDataView.TimeDependencyType.DIRECT_HITS, 20000);
 
-    private DataView[] duelViews = {mainDataView, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView};
+    private static final DataView afDataView = new SingleSourceDataView(new Attribute[]{
+            AttributesManager.distBetween,
+            AttributesManager.enemySpeed,
+            AttributesManager.enemyBearingToMe,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.enemyDistanceToReverseWall,
+            AttributesManager.enemyBearingOffsetOnFirstBullet,
+            AttributesManager.fireTimeDiff,
+            AttributesManager.enemyLateralDirection
+    }, "Anti-flattener", SingleSourceDataView.TimeDependencyType.REVERCE_WAVES, 50000);
+
+    private DataView[] duelViews = {mainDataView, asDataView, afDataView};
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotLog;

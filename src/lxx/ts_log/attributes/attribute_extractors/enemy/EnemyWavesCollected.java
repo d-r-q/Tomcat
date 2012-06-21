@@ -1,23 +1,18 @@
-/*
- * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
- */
-
 package lxx.ts_log.attributes.attribute_extractors.enemy;
 
 import lxx.EnemySnapshot;
 import lxx.MySnapshot;
+import lxx.office.StatisticsManager;
 import lxx.ts_log.attributes.attribute_extractors.AttributeValueExtractor;
 
-import static java.lang.Math.toDegrees;
-
 /**
- * User: jdev
- * Date: 07.03.2010
+ * User: Aleksey Zhidkov
+ * Date: 19.06.12
  */
-public class EnemyTurnRate implements AttributeValueExtractor {
+public class EnemyWavesCollected implements AttributeValueExtractor {
 
     public double getAttributeValue(EnemySnapshot enemy, MySnapshot me) {
-        return toDegrees(enemy.getTurnRateRadians());
+        return enemy.getWavesCollected();
     }
 
 }
