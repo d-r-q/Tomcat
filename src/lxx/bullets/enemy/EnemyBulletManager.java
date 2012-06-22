@@ -15,6 +15,7 @@ import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
+import lxx.movement.OrbitDirection;
 import lxx.office.Office;
 import lxx.office.PropertiesManager;
 import lxx.paint.LXXGraphics;

@@ -11,6 +11,8 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
     private final BattleField battleField;
     private final double energy;
     private final String name;
+    private final double robotWidth;
+    private final double robotHeight;
     protected final double headingRadians;
     protected final double velocity;
     protected final int lastDirection;
@@ -31,6 +33,8 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
 
         lastDirection = 1;
         acceleration = 0;
+        robotWidth = currentState.getWidth();
+        robotHeight = currentState.getHeight();
     }
 
     public RobotSnapshot(LXXRobotSnapshot prevState, LXXRobot currentState) {
@@ -52,6 +56,8 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
         }
 
         acceleration = LXXUtils.calculateAcceleration(prevState, currentState);
+        robotWidth = currentState.getWidth();
+        robotHeight = currentState.getHeight();
     }
 
     public RobotSnapshot(LXXRobotSnapshot state1, LXXRobotSnapshot state, double interpolationK) {
@@ -70,6 +76,8 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
         name = state1.getName();
 
         lastDirection = state.getLastDirection();
+        robotWidth = state.getWidth();
+        robotHeight = state.getHeight();
     }
 
     public double getVelocity() {
@@ -144,11 +152,11 @@ public abstract class RobotSnapshot implements LXXRobotSnapshot {
     }
 
     public double getWidth() {
-        throw new UnsupportedOperationException();
+        return robotWidth;
     }
 
     public double getHeight() {
-        throw new UnsupportedOperationException();
+        return robotHeight;
     }
 
     public double getAcceleration() {

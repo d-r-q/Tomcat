@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.strategies.duel;
+package lxx.movement;
 
 import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
@@ -11,6 +11,7 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.EnemyBulletPredictionData;
 import lxx.strategies.MovementDecision;
+import lxx.strategies.duel.DistanceController;
 import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;

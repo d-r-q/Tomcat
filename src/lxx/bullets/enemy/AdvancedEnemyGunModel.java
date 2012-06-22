@@ -9,6 +9,7 @@ import lxx.bullets.LXXBullet;
 import lxx.data_analysis.DataPoint;
 import lxx.data_analysis.LxxDataPoint;
 import lxx.data_analysis.r_tree.RTree;
+import lxx.movement.OrbitDirection;
 import lxx.office.Office;
 import lxx.targeting.GunType;
 import lxx.ts_log.TurnSnapshot;
@@ -93,7 +94,12 @@ public class AdvancedEnemyGunModel {
 
     public void processVisit(LXXBullet bullet) {
         final double direction = bullet.getTargetLateralDirection();
-        final double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+
+        final double mae = bullet.getWave().getHitBearingOffsetInterval().center() > 0
+                ? LXXUtils.getMaxEscapeAngle(bullet.getFirePosition(), 0, bullet.getSpeed(), bullet.getTargetState(), OrbitDirection.CLOCKWISE)
+                : LXXUtils.getMaxEscapeAngle(bullet.getFirePosition(), 0, bullet.getSpeed(), bullet.getTargetState(), OrbitDirection.COUNTER_CLOCKWISE);
+
+        final double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / mae;
         getLogSet(bullet.getSourceState().getName()).learn(bullet.getAimPredictionData().getTs(), new GuessFactor(undirectedGuessFactor * direction));
     }
 
@@ -214,7 +220,8 @@ public class AdvancedEnemyGunModel {
 
             final double lateralDirection = LXXUtils.lateralDirection(predicate.enemySnapshot, predicate.mySnapshot);
             final double bulletSpeed = Rules.getBulletSpeed(firePower);
-            final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
+            final double cwMae = LXXUtils.getMaxEscapeAngle(predicate.enemySnapshot, 0, bulletSpeed, predicate.mySnapshot, OrbitDirection.CLOCKWISE);
+            final double ccwMae = LXXUtils.getMaxEscapeAngle(predicate.enemySnapshot, 0, bulletSpeed, predicate.mySnapshot, OrbitDirection.COUNTER_CLOCKWISE);
 
             final List<BearingOffsetDanger> bearingOffsets = new LinkedList<BearingOffsetDanger>();
             int notShadowedBulletsCount = 0;
@@ -230,7 +237,12 @@ public class AdvancedEnemyGunModel {
                     office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
                 }
                 final LxxDataPoint<GuessFactor> entry = (LxxDataPoint<GuessFactor>) entries[i];
-                final double bearingOffset = entry.payload.guessFactor * lateralDirection * maxEscapeAngleQuick;
+                double bearingOffset = entry.payload.guessFactor * lateralDirection;
+                if (bearingOffset > 0) {
+                    bearingOffset *= cwMae;
+                } else {
+                    bearingOffset *= ccwMae;
+                }
                 if (isShadowed(bearingOffset, bulletShadows)) {
                     continue;
                 } else {
@@ -361,16 +373,13 @@ public class AdvancedEnemyGunModel {
             final double lateralDirection = LXXUtils.lateralDirection(ts.enemySnapshot, ts.mySnapshot);
             final double bulletSpeed = Rules.getBulletSpeed(t.getFirePower());
             final double maxEscapeAngleAcc = LXXUtils.getMaxEscapeAngle(t, office.getRobot().getCurrentSnapshot(), bulletSpeed);
-            if (enemyGunType != GunType.HEAD_ON) {
-                if (lateralDirection != 0) {
-                    bearingOffsets.add(new BearingOffsetDanger(maxEscapeAngleAcc * lateralDirection, 1));
-                } else {
-                    bearingOffsets.add(new BearingOffsetDanger(maxEscapeAngleAcc * 1, 1));
-                    bearingOffsets.add(new BearingOffsetDanger(maxEscapeAngleAcc * -1, 1));
-                }
-            }
-            if (enemyGunType == GunType.UNKNOWN || enemyGunType == GunType.HEAD_ON) {
+            if (enemyGunType == GunType.HEAD_ON) {
                 bearingOffsets.add(new BearingOffsetDanger(0D, 1));
+            } else if (enemyGunType == GunType.LINEAR) {
+                bearingOffsets.add(new BearingOffsetDanger(maxEscapeAngleAcc * lateralDirection, 1));
+            }  else {
+                bearingOffsets.add(new BearingOffsetDanger(0D, 1));
+                bearingOffsets.add(new BearingOffsetDanger(maxEscapeAngleAcc * lateralDirection, 1));
             }
         }
 
@@ -380,9 +389,14 @@ public class AdvancedEnemyGunModel {
             updateBestLogs();
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
-                final double guessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed()) * direction;
+
+                final double mae = bullet.getRealBearingOffsetRadians() > 0
+                        ? LXXUtils.getMaxEscapeAngle(bullet.getFirePosition(), 0, bullet.getSpeed(), bullet.getTargetState(), OrbitDirection.CLOCKWISE)
+                        : LXXUtils.getMaxEscapeAngle(bullet.getFirePosition(), 0, bullet.getSpeed(), bullet.getTargetState(), OrbitDirection.COUNTER_CLOCKWISE);
+
+                final double guessFactor = bullet.getRealBearingOffsetRadians() / mae;
                 for (Log log : hitLogsSet) {
-                    log.addEntry(bullet.getAimPredictionData().getTs(), new GuessFactor(guessFactor));
+                    log.addEntry(bullet.getAimPredictionData().getTs(), new GuessFactor(guessFactor * direction));
                 }
             }
         }

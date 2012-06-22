@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.strategies.duel;
+package lxx.movement;
 
 import lxx.bullets.LXXBullet;
 

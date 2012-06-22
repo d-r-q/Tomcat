@@ -13,8 +13,8 @@ public class BulletSnapshot {
     private final double speed;
     private final long launchTime;
 
-    public BulletSnapshot(LXXRobotSnapshot ownerState, LXXRobotSnapshot targetState, double noBearingOffsetRadians, double travelledDistance,
-                          double speed, long launchTime) {
+    public BulletSnapshot(LXXRobotSnapshot ownerState, LXXRobotSnapshot targetState, double noBearingOffsetRadians,
+                          double travelledDistance, double speed, long launchTime) {
         this.ownerState = ownerState;
         this.targetState = targetState;
         this.noBearingOffsetRadians = noBearingOffsetRadians;

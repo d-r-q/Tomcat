@@ -6,6 +6,9 @@ package lxx.utils;
 
 import lxx.LXXRobotSnapshot;
 import lxx.LXXRobotState;
+import lxx.RobotImage;
+import lxx.movement.OrbitDirection;
+import lxx.movement.OrbitalMovement;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
@@ -268,6 +271,26 @@ public class LXXUtils {
 
     public static <T> List<T> asModifiableList(T... items) {
         return new ArrayList<T>(Arrays.asList(items));
+    }
+
+    public static double getMaxEscapeAngle(APoint bulletFirePos, double bulletTravelledDist, double bulletSpeed, LXXRobotSnapshot robot, OrbitDirection od) {
+        final OrbitalMovement orbitalMovement = new OrbitalMovement(bulletFirePos.aDistance(robot));
+        final RobotImage img = new RobotImage(robot);
+
+        boolean isPassed = false;
+        while (!isPassed) {
+            final Rectangle2D targetRect = getBoundingRectangleAt(img);
+            final double angleToTarget = bulletFirePos.angleTo(img);
+            final LXXPoint bulletPos = (LXXPoint) bulletFirePos.project(angleToTarget, bulletTravelledDist);
+            final boolean contains = targetRect.contains(bulletPos);
+            if (!contains && bulletTravelledDist > bulletFirePos.aDistance(img)) {
+                isPassed = true;
+            }
+            img.apply(orbitalMovement.makeDecision(bulletFirePos, img, od));
+            bulletTravelledDist += bulletSpeed;
+        }
+
+        return abs(bearingOffset(bulletFirePos, robot, img)) + getRobotWidthInRadians(bulletFirePos, img) / 2;
     }
 
 }

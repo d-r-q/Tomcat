@@ -20,6 +20,8 @@ public class RobotImage implements LXXRobotSnapshot {
     private String name;
     private double acceleration;
     private int lastDirection;
+    private double robotWidth;
+    private double robotHeight;
 
     public RobotImage(LXXRobotSnapshot original) {
         this.position = new LXXPoint(original.getX(), original.getY());
@@ -33,6 +35,8 @@ public class RobotImage implements LXXRobotSnapshot {
         acceleration = original.getAcceleration();
         absoluteHeadingRadians = original.getAbsoluteHeadingRadians();
         lastDirection = original.getLastDirection();
+        robotWidth = original.getWidth();
+        robotHeight = original.getHeight();
     }
 
     public void apply(MovementDecision movementDecision) {
@@ -116,11 +120,11 @@ public class RobotImage implements LXXRobotSnapshot {
     }
 
     public double getWidth() {
-        throw new UnsupportedOperationException();
+        return robotWidth;
     }
 
     public double getHeight() {
-        throw new UnsupportedOperationException();
+        return robotHeight;
     }
 
     public double getAcceleration() {

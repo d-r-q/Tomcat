@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.strategies.duel;
+package lxx.movement;
 
 import lxx.LXXRobotSnapshot;
 import lxx.RobotImage;
@@ -14,6 +14,7 @@ import lxx.paint.LXXGraphics;
 import lxx.paint.Painter;
 import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
+import lxx.strategies.duel.DistanceController;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.utils.APoint;

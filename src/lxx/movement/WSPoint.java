@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.strategies.duel;
+package lxx.movement;
 
 import lxx.utils.APoint;
 import lxx.utils.LXXPoint;

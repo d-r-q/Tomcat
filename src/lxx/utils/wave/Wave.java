@@ -12,7 +12,7 @@ import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
 import robocode.util.Utils;
 
-import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 import static java.lang.StrictMath.max;
 import static java.lang.StrictMath.min;
@@ -51,10 +51,7 @@ public class Wave {
     }
 
     public boolean check() {
-        final double width = target.getWidth();
-        final double height = target.getHeight();
-        final Rectangle targetRect = new Rectangle((int) (target.getX() - width / 2), (int) (target.getY() - height / 2),
-                (int) width, (int) height);
+        final Rectangle2D targetRect = LXXUtils.getBoundingRectangleAt(target);
         final double angleToTarget = sourceState.angleTo(target);
         final LXXPoint bulletPos = (LXXPoint) sourceState.project(angleToTarget, getTraveledDistance());
         final boolean contains = targetRect.contains(bulletPos);

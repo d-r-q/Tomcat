@@ -12,7 +12,7 @@ import lxx.strategies.challenges.MCChallengerStrategy;
 import lxx.strategies.challenges.TCChallengerStrategy;
 import lxx.strategies.duel.DuelFirePowerSelector;
 import lxx.strategies.duel.DuelStrategy;
-import lxx.strategies.duel.WaveSurfingMovement;
+import lxx.movement.WaveSurfingMovement;
 import lxx.strategies.find_enemies.FindEnemiesStrategy;
 import lxx.strategies.win.WinStrategy;
 import lxx.targeting.TargetManager;

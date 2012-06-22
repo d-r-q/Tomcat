@@ -4,6 +4,7 @@
 
 package lxx.strategies.duel;
 
+import lxx.movement.OrbitDirection;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.utils.LXXConstants;

@@ -1,3 +1,6 @@
+v. 3.61
+* precise max escape angle calculation for movement
+
 v. 3.60a
 * Dead code for zero lateral directions processing in movement removed, minor refactoring
 
