@@ -94,7 +94,7 @@ public class AdvancedEnemyGunModel {
     public void processVisit(LXXBullet bullet) {
         final double direction = bullet.getTargetLateralDirection();
         final double undirectedGuessFactor = bullet.getWave().getHitBearingOffsetInterval().center() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
-        getLogSet(bullet.getSourceState().getName()).learn(bullet.getAimPredictionData().getTs(), new UndirectedGuessFactor(undirectedGuessFactor, direction));
+        getLogSet(bullet.getSourceState().getName()).learn(bullet.getAimPredictionData().getTs(), new GuessFactor(undirectedGuessFactor * direction));
     }
 
     public void updateBulletPredictionData(LXXBullet bullet) {
@@ -229,34 +229,14 @@ public class AdvancedEnemyGunModel {
                     heapSort.sortLastN(sortedEntris);
                     office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
                 }
-                final LxxDataPoint<UndirectedGuessFactor> entry = (LxxDataPoint<UndirectedGuessFactor>) entries[i];
-                if (entry.payload.lateralDirection != 0 && lateralDirection != 0) {
-
-                    final double bearingOffset = entry.payload.guessFactor * entry.payload.lateralDirection * lateralDirection * maxEscapeAngleQuick;
-                    if (isShadowed(bearingOffset, bulletShadows)) {
-                        continue;
-                    } else {
-                        notShadowedBulletsCount++;
-                    }
-                    bearingOffsets.add(new BearingOffsetDanger(bearingOffset, 1));
+                final LxxDataPoint<GuessFactor> entry = (LxxDataPoint<GuessFactor>) entries[i];
+                final double bearingOffset = entry.payload.guessFactor * lateralDirection * maxEscapeAngleQuick;
+                if (isShadowed(bearingOffset, bulletShadows)) {
+                    continue;
                 } else {
-                    boolean hasNotShadowed = false;
-                    final double bearingOffset1 = entry.payload.guessFactor * 1 * maxEscapeAngleQuick;
-                    if (!isShadowed(bearingOffset1, bulletShadows)) {
-                        hasNotShadowed = true;
-                        bearingOffsets.add(new BearingOffsetDanger(bearingOffset1, 1));
-                    }
-
-                    final double bearingOffset2 = entry.payload.guessFactor * -1 * maxEscapeAngleQuick;
-                    if (!isShadowed(bearingOffset2, bulletShadows)) {
-                        hasNotShadowed = true;
-                        bearingOffsets.add(new BearingOffsetDanger(bearingOffset2, 1));
-                    }
-
-                    if (hasNotShadowed) {
-                        notShadowedBulletsCount++;
-                    }
+                    notShadowedBulletsCount++;
                 }
+                bearingOffsets.add(new BearingOffsetDanger(bearingOffset, 1));
             }
 
             return bearingOffsets;
@@ -284,7 +264,7 @@ public class AdvancedEnemyGunModel {
             return res;
         }
 
-        public void addEntry(TurnSnapshot location, UndirectedGuessFactor payload) {
+        public void addEntry(TurnSnapshot location, GuessFactor payload) {
             rTree.insert(LxxDataPoint.createPlainPoint(location, payload, attrs));
             lastUpdateRoundTime = LXXUtils.getRoundTime(office.getTime(), office.getRobot().getRoundNum());
         }
@@ -302,7 +282,7 @@ public class AdvancedEnemyGunModel {
         private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
         private final List[] bestLogs = {shortLogs, midLogs, longLogs, enemyHitRateLogs};
 
-        public void learn(TurnSnapshot location, UndirectedGuessFactor payload) {
+        public void learn(TurnSnapshot location, GuessFactor payload) {
             for (Log log : visitLogsSet) {
                 log.addEntry(location, payload);
             }
@@ -400,10 +380,9 @@ public class AdvancedEnemyGunModel {
             updateBestLogs();
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
-                final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+                final double guessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed()) * direction;
                 for (Log log : hitLogsSet) {
-                    log.addEntry(bullet.getAimPredictionData().getTs(), new
-                            UndirectedGuessFactor(undirectedGuessFactor, direction));
+                    log.addEntry(bullet.getAimPredictionData().getTs(), new GuessFactor(guessFactor));
                 }
             }
         }

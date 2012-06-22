@@ -6,13 +6,12 @@ package lxx.bullets.enemy;
 
 import java.io.Serializable;
 
-class UndirectedGuessFactor implements Serializable {
+public class GuessFactor implements Serializable {
 
     public final double guessFactor;
-    public final double lateralDirection;
 
-    UndirectedGuessFactor(double guessFactor, double lateralDirection) {
+    public GuessFactor(double guessFactor) {
         this.guessFactor = guessFactor;
-        this.lateralDirection = lateralDirection;
     }
+
 }
