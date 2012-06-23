@@ -156,7 +156,7 @@ public class AdvancedEnemyGunModel {
 
     class Log {
 
-        private static final int BULLETS_PER_LOG = 5;
+        private static final int BULLETS_PER_LOG = 11;
 
         private final Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
                 AttributesManager.myLateralSpeed, 2D,

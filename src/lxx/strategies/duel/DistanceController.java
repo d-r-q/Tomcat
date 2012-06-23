@@ -20,10 +20,12 @@ public class DistanceController {
     private static final double MAX_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
     private static final double MIN_ATTACK_DELTA_WITHOUT_BULLETS = LXXConstants.RADIANS_30;
 
-    private static final double SIMPLE_DISTANCE = 650;
+    public static final double SIMPLE_DISTANCE = 650;
     private static final int ANTI_RAM_DISTANCE = 150;
 
     private final TargetManager targetManager;
+
+    private double desiredDistance = SIMPLE_DISTANCE;
 
     public DistanceController(TargetManager targetManager) {
         this.targetManager = targetManager;
@@ -46,4 +48,7 @@ public class DistanceController {
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
     }
 
+    public void setDesiredDistance(double desiredDistance) {
+        this.desiredDistance = desiredDistance;
+    }
 }

@@ -40,6 +40,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     private final EnemyBulletManager enemyBulletManager;
     private final PointsGenerator pointsGenerator;
     private final TimeProfiler timeProfiler;
+    private final DistanceController distanceController;
+
     private Target duelOpponent;
     private MovementDirectionPrediction prevPrediction;
     private RobotImage pifImage;
@@ -52,7 +54,8 @@ public class WaveSurfingMovement implements Movement, Painter {
         this.enemyBulletManager = office.getEnemyBulletManager();
         timeProfiler = office.getTimeProfiler();
 
-        pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager()), robot.getBattleField());
+        distanceController = new DistanceController(office.getTargetManager());
+        pointsGenerator = new PointsGenerator(distanceController, robot.getBattleField());
     }
 
     public MovementDecision getMovementDecision() {
@@ -65,6 +68,9 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         final LXXRobotSnapshot opponent = duelOpponent == null ? null : duelOpponent.getCurrentSnapshot();
+        if (duelOpponent == null) {
+            distanceController.setDesiredDistance(900);
+        }
         final LXXPoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
 
         return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getCurrentSnapshot(), opponent);
