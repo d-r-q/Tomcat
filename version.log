@@ -1,6 +1,9 @@
+v. 3.63
+* use bullet fire pos as center for surfing
+
 v. 3.62
 * Increase distance after enemy death
-* Bullets per log increased to 11 in movement
+* Bullets per log count increased to 11 in movement
 
 v. 3.60a
 * Dead code for zero lateral directions processing in movement removed, minor refactoring
