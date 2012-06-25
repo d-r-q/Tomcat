@@ -37,7 +37,6 @@ public class RobotImage implements LXXRobotSnapshot {
 
     public void apply(MovementDecision movementDecision) {
         heading = Utils.normalAbsoluteAngle(heading + movementDecision.getTurnRateRadians());
-        final double acceleration;
         final double desiredVelocity = movementDecision.getDesiredVelocity();
         if (abs(signum(velocity) - signum(desiredVelocity)) <= 1) {
             acceleration = LXXUtils.limit(-Rules.DECELERATION, abs(desiredVelocity) - speed, Rules.ACCELERATION);
@@ -53,6 +52,7 @@ public class RobotImage implements LXXRobotSnapshot {
                 velocity = 0;
                 speed = 0;
             }
+            acceleration = abs(desiredVelocity);
         }
 
         absoluteHeadingRadians = velocity >= 0 ? heading : Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_180);

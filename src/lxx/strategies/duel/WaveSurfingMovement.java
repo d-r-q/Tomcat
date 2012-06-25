@@ -55,7 +55,9 @@ public class WaveSurfingMovement implements Movement, Painter {
         timeProfiler = office.getTimeProfiler();
 
         distanceController = new DistanceController(office.getTargetManager());
-        pointsGenerator = new PointsGenerator(distanceController, robot.getBattleField());
+        final MovementApproximator enemyMovementApproximator = new MovementApproximator(office.getTurnSnapshotsLog());
+        office.getTargetManager().addListener(enemyMovementApproximator);
+        pointsGenerator = new PointsGenerator(distanceController, robot.getBattleField(), enemyMovementApproximator);
     }
 
     public MovementDecision getMovementDecision() {

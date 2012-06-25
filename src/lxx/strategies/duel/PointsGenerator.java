@@ -24,10 +24,12 @@ public class PointsGenerator {
 
     private final DistanceController distanceController;
     private final BattleField battleField;
+    private MovementApproximator enemyMovementApproximator;
 
-    public PointsGenerator(DistanceController distanceController, BattleField battleField) {
+    public PointsGenerator(DistanceController distanceController, BattleField battleField, MovementApproximator enemyMovementApproximator) {
         this.distanceController = distanceController;
         this.battleField = battleField;
+        this.enemyMovementApproximator = enemyMovementApproximator;
     }
 
     private PointDanger getPointDanger(LXXBullet lxxBullet, LXXPoint robotPos) {
@@ -89,12 +91,6 @@ public class PointsGenerator {
         final double bulletSpeed = bullet.getSpeed();
         double travelledDistance = bullet.getTravelledDistance() + bulletSpeed * time;
         final LXXPoint firePosition = bullet.getFirePosition();
-        final double enemyDesiredVelocity;
-        if (opponentImg != null) {
-            enemyDesiredVelocity = Rules.MAX_VELOCITY * signum(opponentImg.getVelocity());
-        } else {
-            enemyDesiredVelocity = 0;
-        }
 
         LXXPoint robotImgPosition;
         do {
@@ -104,7 +100,7 @@ public class PointsGenerator {
             if (points != null) {
                 points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPosition)));
                 if (opponentImg != null) {
-                    opponentImg.apply(new MovementDecision(enemyDesiredVelocity, 0));
+                    opponentImg.apply(enemyMovementApproximator.getMovementDecision(robotImg, opponentImg));
                     for (WSPoint prevPoint : points) {
                         prevPoint.danger.setMinDistToEnemySq(prevPoint.aDistanceSq(opponentImg.getPosition()));
                     }
