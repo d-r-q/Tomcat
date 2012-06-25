@@ -70,4 +70,7 @@ public abstract class LXXConstants {
 
     public static final double INITIAL_GUN_HEAT = 3.0;
     public static final double ROBOT_HIT_DAMAGE = 0.6;
+
+    public static final int INACTIVITY_TIMER = 450;
+
 }
