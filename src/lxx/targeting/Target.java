@@ -48,6 +48,7 @@ public class Target implements Serializable, LXXRobot {
     private int enemyHitRobotEnergyLoss;
     private double enemyLastFirePower;
     private double gunHeat;
+    private long fireReadyTime;
 
     public Target(BasicRobot owner, String name, TargetData targetData) {
         this.owner = owner;
@@ -84,9 +85,13 @@ public class Target implements Serializable, LXXRobot {
             final double firePower = getExpectedEnergy() - energy;
             gunHeat = Rules.getGunHeat(firePower);
             enemyLastFirePower = firePower;
+            targetData.addFireDelay(owner.getTime() - fireReadyTime);
         }
 
         gunHeat = max(0, gunHeat - owner.getGunCoolingRate());
+        if (gunHeat == 0) {
+            fireReadyTime = owner.getTime();
+        }
         currentSnapshot.setGunHeat(gunHeat);
     }
 
