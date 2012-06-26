@@ -10,6 +10,7 @@ import lxx.Tomcat;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.office.Office;
+import lxx.office.StatisticsManager;
 import lxx.paint.LXXGraphics;
 import lxx.paint.Painter;
 import lxx.strategies.Movement;
@@ -47,6 +48,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     private RobotImage pifImage;
     private List<WSPoint> secondCWPoints;
     private List<WSPoint> secondCCWPoints;
+    private final StatisticsManager statisticsManager;
 
     public WaveSurfingMovement(Office office) {
         this.robot = office.getRobot();
@@ -56,6 +58,7 @@ public class WaveSurfingMovement implements Movement, Painter {
 
         distanceController = new DistanceController(office.getTargetManager());
         pointsGenerator = new PointsGenerator(distanceController, robot.getBattleField());
+        statisticsManager = office.getStatisticsManager();
     }
 
     public MovementDecision getMovementDecision() {
@@ -68,7 +71,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         final LXXRobotSnapshot opponent = duelOpponent == null ? null : duelOpponent.getCurrentSnapshot();
-        if (duelOpponent == null) {
+        if (duelOpponent == null || statisticsManager.getEnemyHitRate().getHitRate() < 0.05) {
             distanceController.setDesiredDistance(900);
         }
         final LXXPoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
