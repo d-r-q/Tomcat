@@ -16,6 +16,7 @@ public class ValueInfo {
     private final AvgValue avgValue;
     private double maxValue = Long.MIN_VALUE;
     private double minValue = Long.MAX_VALUE;
+    private double total;
 
     public ValueInfo(int deph) {
         avgValue = new AvgValue(deph);
@@ -25,6 +26,7 @@ public class ValueInfo {
         maxValue = max(maxValue, value);
         minValue = min(minValue, value);
         avgValue.addValue(value);
+        total += value;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class ValueInfo {
         } else if (maxValue == minValue) {
             return String.format("[ %,14.0f ]", minValue);
         } else {
-            return String.format("[ %,9.0f | %,9.0f | %,14.0f]", minValue, avgValue.getCurrentValue(), maxValue);
+            return String.format("[ %,9.0f | %,9.0f | %,14.0f | %,20.0f]", minValue, avgValue.getCurrentValue(), maxValue, total);
         }
     }
 }

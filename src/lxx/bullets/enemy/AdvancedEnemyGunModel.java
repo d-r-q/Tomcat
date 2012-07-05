@@ -15,7 +15,7 @@ import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.ts_log.attributes.AttributesManager;
 import lxx.utils.*;
-import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.time_profiling.TimeProfile;
 import robocode.Rules;
 
 import java.util.*;
@@ -195,19 +195,19 @@ public class AdvancedEnemyGunModel {
 
             final IntervalDouble[] range = getRange(predicate);
 
-            TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
+            TimeProfile.TR_RANGE_SEARCH_TIME.start();
             final DataPoint[] entries = rTree.rangeSearch(range);
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
+            TimeProfile.TR_RANGE_SEARCH_TIME.stop();
             totalBosVi.addValue(entries.length);
             roundBosVi.addValue(entries.length);
 
             final HeapSort heapSort;
             int sortedEntris = BULLETS_PER_LOG;
             if (entries.length > BULLETS_PER_LOG) {
-                TimeProfileProperties.TR_SORT_TIME.start();
+                TimeProfile.TR_SORT_TIME.start();
                 heapSort = new HeapSort(entries);
                 heapSort.sortLastN(BULLETS_PER_LOG);
-                office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
+                TimeProfile.TR_SORT_TIME.stop();
             } else {
                 heapSort = null;
             }
@@ -225,9 +225,9 @@ public class AdvancedEnemyGunModel {
                 if (i < entries.length - sortedEntris) {
                     int entriesToSort = BULLETS_PER_LOG - notShadowedBulletsCount;
                     sortedEntris += entriesToSort;
-                    TimeProfileProperties.TR_SORT_TIME.start();
+                    TimeProfile.TR_SORT_TIME.start();
                     heapSort.sortLastN(sortedEntris);
-                    office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
+                    TimeProfile.TR_SORT_TIME.stop();
                 }
                 final LxxDataPoint<GuessFactor> entry = (LxxDataPoint<GuessFactor>) entries[i];
                 final double bearingOffset = entry.payload.guessFactor * lateralDirection * maxEscapeAngleQuick;

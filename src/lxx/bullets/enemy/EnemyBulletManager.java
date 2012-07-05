@@ -22,8 +22,7 @@ import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
-import lxx.utils.time_profiling.TimeProfileProperties;
-import lxx.utils.time_profiling.TimeProfiler;
+import lxx.utils.time_profiling.TimeProfile;
 import lxx.utils.wave.Wave;
 import lxx.utils.wave.WaveCallback;
 import lxx.utils.wave.WaveManager;
@@ -58,7 +57,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private final BulletManager bulletManager;
 
     private double nextFireTime;
-    private final TimeProfiler timeProfiler;
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyGunModel = new AdvancedEnemyGunModel(office);
@@ -66,7 +64,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         this.robot = robot;
         this.bulletManager = office.getBulletManager();
         turnSnapshotsLog = office.getTurnSnapshotsLog();
-        timeProfiler = office.getTimeProfiler();
     }
 
     public void targetUpdated(Target target) {
@@ -106,7 +103,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     public void waveBroken(Wave w) {
-        TimeProfileProperties.EBM_WAVE_TIME.start();
+        TimeProfile.EBM_WAVE_TIME.start();
         final LXXBullet lxxBullet = getLXXBullet(w);
         if (lxxBullet != null && lxxBullet.getState() == LXXBulletState.ON_AIR) {
             lxxBullet.setState(LXXBulletState.MISSED);
@@ -118,7 +115,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         enemyGunModel.processMiss(lxxBullet);
         updateBulletsOnAir();
         enemyGunModel.processVisit(lxxBullet);
-        timeProfiler.stopAndSaveProperty(TimeProfileProperties.EBM_WAVE_TIME);
+        TimeProfile.EBM_WAVE_TIME.stop();
     }
 
     private void updateBulletsOnAir() {

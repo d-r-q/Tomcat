@@ -16,7 +16,7 @@ import lxx.strategies.MovementDecision;
 import lxx.strategies.Strategy;
 import lxx.strategies.StrategySelector;
 import lxx.strategies.TurnDecision;
-import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.time_profiling.TimeProfile;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.DeathEvent;
@@ -38,6 +38,10 @@ import static java.lang.Math.*;
  */
 public class Tomcat extends BasicRobot {
 
+    static {
+        TimeProfile.initBattle();
+    }
+
     private boolean isAlive = true;
 
     private boolean isPaintEnabled = false;
@@ -49,6 +53,7 @@ public class Tomcat extends BasicRobot {
     private long lastFireTime;
 
     public void run() {
+        TimeProfile.initRound();
         if (getBattleFieldWidth() > 1200 || getBattleFieldHeight() > 1200) {
             System.out.println("Tomcat isn't support battle fields greater than 1200x1200");
             return;
@@ -72,14 +77,16 @@ public class Tomcat extends BasicRobot {
         init();
 
         while (isAlive) {
-            TimeProfileProperties.TURN_TIME.start();
+            TimeProfile.initTurn();
 
-            TimeProfileProperties.PROCESS_LISTENERS_TIME.start();
+            TimeProfile.TURN_TIME.start();
+
+            TimeProfile.PROCESS_LISTENERS_TIME.start();
             notifyListeners();
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.PROCESS_LISTENERS_TIME);
+            TimeProfile.PROCESS_LISTENERS_TIME.stop();
 
             doTurn();
-            office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TURN_TIME);
+            TimeProfile.TURN_TIME.stop();
 
             execute();
         }

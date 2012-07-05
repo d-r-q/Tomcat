@@ -10,6 +10,7 @@ import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.events.TickEvent;
 import lxx.utils.HitRate;
+import lxx.utils.time_profiling.TimeProfile;
 import robocode.*;
 
 /**
@@ -66,11 +67,15 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
 
     public void onDeath() {
         placeDeathCount[tomcat.getOthers() + 1]++;
+        System.out.println(TimeProfile.getRoundProfilesString());
+        System.out.println(TimeProfile.getBattleProfilesString());
     }
 
     public void onWin() {
         placeDeathCount[1]++;
         placePassed[1]++;
+        System.out.println(TimeProfile.getRoundProfilesString());
+        System.out.println(TimeProfile.getBattleProfilesString());
     }
 
     public void onEvent(Event event) {
@@ -91,6 +96,7 @@ public class StatisticsManager implements RobotListener, BulletManagerListener {
         } else if (event instanceof SkippedTurnEvent) {
             skippedTurns++;
             PropertiesManager.setDebugProperty("Skipped turns", String.valueOf(skippedTurns));
+            System.out.println(TimeProfile.getTurnProfilesString());
         }
     }
 

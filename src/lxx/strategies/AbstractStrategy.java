@@ -7,7 +7,7 @@ package lxx.strategies;
 import lxx.Tomcat;
 import lxx.office.Office;
 import lxx.targeting.Target;
-import lxx.utils.time_profiling.TimeProfileProperties;
+import lxx.utils.time_profiling.TimeProfile;
 
 public abstract class AbstractStrategy implements Strategy {
 
@@ -20,16 +20,14 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     public TurnDecision makeDecision() {
-        TimeProfileProperties.MOVEMENT_TIME.start();
+        TimeProfile.MOVEMENT_TIME.start();
         MovementDecision md = getMovementDecision();
-        office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.MOVEMENT_TIME);
+        TimeProfile.MOVEMENT_TIME.stop();
 
         Target target = selectTarget();
         double firePower = selectFirePower(target);
 
-        TimeProfileProperties.GUN_TIME.start();
-        GunDecision gd = getGunDecision(target, firePower);
-        office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.GUN_TIME);
+        final GunDecision gd = getGunDecision(target, firePower);
 
         return new TurnDecision(md,
                 gd.getGunTurnAngleRadians(), firePower,

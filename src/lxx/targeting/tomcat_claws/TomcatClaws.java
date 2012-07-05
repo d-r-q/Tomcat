@@ -14,6 +14,7 @@ import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
+import lxx.utils.time_profiling.TimeProfile;
 import robocode.Rules;
 import robocode.util.Utils;
 
@@ -56,7 +57,9 @@ public class TomcatClaws implements Gun {
         }
 
         if (futurePoses == null) {
+            TimeProfile.GUN_TIME.start();
             bestBearingOffset = getBearingOffset(t, Rules.getBulletSpeed(firePower), log.getLastSnapshot(t));
+            TimeProfile.GUN_TIME.stop();
         }
 
         return new GunDecision(getGunTurnAngle(Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(t) + bestBearingOffset)),
@@ -195,6 +198,7 @@ public class TomcatClaws implements Gun {
         }
         return BulletState.COMING;
     }
+
     private enum BulletState {
         COMING,
         HITTING,

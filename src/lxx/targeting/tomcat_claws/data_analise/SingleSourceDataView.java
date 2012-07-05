@@ -8,11 +8,9 @@ import lxx.data_analysis.kd_tree.GunKdTreeEntry;
 import lxx.data_analysis.kd_tree.KdTreeAdapter;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
-import lxx.utils.AvgValue;
 import lxx.utils.IntervalDouble;
 import lxx.utils.IntervalLong;
 
-import java.io.Serializable;
 import java.util.*;
 
 import static java.lang.Math.sqrt;
