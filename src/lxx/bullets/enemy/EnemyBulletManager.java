@@ -308,17 +308,21 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         if (target.getGunHeat() > 0) {
             nextFireTime = robot.getTime() + ceil(target.getGunHeat() / robot.getGunCoolingRate());
         }
-        final double timeToFire = round(target.getGunHeat() / robot.getGunCoolingRate());
-        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCurrentSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), (long) (robot.getTime() + timeToFire));
+        final double ticksUntilFire = round(target.getGunHeat() / robot.getGunCoolingRate());
+        final long fireTime = (long) (robot.getTime() + ticksUntilFire);
+        final Wave wave = new Wave(target.getCurrentSnapshot(), robot.getCurrentSnapshot(), robot, Rules.getBulletSpeed(target.getFirePower()), fireTime);
         final Bullet bullet = new Bullet(target.angleTo(robot), target.getX(), target.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
                 wave.getSourceState().getName(), wave.getTargetState().getName(), true, -1);
 
         final LXXBullet lxxBullet = new LXXBullet(bullet, wave);
-        AimingPredictionData futureBulletAimingPredictionData;
-        if (timeToFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() < nextFireTime) {
+        final AimingPredictionData futureBulletAimingPredictionData;
+        if (ticksUntilFire <= LXXUtils.getStopTime(robot.getSpeed()) && robot.getTime() <= nextFireTime) {
             final Map<LXXBullet, BulletShadow> bulletShadows = getBulletShadows(lxxBullet, bulletManager.getBullets());
             addBulletShadows(lxxBullet, bulletShadows);
-            futureBulletAimingPredictionData = enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletShadows.values());
+            final int timeDelta = ticksUntilFire > 0
+                    ? 0
+                    : 1;
+            futureBulletAimingPredictionData = enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, timeDelta), bulletShadows.values());
         } else {
             futureBulletAimingPredictionData = EMPTY_PREDICTION_DATA;
         }

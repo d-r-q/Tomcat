@@ -80,7 +80,8 @@ public class Target implements Serializable, LXXRobot {
     private void updateState() {
         enemyHitRobotEnergyLoss = 0;
         if (prevSnapshot == null) {
-            gunHeat = LXXConstants.INITIAL_GUN_HEAT - owner.getGunCoolingRate() * owner.getTime();
+            // one unit of cooling rate will be deducted after this if-else
+            gunHeat = LXXConstants.INITIAL_GUN_HEAT - owner.getGunCoolingRate() * (owner.getTime() - 1);
         } else if (isFireLastTick()) {
             final double firePower = getExpectedEnergy() - energy;
             gunHeat = Rules.getGunHeat(firePower);
