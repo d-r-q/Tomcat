@@ -1,3 +1,6 @@
+v. 3.67d
+* Recalculate movement path every tick, when no bullets in air
+
 v. 3.67c
 * More accurate gun heat waves processing
 

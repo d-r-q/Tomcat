@@ -6,8 +6,20 @@
 
 <project name="Tomcat" basedir="."
          default="release">
-    <property file="excluded\build.properties"/>
-    <property name="robot.version" value="3.67c"/>
+    <property environment="env"/>
+
+    <property name="bin.dir" value="bin"/>
+    <property name="builds.dir" value="builds"/>
+    <property name="tests.dir" value="tests"/>
+    <property name="tests.bin.dir" value="${tests.dir}/bin"/>
+
+    <property name="robocode.dir" location="C:\Users\1\opt\rc"/>
+    <property name="robocode.jar" value="${robocode.dir}\libs\robocode.jar"/>
+
+    <property name="robot.version" value="3.67d"/>
+    <property name="robot.name" value="Tomcat"/>
+    <property name="robot.jar" value="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
+
 
     <path id="src.files">
         <pathelement location="src"/>

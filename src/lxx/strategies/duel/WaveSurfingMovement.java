@@ -84,8 +84,8 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private boolean isBulletsUpdated(List<LXXBullet> newBullets) {
-        return (newBullets.get(0).getAimPredictionData()).getPredictionRoundTime() !=
-                prevPrediction.firstBulletPredictionTime;
+        final long predictionRoundTime = newBullets.get(0).getAimPredictionData().getPredictionRoundTime();
+        return predictionRoundTime != prevPrediction.firstBulletPredictionTime || predictionRoundTime == 0;
     }
 
     private void selectOrbitDirection(List<LXXBullet> lxxBullets) {
@@ -181,13 +181,20 @@ public class WaveSurfingMovement implements Movement, Painter {
         g.drawCircle(prevPrediction.minDangerPoint, 16);
         g.drawCross(prevPrediction.minDangerPoint, 16);
 
-        if (prevPrediction.pifImage != null) {
+        /*if (prevPrediction.pifImage != null) {
             g.setColor(new Color(0, 0, 255, 200));
             g.drawCircle(prevPrediction.pifImage, 16);
             g.drawCross(prevPrediction.pifImage, 16);
 
             drawPath(g, prevPrediction.secondCWPoints, new Color(0, 255, 255, 200));
             drawPath(g, prevPrediction.secondCCWPoints, new Color(255, 255, 0, 200));
+        }*/
+
+        if (prevPrediction.secondPoints != null) {
+            g.setColor(new Color(0, 255, 0, 55));
+            for (APoint sp : prevPrediction.secondPoints) {
+                g.fillCircle(sp, 21);
+            }
         }
     }
 
@@ -200,6 +207,7 @@ public class WaveSurfingMovement implements Movement, Painter {
 
     public class MovementDirectionPrediction {
 
+        public List<APoint> secondPoints;
         public List<WSPoint> cwPoints;
         public List<WSPoint> ccwPoints;
         public double enemyVelocitySign;
