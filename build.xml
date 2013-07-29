@@ -16,7 +16,7 @@
     <property name="robocode.dir" location="C:\Users\1\opt\rc"/>
     <property name="robocode.jar" value="${robocode.dir}\libs\robocode.jar"/>
 
-    <property name="robot.version" value="3.67d"/>
+    <property name="robot.version" value="3.68"/>
     <property name="robot.name" value="Tomcat"/>
     <property name="robot.jar" value="${builds.dir}\lxx.${robot.name}_${robot.version}.jar"/>
 

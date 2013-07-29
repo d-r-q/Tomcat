@@ -151,12 +151,15 @@ public class PointsGenerator {
         if (opponent != null) {
             final LXXPoint oppPos = opponent.getPosition();
             final double distToOpponent = robot.aDistance(oppPos);
-            if (distToOpponent < 100) {
-                final double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
-                if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, distToOpponent) * 1.01))) {
-                    desiredSpeed = 0;
-                }
+            final double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
+            if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, distToOpponent) * 1.1))) {
+                desiredHeading = Utils.normalNearAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
             }
+        }
+
+        double angleToSurfPoint = robot.angleTo(surfPoint);
+        if (((LXXUtils.anglesDiff(desiredHeading, angleToSurfPoint) < LXXUtils.getRobotWidthInRadians(angleToSurfPoint, robot.aDistance(surfPoint)) * 1.1))) {
+            desiredHeading = Utils.normalNearAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
         }
 
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);

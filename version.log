@@ -1,3 +1,6 @@
+v. 3.68
+* Revert movement direction, when approaching to enemy or fire position
+
 v. 3.67d
 * Recalculate movement path every tick, when no bullets in air
 
